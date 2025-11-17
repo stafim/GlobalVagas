@@ -173,7 +173,12 @@ export class ObjectStorageService {
     }
 
     const url = new URL(rawPath);
-    const rawObjectPath = url.pathname;
+    let rawObjectPath = url.pathname;
+    
+    // Remove leading slash from pathname to match the format of objectEntityDir
+    if (rawObjectPath.startsWith("/")) {
+      rawObjectPath = rawObjectPath.slice(1);
+    }
 
     let objectEntityDir = this.getPrivateObjectDir();
     if (!objectEntityDir.endsWith("/")) {
@@ -181,7 +186,7 @@ export class ObjectStorageService {
     }
 
     if (!rawObjectPath.startsWith(objectEntityDir)) {
-      return rawObjectPath;
+      return `/${rawObjectPath}`;
     }
 
     const entityId = rawObjectPath.slice(objectEntityDir.length);
