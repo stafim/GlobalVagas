@@ -89,7 +89,17 @@ export default function CompanyJobs() {
   });
 
   const onSubmit = (data: JobFormValues) => {
+    if (currentStep !== 3) {
+      return;
+    }
     createJobMutation.mutate(data);
+  };
+
+  const handleFormSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (currentStep === 3) {
+      form.handleSubmit(onSubmit)();
+    }
   };
 
   const nextStep = async () => {
@@ -172,7 +182,7 @@ export default function CompanyJobs() {
             </div>
 
             <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <form onSubmit={handleFormSubmit} className="space-y-4">
                 {currentStep === 1 && (
                   <div className="space-y-4">
                     <h3 className="font-semibold text-lg">Informações Básicas</h3>
