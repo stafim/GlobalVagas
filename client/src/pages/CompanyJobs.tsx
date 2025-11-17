@@ -88,18 +88,16 @@ export default function CompanyJobs() {
     },
   });
 
-  const onSubmit = (data: JobFormValues) => {
-    if (currentStep !== 3) {
-      return;
+  const handlePublishJob = async () => {
+    const isValid = await form.trigger();
+    if (isValid) {
+      const data = form.getValues();
+      createJobMutation.mutate(data);
     }
-    createJobMutation.mutate(data);
   };
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (currentStep === 3) {
-      form.handleSubmit(onSubmit)();
-    }
   };
 
   const nextStep = async () => {
@@ -511,7 +509,8 @@ export default function CompanyJobs() {
                     </Button>
                   ) : (
                     <Button 
-                      type="submit" 
+                      type="button"
+                      onClick={handlePublishJob}
                       disabled={createJobMutation.isPending}
                       className="ml-auto"
                       data-testid="button-submit-job"
