@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/sidebar";
 import { useLocation, Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
+import { useAuth } from "@/hooks/use-auth";
+import type { Company } from "@shared/schema";
 
 const menuItems = [
   {
@@ -34,6 +36,9 @@ const menuItems = [
 export function CompanySidebar() {
   const [location] = useLocation();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
+  
+  const company = user as Company;
 
   const prefetchData = (url: string) => {
     if (url === '/empresa/vagas') {
@@ -51,8 +56,10 @@ export function CompanySidebar() {
           <div className="bg-primary/10 p-2 rounded-md">
             <Building2 className="h-5 w-5 text-primary" />
           </div>
-          <div>
-            <h2 className="font-semibold">Empresa</h2>
+          <div className="flex-1 min-w-0">
+            <h2 className="font-semibold truncate" data-testid="text-company-name">
+              {company?.companyName || 'Empresa'}
+            </h2>
             <p className="text-xs text-muted-foreground">Operlist</p>
           </div>
         </div>
