@@ -15,6 +15,10 @@ export default function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const handleLogoClick = () => {
+    setLocation("/");
+  };
+
   const loginMutation = useMutation({
     mutationFn: async (credentials: { email: string; password: string }) => {
       const response = await apiRequest('POST', '/api/admin/login', credentials);
@@ -61,7 +65,8 @@ export default function AdminLogin() {
             <img 
               src={operlistLogo} 
               alt="Operlist" 
-              className="h-20"
+              className="h-20 cursor-pointer"
+              onClick={handleLogoClick}
               data-testid="logo-admin-login"
             />
           </div>
