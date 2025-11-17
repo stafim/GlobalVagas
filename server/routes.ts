@@ -605,7 +605,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         contactName: company.companyName,
         contactEmail: company.email,
         contactPhone: company.phone,
-        logoUrl: null,
+        logoUrl: company.logoUrl || null,
         primaryColor: '#8b5cf6',
         secondaryColor: '#a78bfa',
         accentColor: '#c4b5fd',
@@ -664,8 +664,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Acesso negado" });
       }
 
-      const client = await storage.updateClient(req.params.id, req.body);
-      return res.status(200).json(client);
+      // Check if this is a client (admin-created) or company (site-registered)
+      const existingClient = await storage.getClient(req.params.id);
+      
+      if (existingClient) {
+        // Update in clients table
+        const client = await storage.updateClient(req.params.id, req.body);
+        return res.status(200).json(client);
+      } else {
+        // Check if it's a company
+        const existingCompany = await storage.getCompany(req.params.id);
+        
+        if (existingCompany) {
+          // Update in companies table
+          const company = await storage.updateCompany(req.params.id, req.body);
+          return res.status(200).json(company);
+        } else {
+          return res.status(404).json({ message: "Cliente não encontrado" });
+        }
+      }
     } catch (error) {
       console.error("Error updating client:", error);
       return res.status(500).json({ message: "Erro ao atualizar cliente" });

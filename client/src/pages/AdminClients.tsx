@@ -590,7 +590,7 @@ export default function AdminClients() {
                           <div className="w-24 h-24 flex items-center justify-center bg-muted rounded-md p-3 overflow-hidden">
                             {client.logoUrl ? (
                               <img 
-                                src={client.logoUrl} 
+                                src={`${client.logoUrl}?t=${Date.now()}`}
                                 alt={`${client.companyName} logo`}
                                 className="max-w-full max-h-full object-contain"
                                 onError={(e) => {

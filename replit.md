@@ -132,6 +132,11 @@ npm run dev  # Starts both frontend and backend
   - Upload/change logo button now available for ALL clients
   - Previously only available for admin-created clients
   - Now also enabled for site-registered companies
+  - **Bug Fixes**:
+    - Fixed logo not updating for site-registered companies
+    - GET /api/clients now correctly returns logoUrl from companies table
+    - PUT /api/clients/:id now updates correct table (clients OR companies)
+    - Added cache-busting to force image refresh after upload
 
 ### CPF Validation Enhancement
 - Added input mask for CPF (formats as user types)
