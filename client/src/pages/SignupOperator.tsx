@@ -32,8 +32,52 @@ import {
 import { HardHat, Mail, Lock, Phone, User, FileText, Briefcase, MapPin, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
 
+function formatCPF(value: string): string {
+  const numbers = value.replace(/\D/g, '');
+  
+  if (numbers.length <= 3) return numbers;
+  if (numbers.length <= 6) return `${numbers.slice(0, 3)}.${numbers.slice(3)}`;
+  if (numbers.length <= 9) return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6)}`;
+  return `${numbers.slice(0, 3)}.${numbers.slice(3, 6)}.${numbers.slice(6, 9)}-${numbers.slice(9, 11)}`;
+}
+
+function removeCPFMask(value: string): string {
+  return value.replace(/\D/g, '');
+}
+
+function validateCPF(cpf: string): boolean {
+  const numbers = cpf.replace(/\D/g, '');
+  
+  if (numbers.length !== 11) return false;
+  
+  if (/^(\d)\1+$/.test(numbers)) return false;
+  
+  let sum = 0;
+  for (let i = 0; i < 9; i++) {
+    sum += parseInt(numbers.charAt(i)) * (10 - i);
+  }
+  let digit = 11 - (sum % 11);
+  if (digit >= 10) digit = 0;
+  if (digit !== parseInt(numbers.charAt(9))) return false;
+  
+  sum = 0;
+  for (let i = 0; i < 10; i++) {
+    sum += parseInt(numbers.charAt(i)) * (11 - i);
+  }
+  digit = 11 - (sum % 11);
+  if (digit >= 10) digit = 0;
+  if (digit !== parseInt(numbers.charAt(10))) return false;
+  
+  return true;
+}
+
 const signupFormSchema = insertOperatorSchema.extend({
   confirmPassword: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+  cpf: z.string()
+    .min(1, "CPF é obrigatório")
+    .refine((cpf) => validateCPF(cpf), {
+      message: "CPF inválido",
+    }),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "As senhas não coincidem",
   path: ["confirmPassword"],
@@ -293,6 +337,12 @@ export default function SignupOperator() {
                                   className="pl-10"
                                   data-testid="input-cpf"
                                   {...field}
+                                  onChange={(e) => {
+                                    const formatted = formatCPF(e.target.value);
+                                    field.onChange(removeCPFMask(formatted));
+                                    e.target.value = formatted;
+                                  }}
+                                  value={formatCPF(field.value || '')}
                                 />
                               </div>
                             </FormControl>
