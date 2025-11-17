@@ -196,6 +196,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/companies/profile", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autenticado" });
+      }
+
+      const updateData = req.body;
+      delete updateData.id;
+      delete updateData.password;
+      delete updateData.cnpj;
+      delete updateData.email;
+
+      const updatedCompany = await storage.updateCompany(req.session.userId, updateData);
+      const { password: _, ...companyWithoutPassword } = updatedCompany;
+      
+      return res.status(200).json(companyWithoutPassword);
+    } catch (error) {
+      console.error("Error updating company profile:", error);
+      return res.status(500).json({ message: "Erro ao atualizar perfil" });
+    }
+  });
+
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { email, password } = req.body;
@@ -797,6 +819,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error setting profile photo:", error);
       res.status(500).json({ message: "Erro ao atualizar foto de perfil" });
+    }
+  });
+
+  app.put("/api/companies/logo", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autenticado" });
+      }
+
+      if (!req.body.logoURL) {
+        return res.status(400).json({ message: "logoURL é obrigatório" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        req.body.logoURL,
+        {
+          owner: req.session.userId,
+          visibility: "public",
+        }
+      );
+
+      await storage.updateCompany(req.session.userId, { logoUrl: objectPath });
+
+      res.status(200).json({ objectPath });
+    } catch (error) {
+      console.error("Error setting company logo:", error);
+      res.status(500).json({ message: "Erro ao atualizar logo da empresa" });
     }
   });
 

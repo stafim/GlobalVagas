@@ -11,6 +11,7 @@ export interface IStorage {
   getCompanyByEmail(email: string): Promise<Company | undefined>;
   getCompanyByCnpj(cnpj: string): Promise<Company | undefined>;
   createCompany(company: InsertCompany): Promise<Company>;
+  updateCompany(id: string, company: Partial<InsertCompany>): Promise<Company>;
   getAllCompanies(): Promise<Company[]>;
   
   getOperator(id: string): Promise<Operator | undefined>;
@@ -131,6 +132,15 @@ export class DatabaseStorage implements IStorage {
     const [company] = await db
       .insert(companies)
       .values(insertCompany)
+      .returning();
+    return company;
+  }
+
+  async updateCompany(id: string, updateData: Partial<InsertCompany>): Promise<Company> {
+    const [company] = await db
+      .update(companies)
+      .set(updateData)
+      .where(eq(companies.id, id))
       .returning();
     return company;
   }
