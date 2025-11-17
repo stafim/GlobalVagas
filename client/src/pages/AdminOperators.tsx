@@ -112,7 +112,7 @@ export default function AdminOperators() {
   }, [operators, searchName]);
 
   const handleDownloadPDF = async (operator: Operator) => {
-    const operatorExperiences = await fetch(`/api/experiences?operatorId=${operator.id}`).then(res => res.json()).catch(() => []);
+    const operatorExperiences = await fetch(`/api/experiences/${operator.id}`).then(res => res.json()).catch(() => []);
     
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
