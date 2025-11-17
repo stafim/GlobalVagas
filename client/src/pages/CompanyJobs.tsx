@@ -8,7 +8,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { Briefcase, Plus, Search, MapPin, Clock, DollarSign, Users, ChevronRight, ChevronLeft, Building2, Check, ChevronsUpDown } from "lucide-react";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Briefcase, Plus, Search, MapPin, Clock, DollarSign, Users, ChevronRight, ChevronLeft, Building2, Check, ChevronsUpDown, Eye, Trash2, UserCheck } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -37,6 +38,10 @@ export default function CompanyJobs() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [locationOpen, setLocationOpen] = useState(false);
+  const [selectedJob, setSelectedJob] = useState<Job | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [jobToDelete, setJobToDelete] = useState<string | null>(null);
 
   const { data: jobs = [], isLoading } = useQuery<Job[]>({
     queryKey: ['/api/jobs'],
@@ -61,6 +66,28 @@ export default function CompanyJobs() {
       toast({
         variant: "destructive",
         title: "Erro ao criar vaga",
+        description: "Tente novamente mais tarde.",
+      });
+    },
+  });
+
+  const deleteJobMutation = useMutation({
+    mutationFn: async (jobId: string) => {
+      await apiRequest('DELETE', `/api/jobs/${jobId}`);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/jobs'] });
+      setDeleteDialogOpen(false);
+      setJobToDelete(null);
+      toast({
+        title: "Vaga excluída com sucesso!",
+        description: "A vaga foi removida do sistema.",
+      });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Erro ao excluir vaga",
         description: "Tente novamente mais tarde.",
       });
     },
@@ -616,17 +643,60 @@ export default function CompanyJobs() {
                   {job.description}
                 </p>
 
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                  <span>
-                    <Clock className="h-3 w-3 inline mr-1" />
-                    Publicado em {new Date(job.createdAt).toLocaleDateString('pt-BR')}
-                  </span>
-                  {job.vacancies && (
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground">
                     <span>
-                      <Users className="h-3 w-3 inline mr-1" />
-                      {job.vacancies} {job.vacancies === '1' ? 'vaga' : 'vagas'}
+                      <Clock className="h-3 w-3 inline mr-1" />
+                      {new Date(job.createdAt).toLocaleDateString('pt-BR')}
                     </span>
-                  )}
+                    {job.vacancies && (
+                      <span>
+                        <Users className="h-3 w-3 inline mr-1" />
+                        {job.vacancies} {job.vacancies === '1' ? 'vaga' : 'vagas'}
+                      </span>
+                    )}
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setSelectedJob(job);
+                        setDetailsOpen(true);
+                      }}
+                      data-testid={`button-view-job-${job.id}`}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      Detalhes
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        toast({
+                          title: "Em desenvolvimento",
+                          description: "Sistema de candidaturas em breve!",
+                        });
+                      }}
+                      data-testid={`button-candidates-${job.id}`}
+                    >
+                      <UserCheck className="h-4 w-4 mr-1" />
+                      Candidatos
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setJobToDelete(job.id);
+                        setDeleteDialogOpen(true);
+                      }}
+                      data-testid={`button-delete-job-${job.id}`}
+                    >
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Excluir
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -659,6 +729,137 @@ export default function CompanyJobs() {
           </CardContent>
         </Card>
       )}
+
+      {/* Modal de Detalhes da Vaga */}
+      <Dialog open={detailsOpen} onOpenChange={setDetailsOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{selectedJob?.title}</DialogTitle>
+            <DialogDescription>
+              Detalhes completos da vaga
+            </DialogDescription>
+          </DialogHeader>
+
+          {selectedJob && (
+            <div className="space-y-6">
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="outline">
+                  <MapPin className="h-3 w-3 mr-1" />
+                  {selectedJob.location}
+                </Badge>
+                <Badge variant="outline">{selectedJob.workType}</Badge>
+                <Badge variant="outline">{selectedJob.contractType}</Badge>
+                {selectedJob.salary && (
+                  <Badge variant="outline">
+                    <DollarSign className="h-3 w-3 mr-1" />
+                    {selectedJob.salary}
+                  </Badge>
+                )}
+                <Badge
+                  className={
+                    selectedJob.status === 'active'
+                      ? 'bg-green-500/10 text-green-700 dark:text-green-400'
+                      : 'bg-gray-500/10 text-gray-700 dark:text-gray-400'
+                  }
+                >
+                  {selectedJob.status === 'active' ? 'Ativa' : 'Fechada'}
+                </Badge>
+              </div>
+
+              <Separator />
+
+              <div>
+                <h3 className="font-semibold mb-2">Descrição</h3>
+                <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                  {selectedJob.description}
+                </p>
+              </div>
+
+              {selectedJob.requirements && (
+                <div>
+                  <h3 className="font-semibold mb-2">Requisitos</h3>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {selectedJob.requirements}
+                  </p>
+                </div>
+              )}
+
+              {selectedJob.responsibilities && (
+                <div>
+                  <h3 className="font-semibold mb-2">Responsabilidades</h3>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {selectedJob.responsibilities}
+                  </p>
+                </div>
+              )}
+
+              {selectedJob.benefits && (
+                <div>
+                  <h3 className="font-semibold mb-2">Benefícios</h3>
+                  <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+                    {selectedJob.benefits}
+                  </p>
+                </div>
+              )}
+
+              <Separator />
+
+              <div className="grid grid-cols-2 gap-4 text-sm">
+                {selectedJob.experienceLevel && (
+                  <div>
+                    <span className="font-semibold">Nível de Experiência:</span>
+                    <p className="text-muted-foreground capitalize">{selectedJob.experienceLevel}</p>
+                  </div>
+                )}
+                {selectedJob.educationLevel && (
+                  <div>
+                    <span className="font-semibold">Escolaridade:</span>
+                    <p className="text-muted-foreground capitalize">{selectedJob.educationLevel}</p>
+                  </div>
+                )}
+                {selectedJob.vacancies && (
+                  <div>
+                    <span className="font-semibold">Vagas:</span>
+                    <p className="text-muted-foreground">{selectedJob.vacancies}</p>
+                  </div>
+                )}
+                <div>
+                  <span className="font-semibold">Publicado em:</span>
+                  <p className="text-muted-foreground">
+                    {new Date(selectedJob.createdAt).toLocaleDateString('pt-BR')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Dialog de Confirmação de Exclusão */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta ação não pode ser desfeita. A vaga será permanentemente excluída do sistema.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-delete">Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (jobToDelete) {
+                  deleteJobMutation.mutate(jobToDelete);
+                }
+              }}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              data-testid="button-confirm-delete"
+            >
+              {deleteJobMutation.isPending ? "Excluindo..." : "Excluir Vaga"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
