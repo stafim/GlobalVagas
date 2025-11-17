@@ -602,51 +602,49 @@ export default function AdminClients() {
                               <Building2 className="h-12 w-12 text-muted-foreground" />
                             )}
                           </div>
-                          {client.source === 'admin_client' && (
-                            <ObjectUploader
-                              maxNumberOfFiles={1}
-                              maxFileSize={5242880}
-                              onGetUploadParameters={async () => {
-                                const response = await apiRequest("POST", "/api/clients/upload-logo");
-                                const data = await response.json();
-                                return {
-                                  method: 'PUT' as const,
-                                  url: data.uploadURL,
-                                };
-                              }}
-                              onComplete={async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
-                                if (result.successful && result.successful.length > 0) {
-                                  const uploadURL = result.successful[0].uploadURL;
-                                  try {
-                                    const setLogoResponse = await apiRequest('POST', '/api/clients/set-logo', {
-                                      logoURL: uploadURL
-                                    });
-                                    const { objectPath } = await setLogoResponse.json();
-                                    
-                                    await apiRequest('PUT', `/api/clients/${client.id}`, {
-                                      logoUrl: objectPath
-                                    });
-                                    
-                                    queryClient.invalidateQueries({ queryKey: ['/api/clients'] });
-                                    toast({
-                                      title: "Logo atualizado!",
-                                      description: "O logo foi atualizado com sucesso.",
-                                    });
-                                  } catch (error) {
-                                    toast({
-                                      title: "Erro ao atualizar logo",
-                                      description: "Ocorreu um erro ao salvar o logo. Tente novamente.",
-                                      variant: "destructive",
-                                    });
-                                  }
+                          <ObjectUploader
+                            maxNumberOfFiles={1}
+                            maxFileSize={5242880}
+                            onGetUploadParameters={async () => {
+                              const response = await apiRequest("POST", "/api/clients/upload-logo");
+                              const data = await response.json();
+                              return {
+                                method: 'PUT' as const,
+                                url: data.uploadURL,
+                              };
+                            }}
+                            onComplete={async (result: UploadResult<Record<string, unknown>, Record<string, unknown>>) => {
+                              if (result.successful && result.successful.length > 0) {
+                                const uploadURL = result.successful[0].uploadURL;
+                                try {
+                                  const setLogoResponse = await apiRequest('POST', '/api/clients/set-logo', {
+                                    logoURL: uploadURL
+                                  });
+                                  const { objectPath } = await setLogoResponse.json();
+                                  
+                                  await apiRequest('PUT', `/api/clients/${client.id}`, {
+                                    logoUrl: objectPath
+                                  });
+                                  
+                                  queryClient.invalidateQueries({ queryKey: ['/api/clients'] });
+                                  toast({
+                                    title: "Logo atualizado!",
+                                    description: "O logo foi atualizado com sucesso.",
+                                  });
+                                } catch (error) {
+                                  toast({
+                                    title: "Erro ao atualizar logo",
+                                    description: "Ocorreu um erro ao salvar o logo. Tente novamente.",
+                                    variant: "destructive",
+                                  });
                                 }
-                              }}
-                              buttonClassName="h-8 gap-2"
-                            >
-                              <Camera className="h-3 w-3" />
-                              {client.logoUrl ? "Trocar" : "Adicionar"}
-                            </ObjectUploader>
-                          )}
+                              }
+                            }}
+                            buttonClassName="h-8 gap-2"
+                          >
+                            <Camera className="h-3 w-3" />
+                            {client.logoUrl ? "Trocar" : "Adicionar"}
+                          </ObjectUploader>
                         </div>
 
                         <div className="flex-1 min-w-0">

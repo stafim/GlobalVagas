@@ -125,6 +125,13 @@ npm run dev  # Starts both frontend and backend
   - Admin sidebar: Logo with click navigation to home page
   - Consistent brand identity across admin panel
 - **Operator Profile Photos**: Default HardHat icon for operators without photos
+- **Admin Header Simplified**: Removed redundant navigation menu
+  - Removed: Logo in header (already in sidebar), Vagas and Eventos buttons
+  - Kept: Sidebar toggle, page title/description, logout button
+- **Client Logo Management**: All clients can now update logos
+  - Upload/change logo button now available for ALL clients
+  - Previously only available for admin-created clients
+  - Now also enabled for site-registered companies
 
 ### CPF Validation Enhancement
 - Added input mask for CPF (formats as user types)
