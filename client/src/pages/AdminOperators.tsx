@@ -111,9 +111,12 @@ export default function AdminOperators() {
     });
   }, [operators, searchName]);
 
-  const handleDownloadPDF = (operator: Operator) => {
+  const handleDownloadPDF = async (operator: Operator) => {
+    const operatorExperiences = await fetch(`/api/experiences?operatorId=${operator.id}`).then(res => res.json()).catch(() => []);
+    
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
+    const pageHeight = doc.internal.pageSize.getHeight();
     let yPosition = 15;
 
     const img = new Image();
@@ -214,6 +217,57 @@ export default function AdminOperators() {
         doc.setFont("helvetica", "normal");
         const bioLines = doc.splitTextToSize(operator.bio, pageWidth - 40);
         doc.text(bioLines, 20, yPosition);
+        yPosition += bioLines.length * 6;
+      }
+      
+      if (operatorExperiences && operatorExperiences.length > 0) {
+        yPosition += 12;
+        
+        if (yPosition > pageHeight - 40) {
+          doc.addPage();
+          yPosition = 20;
+        }
+        
+        doc.setFontSize(14);
+        doc.setFont("helvetica", "bold");
+        doc.text("Experiências Profissionais", 20, yPosition);
+        
+        yPosition += 10;
+        
+        operatorExperiences.forEach((exp: Experience, index: number) => {
+          if (yPosition > pageHeight - 60) {
+            doc.addPage();
+            yPosition = 20;
+          }
+          
+          doc.setFontSize(12);
+          doc.setFont("helvetica", "bold");
+          doc.text(`${exp.position} - ${exp.company}`, 20, yPosition);
+          
+          yPosition += 6;
+          doc.setFontSize(10);
+          doc.setFont("helvetica", "normal");
+          
+          const startDate = new Date(exp.startDate).toLocaleDateString('pt-BR', { month: '2-digit', year: 'numeric' });
+          const endDate = exp.endDate ? new Date(exp.endDate).toLocaleDateString('pt-BR', { month: '2-digit', year: 'numeric' }) : 'Atual';
+          doc.text(`${startDate} - ${endDate}`, 20, yPosition);
+          
+          if (exp.location) {
+            yPosition += 5;
+            doc.text(`Local: ${exp.location}`, 20, yPosition);
+          }
+          
+          if (exp.description) {
+            yPosition += 6;
+            const descLines = doc.splitTextToSize(exp.description, pageWidth - 40);
+            doc.text(descLines, 20, yPosition);
+            yPosition += descLines.length * 5;
+          }
+          
+          if (index < operatorExperiences.length - 1) {
+            yPosition += 8;
+          }
+        });
       }
       
       const fileName = `curriculo_${operator.fullName.replace(/\s+/g, '_')}.pdf`;
