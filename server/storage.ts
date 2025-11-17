@@ -1,6 +1,6 @@
 import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc } from "drizzle-orm";
+import { eq, desc, and, gte, lte } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -49,6 +49,14 @@ export interface IStorage {
   getPurchase(id: string): Promise<Purchase | undefined>;
   getPurchasesByClient(clientId: string): Promise<Purchase[]>;
   getPurchasesByPlan(planId: string): Promise<Purchase[]>;
+  getAllPurchases(): Promise<Purchase[]>;
+  getPurchasesWithFilters(filters: {
+    startDate?: string;
+    endDate?: string;
+    clientId?: string;
+    minAmount?: number;
+    maxAmount?: number;
+  }): Promise<Purchase[]>;
   createPurchase(purchase: InsertPurchase): Promise<Purchase>;
   
   getEmailSettings(): Promise<EmailSettings | undefined>;
@@ -322,6 +330,43 @@ export class DatabaseStorage implements IStorage {
 
   async getPurchasesByPlan(planId: string): Promise<Purchase[]> {
     return await db.select().from(purchases).where(eq(purchases.planId, planId));
+  }
+
+  async getAllPurchases(): Promise<Purchase[]> {
+    return await db.select().from(purchases).orderBy(desc(purchases.purchaseDate));
+  }
+
+  async getPurchasesWithFilters(filters: {
+    startDate?: string;
+    endDate?: string;
+    clientId?: string;
+    minAmount?: number;
+    maxAmount?: number;
+  }): Promise<Purchase[]> {
+    let query = db.select().from(purchases);
+    const conditions = [];
+
+    if (filters.startDate) {
+      conditions.push(gte(purchases.purchaseDate, filters.startDate));
+    }
+    if (filters.endDate) {
+      conditions.push(lte(purchases.purchaseDate, filters.endDate));
+    }
+    if (filters.clientId) {
+      conditions.push(eq(purchases.clientId, filters.clientId));
+    }
+    if (filters.minAmount !== undefined) {
+      conditions.push(gte(purchases.amount, filters.minAmount.toString()));
+    }
+    if (filters.maxAmount !== undefined) {
+      conditions.push(lte(purchases.amount, filters.maxAmount.toString()));
+    }
+
+    if (conditions.length > 0) {
+      query = query.where(and(...conditions)) as any;
+    }
+
+    return await query.orderBy(desc(purchases.purchaseDate));
   }
 
   async createPurchase(insertPurchase: InsertPurchase): Promise<Purchase> {

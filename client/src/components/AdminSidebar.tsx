@@ -81,6 +81,15 @@ export function AdminSidebar() {
         queryKey: ['/api/plans'],
         staleTime: 1000 * 60 * 5,
       });
+    } else if (url === '/admin/financeiro') {
+      queryClient.prefetchQuery({
+        queryKey: ['/api/purchases/stats'],
+        staleTime: 1000 * 60 * 5,
+      });
+      queryClient.prefetchQuery({
+        queryKey: ['/api/purchases'],
+        staleTime: 1000 * 60 * 5,
+      });
     }
   };
 

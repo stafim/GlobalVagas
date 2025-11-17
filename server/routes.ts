@@ -1386,6 +1386,76 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/purchases", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(403).json({ message: "Acesso negado" });
+      }
+
+      const { startDate, endDate, clientId, minAmount, maxAmount } = req.query;
+
+      const filters: {
+        startDate?: string;
+        endDate?: string;
+        clientId?: string;
+        minAmount?: number;
+        maxAmount?: number;
+      } = {};
+
+      if (startDate) filters.startDate = startDate as string;
+      if (endDate) filters.endDate = endDate as string;
+      if (clientId) filters.clientId = clientId as string;
+      if (minAmount) filters.minAmount = parseFloat(minAmount as string);
+      if (maxAmount) filters.maxAmount = parseFloat(maxAmount as string);
+
+      const purchases = Object.keys(filters).length > 0 
+        ? await storage.getPurchasesWithFilters(filters)
+        : await storage.getAllPurchases();
+
+      return res.json(purchases);
+    } catch (error) {
+      console.error("Error fetching purchases:", error);
+      return res.status(500).json({ message: "Erro ao buscar vendas" });
+    }
+  });
+
+  app.get("/api/purchases/stats", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(403).json({ message: "Acesso negado" });
+      }
+
+      const allPurchases = await storage.getAllPurchases();
+      
+      const totalRevenue = allPurchases.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+      const totalSales = allPurchases.length;
+      const activePurchases = allPurchases.filter(p => p.status === 'active').length;
+      
+      const now = new Date();
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      const recentPurchases = allPurchases.filter(p => new Date(p.purchaseDate) >= thirtyDaysAgo);
+      const recentRevenue = recentPurchases.reduce((sum, p) => sum + parseFloat(p.amount), 0);
+
+      const clientPurchases = allPurchases.reduce((acc, p) => {
+        acc[p.clientId] = (acc[p.clientId] || 0) + 1;
+        return acc;
+      }, {} as Record<string, number>);
+      const totalClients = Object.keys(clientPurchases).length;
+
+      return res.json({
+        totalRevenue,
+        totalSales,
+        activePurchases,
+        totalClients,
+        recentRevenue,
+        recentSales: recentPurchases.length,
+      });
+    } catch (error) {
+      console.error("Error fetching purchase stats:", error);
+      return res.status(500).json({ message: "Erro ao buscar estatísticas" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

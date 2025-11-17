@@ -112,6 +112,15 @@ npm run dev  # Starts both frontend and backend
 
 ## Recent Changes
 
+### November 17, 2025 - Financial Dashboard
+- **Complete Financial Reports System**: Implemented comprehensive sales analytics dashboard
+  - Real-time statistics cards: Total Revenue, Total Sales, Active Sales, Active Clients
+  - Interactive charts using Recharts: Revenue over time (line chart) and Top 10 clients (bar chart)
+  - Advanced filtering system: date range, client selection, min/max amount
+  - Sales table with detailed transaction information
+  - API endpoints: `/api/purchases` (with filters) and `/api/purchases/stats`
+  - Sample data created for demonstration
+
 ### CPF Validation Enhancement
 - Added input mask for CPF (formats as user types)
 - Added validation using Brazilian CPF algorithm

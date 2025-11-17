@@ -26,6 +26,7 @@ import AdminSectors from "@/pages/AdminSectors";
 import AdminEvents from "@/pages/AdminEvents";
 import AdminBanners from "@/pages/AdminBanners";
 import AdminSettings from "@/pages/AdminSettings";
+import AdminFinanceiro from "@/pages/AdminFinanceiro";
 import Events from "@/pages/Events";
 import NotFound from "@/pages/not-found";
 
@@ -49,6 +50,7 @@ function Router() {
       <Route path="/admin/clientes" component={AdminClients} />
       <Route path="/admin/operadores" component={AdminOperators} />
       <Route path="/admin/planos" component={AdminPlans} />
+      <Route path="/admin/financeiro" component={AdminFinanceiro} />
       <Route path="/admin/setores" component={AdminSectors} />
       <Route path="/admin/eventos" component={AdminEvents} />
       <Route path="/admin/banners" component={AdminBanners} />
