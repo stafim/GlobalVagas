@@ -1,0 +1,121 @@
+import { useAuth } from "@/hooks/use-auth";
+import { useLocation } from "wouter";
+import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
+import { CompanySidebar } from "@/components/CompanySidebar";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useEffect } from "react";
+import operlistLogo from "@assets/operlist2025_1763133653351.png";
+
+interface CompanyShellProps {
+  children: React.ReactNode;
+}
+
+export function CompanyShell({ children }: CompanyShellProps) {
+  const { user, userType, isLoading } = useAuth();
+  const [location, setLocation] = useLocation();
+  const { toast } = useToast();
+
+  const isCompanyRoute = location.startsWith('/dashboard/empresa') || location.startsWith('/empresa/');
+
+  useEffect(() => {
+    if (isLoading) return;
+    
+    if (isCompanyRoute) {
+      if (!userType || userType !== 'company') {
+        toast({
+          variant: "destructive",
+          title: "Sessão expirada",
+          description: "Faça login novamente para acessar o painel",
+        });
+        setLocation('/login');
+      }
+    }
+  }, [userType, isLoading, setLocation, isCompanyRoute, toast]);
+
+  const handleLogout = async () => {
+    try {
+      await apiRequest('POST', '/api/auth/logout');
+      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+      toast({
+        title: "Logout realizado",
+        description: "Você saiu do sistema",
+      });
+      setLocation('/');
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao fazer logout",
+        description: "Tente novamente",
+      });
+    }
+  };
+
+  const getPageInfo = () => {
+    if (location === '/dashboard/empresa') {
+      return { title: "Dashboard", description: user ? (user as any).companyName || (user as any).email : "" };
+    }
+    if (location === '/empresa/vagas') {
+      return { title: "Minhas Vagas", description: "Gerencie suas vagas publicadas" };
+    }
+    if (location === '/empresa/perfil') {
+      return { title: "Perfil da Empresa", description: "Informações e configurações da empresa" };
+    }
+    return { title: "Dashboard", description: "" };
+  };
+
+  const sidebarStyle = {
+    "--sidebar-width": "16rem",
+    "--sidebar-width-icon": "3rem",
+  };
+
+  if (!isCompanyRoute || isLoading) {
+    return <>{children}</>;
+  }
+
+  const pageInfo = getPageInfo();
+
+  return (
+    <SidebarProvider style={sidebarStyle as React.CSSProperties}>
+      <div className="flex h-screen w-full">
+        <CompanySidebar />
+        <div className="flex flex-col flex-1 overflow-hidden">
+          <header className="flex items-center justify-between px-6 py-3 border-b bg-card">
+            <div className="flex items-center gap-4">
+              <SidebarTrigger data-testid="button-sidebar-toggle" />
+              <img 
+                src={operlistLogo} 
+                alt="Operlist" 
+                className="h-8 cursor-pointer"
+                onClick={() => setLocation('/')}
+              />
+            </div>
+            <Button 
+              variant="ghost" 
+              size="icon"
+              onClick={handleLogout}
+              data-testid="button-logout"
+              title="Sair"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
+          </header>
+          
+          <main className="flex-1 overflow-y-auto bg-background">
+            <div className="p-6">
+              <div className="mb-6">
+                <h1 className="text-2xl font-bold mb-1">{pageInfo.title}</h1>
+                {pageInfo.description && (
+                  <p className="text-sm text-muted-foreground">{pageInfo.description}</p>
+                )}
+              </div>
+              {children}
+            </div>
+          </main>
+        </div>
+      </div>
+    </SidebarProvider>
+  );
+}
