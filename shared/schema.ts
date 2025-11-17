@@ -290,3 +290,43 @@ export const insertSettingSchema = createInsertSchema(settings).omit({
 
 export type InsertSetting = z.infer<typeof insertSettingSchema>;
 export type Setting = typeof settings.$inferSelect;
+
+export const jobs = pgTable("jobs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyId: varchar("company_id").references(() => companies.id, { onDelete: 'cascade' }),
+  clientId: varchar("client_id").references(() => clients.id, { onDelete: 'cascade' }),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  requirements: text("requirements"),
+  responsibilities: text("responsibilities"),
+  benefits: text("benefits"),
+  location: text("location").notNull(),
+  city: text("city"),
+  state: text("state"),
+  workType: text("work_type").notNull(),
+  contractType: text("contract_type").notNull(),
+  salary: text("salary"),
+  salaryPeriod: text("salary_period"),
+  sectorId: varchar("sector_id").references(() => sectors.id),
+  subsectorId: varchar("subsector_id").references(() => subsectors.id),
+  experienceLevel: text("experience_level"),
+  educationLevel: text("education_level"),
+  status: text("status").notNull().default('active'),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: text("updated_at"),
+  expiryDate: text("expiry_date"),
+  vacancies: text("vacancies").notNull().default('1'),
+}, (table) => ({
+  companyIdIdx: index("jobs_company_id_idx").on(table.companyId),
+  clientIdIdx: index("jobs_client_id_idx").on(table.clientId),
+  statusIdx: index("jobs_status_idx").on(table.status),
+  sectorIdIdx: index("jobs_sector_id_idx").on(table.sectorId),
+}));
+
+export const insertJobSchema = createInsertSchema(jobs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertJob = z.infer<typeof insertJobSchema>;
+export type Job = typeof jobs.$inferSelect;

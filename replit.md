@@ -112,6 +112,32 @@ npm run dev  # Starts both frontend and backend
 
 ## Recent Changes
 
+### November 17, 2025 - Job Posting System Implementation
+- **Complete Job Management System for Companies**: Full CRUD system for job vacancies
+  - New `jobs` table with comprehensive fields: title, description, requirements, responsibilities, benefits, location, work type, contract type, salary, experience level, education, etc.
+  - Backend API endpoints: GET/POST/PUT/DELETE `/api/jobs`
+  - Storage methods for job management in DatabaseStorage
+  - Permission-based access control (companies can only manage their own jobs)
+- **Intuitive 3-Step Wizard for Job Creation**: Easy-to-use multi-step form
+  - Step 1: Basic Information (title, location, work type, contract type, number of vacancies)
+  - Step 2: Detailed Description (description, requirements, responsibilities)
+  - Step 3: Additional Details (salary, benefits, experience level, education)
+  - Real-time form validation with error messages
+  - Progress indicator showing current step
+  - Navigation between steps with validation
+- **Company Jobs Dashboard**: Complete job management interface
+  - Statistics cards: Active Jobs, Total Jobs, Closed Jobs
+  - Job listing with search functionality
+  - Job cards displaying key information (location, work type, contract, salary, status)
+  - Empty state with call-to-action for first job
+  - Fully integrated with company sidebar navigation at `/empresa/vagas`
+- **User Experience Enhancements**:
+  - Form fields organized by relevance and flow
+  - Optional fields clearly marked
+  - Helpful placeholder text and descriptions
+  - Responsive layout for all screen sizes
+  - Professional card-based design with hover effects
+
 ### November 17, 2025 - Financial Dashboard & Branding Updates
 - **Complete Financial Reports System**: Implemented comprehensive sales analytics dashboard
   - Real-time statistics cards: Total Revenue, Total Sales, Active Sales, Active Clients

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertCompanySchema, insertOperatorSchema, insertAdminSchema, insertPlanSchema, insertClientSchema, insertSectorSchema, insertSubsectorSchema, insertEventSchema, insertBannerSchema } from "@shared/schema";
+import { insertCompanySchema, insertOperatorSchema, insertAdminSchema, insertPlanSchema, insertClientSchema, insertSectorSchema, insertSubsectorSchema, insertEventSchema, insertBannerSchema, insertJobSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { EmailService } from "./emailService";
@@ -1470,6 +1470,132 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching purchase stats:", error);
       return res.status(500).json({ message: "Erro ao buscar estatísticas" });
+    }
+  });
+
+  app.get("/api/jobs", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      let jobs;
+      
+      if (req.session.userType === 'company') {
+        jobs = await storage.getJobsByCompany(req.session.userId);
+      } else if (req.session.userType === 'admin') {
+        jobs = await storage.getAllJobs();
+      } else {
+        return res.status(403).json({ message: "Acesso negado" });
+      }
+
+      return res.status(200).json(jobs);
+    } catch (error) {
+      console.error("Error getting jobs:", error);
+      return res.status(500).json({ message: "Erro ao buscar vagas" });
+    }
+  });
+
+  app.get("/api/jobs/:id", async (req, res) => {
+    try {
+      const job = await storage.getJob(req.params.id);
+      
+      if (!job) {
+        return res.status(404).json({ message: "Vaga não encontrada" });
+      }
+
+      return res.status(200).json(job);
+    } catch (error) {
+      console.error("Error getting job:", error);
+      return res.status(500).json({ message: "Erro ao buscar vaga" });
+    }
+  });
+
+  app.post("/api/jobs", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      if (req.session.userType !== 'company') {
+        return res.status(403).json({ message: "Apenas empresas podem criar vagas" });
+      }
+
+      const result = insertJobSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: fromZodError(result.error).message 
+        });
+      }
+
+      const jobData = {
+        ...result.data,
+        companyId: req.session.userId,
+        clientId: null,
+      };
+
+      const job = await storage.createJob(jobData);
+      return res.status(201).json(job);
+    } catch (error) {
+      console.error("Error creating job:", error);
+      return res.status(500).json({ message: "Erro ao criar vaga" });
+    }
+  });
+
+  app.put("/api/jobs/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const existingJob = await storage.getJob(req.params.id);
+      
+      if (!existingJob) {
+        return res.status(404).json({ message: "Vaga não encontrada" });
+      }
+
+      if (req.session.userType === 'company' && existingJob.companyId !== req.session.userId) {
+        return res.status(403).json({ message: "Você não tem permissão para editar esta vaga" });
+      }
+
+      if (req.session.userType === 'admin' && existingJob.clientId && existingJob.clientId !== req.session.userId) {
+        return res.status(403).json({ message: "Você não tem permissão para editar esta vaga" });
+      }
+
+      const job = await storage.updateJob(req.params.id, req.body);
+      return res.status(200).json(job);
+    } catch (error) {
+      console.error("Error updating job:", error);
+      return res.status(500).json({ message: "Erro ao atualizar vaga" });
+    }
+  });
+
+  app.delete("/api/jobs/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const existingJob = await storage.getJob(req.params.id);
+      
+      if (!existingJob) {
+        return res.status(404).json({ message: "Vaga não encontrada" });
+      }
+
+      if (req.session.userType === 'company' && existingJob.companyId !== req.session.userId) {
+        return res.status(403).json({ message: "Você não tem permissão para deletar esta vaga" });
+      }
+
+      if (req.session.userType === 'admin' && existingJob.clientId && existingJob.clientId !== req.session.userId) {
+        return res.status(403).json({ message: "Você não tem permissão para deletar esta vaga" });
+      }
+
+      await storage.deleteJob(req.params.id);
+      return res.status(200).json({ message: "Vaga deletada com sucesso" });
+    } catch (error) {
+      console.error("Error deleting job:", error);
+      return res.status(500).json({ message: "Erro ao deletar vaga" });
     }
   });
 
