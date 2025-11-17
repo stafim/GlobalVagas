@@ -6,7 +6,9 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Briefcase, Plus, Search, MapPin, Clock, DollarSign, Users, ChevronRight, ChevronLeft, Building2 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Briefcase, Plus, Search, MapPin, Clock, DollarSign, Users, ChevronRight, ChevronLeft, Building2, Check, ChevronsUpDown } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation } from "@tanstack/react-query";
@@ -16,6 +18,8 @@ import { z } from "zod";
 import { insertJobSchema, type Job } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Separator } from "@/components/ui/separator";
+import { brazilianCities } from "@/lib/brazilian-cities";
+import { cn } from "@/lib/utils";
 
 const jobFormSchema = insertJobSchema.extend({
   title: z.string().min(5, "Título deve ter pelo menos 5 caracteres"),
@@ -32,6 +36,7 @@ export default function CompanyJobs() {
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
+  const [locationOpen, setLocationOpen] = useState(false);
 
   const { data: jobs = [], isLoading } = useQuery<Job[]>({
     queryKey: ['/api/jobs'],
@@ -191,11 +196,63 @@ export default function CompanyJobs() {
                         control={form.control}
                         name="location"
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem className="flex flex-col">
                             <FormLabel>Localização *</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Ex: São Paulo, SP" {...field} data-testid="input-job-location" />
-                            </FormControl>
+                            <Popover open={locationOpen} onOpenChange={setLocationOpen}>
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={locationOpen}
+                                    className={cn(
+                                      "justify-between",
+                                      !field.value && "text-muted-foreground"
+                                    )}
+                                    data-testid="select-job-location"
+                                  >
+                                    {field.value
+                                      ? brazilianCities.find(
+                                          (city) => city.value === field.value
+                                        )?.label
+                                      : "Selecione uma cidade"}
+                                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-[300px] p-0">
+                                <Command>
+                                  <CommandInput placeholder="Buscar cidade..." />
+                                  <CommandList>
+                                    <CommandEmpty>Nenhuma cidade encontrada.</CommandEmpty>
+                                    <CommandGroup>
+                                      {brazilianCities.map((city) => (
+                                        <CommandItem
+                                          key={city.value}
+                                          value={city.label}
+                                          onSelect={() => {
+                                            form.setValue("location", city.value);
+                                            form.setValue("city", city.label.split(",")[0].trim());
+                                            form.setValue("state", city.state);
+                                            setLocationOpen(false);
+                                          }}
+                                        >
+                                          <Check
+                                            className={cn(
+                                              "mr-2 h-4 w-4",
+                                              field.value === city.value
+                                                ? "opacity-100"
+                                                : "opacity-0"
+                                            )}
+                                          />
+                                          {city.label}
+                                        </CommandItem>
+                                      ))}
+                                    </CommandGroup>
+                                  </CommandList>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
                             <FormMessage />
                           </FormItem>
                         )}
