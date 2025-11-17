@@ -179,9 +179,37 @@ export default function SignupOperator() {
 
   const handleNext = async () => {
     const isValid = await validateStep(currentStep);
-    if (isValid) {
-      setCurrentStep(currentStep + 1);
+    if (!isValid) {
+      return;
     }
+
+    if (currentStep === 1) {
+      const cpf = form.getValues("cpf");
+      if (cpf) {
+        try {
+          const response = await fetch(`/api/operators/check-cpf/${cpf}`);
+          const data = await response.json();
+          
+          if (data.exists) {
+            form.setError("cpf", {
+              type: "manual",
+              message: "CPF já cadastrado"
+            });
+            return;
+          }
+        } catch (error) {
+          console.error("Error checking CPF:", error);
+          toast({
+            title: "Erro ao verificar CPF",
+            description: "Tente novamente mais tarde",
+            variant: "destructive",
+          });
+          return;
+        }
+      }
+    }
+
+    setCurrentStep(currentStep + 1);
   };
 
   const handlePrevious = () => {

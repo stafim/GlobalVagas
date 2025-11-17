@@ -150,6 +150,29 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/operators/check-cpf/:cpf", async (req, res) => {
+    try {
+      const { cpf } = req.params;
+      
+      if (!cpf) {
+        return res.status(400).json({ 
+          message: "CPF é obrigatório" 
+        });
+      }
+
+      const existingOperator = await storage.getOperatorByCpf(cpf);
+      
+      return res.status(200).json({ 
+        exists: !!existingOperator 
+      });
+    } catch (error) {
+      console.error("Error checking CPF:", error);
+      return res.status(500).json({ 
+        message: "Erro ao verificar CPF" 
+      });
+    }
+  });
+
   app.patch("/api/operators/profile", async (req, res) => {
     try {
       if (!req.session.userId || req.session.userType !== 'operator') {
