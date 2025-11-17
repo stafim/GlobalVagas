@@ -112,14 +112,19 @@ npm run dev  # Starts both frontend and backend
 
 ## Recent Changes
 
-### November 17, 2025 - Financial Dashboard
+### November 17, 2025 - Financial Dashboard & Branding Updates
 - **Complete Financial Reports System**: Implemented comprehensive sales analytics dashboard
   - Real-time statistics cards: Total Revenue, Total Sales, Active Sales, Active Clients
   - Interactive charts using Recharts: Revenue over time (line chart) and Top 10 clients (bar chart)
   - Advanced filtering system: date range, client selection, min/max amount
   - Sales table with detailed transaction information
   - API endpoints: `/api/purchases` (with filters) and `/api/purchases/stats`
-  - Sample data created for demonstration
+  - Mock data removed - dashboard ready for real sales data
+- **Operlist Branding**: Replaced Shield icons with official Operlist logo
+  - Admin login page: Logo with click navigation to home page
+  - Admin sidebar: Logo with click navigation to home page
+  - Consistent brand identity across admin panel
+- **Operator Profile Photos**: Default HardHat icon for operators without photos
 
 ### CPF Validation Enhancement
 - Added input mask for CPF (formats as user types)

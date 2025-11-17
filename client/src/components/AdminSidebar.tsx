@@ -63,8 +63,12 @@ const menuItems = [
 ];
 
 export function AdminSidebar() {
-  const [location] = useLocation();
+  const [location, setLocation] = useLocation();
   const queryClient = useQueryClient();
+
+  const handleLogoClick = () => {
+    setLocation("/");
+  };
 
   const prefetchData = (url: string) => {
     if (url === '/admin/clientes') {
@@ -101,7 +105,8 @@ export function AdminSidebar() {
           <img 
             src={operlistLogo} 
             alt="Operlist" 
-            className="h-8"
+            className="h-8 cursor-pointer"
+            onClick={handleLogoClick}
             data-testid="logo-admin-sidebar"
           />
           <div>
