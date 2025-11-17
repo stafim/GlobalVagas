@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { Shield } from "lucide-react";
+import operlistLogo from "@assets/operlist2025_1763133653351.png";
 
 export default function AdminLogin() {
   const [, setLocation] = useLocation();
@@ -58,9 +58,12 @@ export default function AdminLogin() {
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-3 text-center">
           <div className="flex justify-center">
-            <div className="bg-primary/10 p-4 rounded-full">
-              <Shield className="h-12 w-12 text-primary" />
-            </div>
+            <img 
+              src={operlistLogo} 
+              alt="Operlist" 
+              className="h-20"
+              data-testid="logo-admin-login"
+            />
           </div>
           <CardTitle className="text-2xl">Administrador</CardTitle>
           <CardDescription>
