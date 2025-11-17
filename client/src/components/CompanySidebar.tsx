@@ -43,7 +43,7 @@ export function CompanySidebar() {
   const prefetchData = (url: string) => {
     if (url === '/empresa/vagas') {
       queryClient.prefetchQuery({
-        queryKey: ['/api/company/jobs'],
+        queryKey: ['/api/jobs'],
         staleTime: 1000 * 60 * 5,
       });
     }
