@@ -3,11 +3,10 @@ import { useLocation } from "wouter";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AdminSidebar } from "@/components/AdminSidebar";
 import { Button } from "@/components/ui/button";
-import { LogOut, Briefcase, Calendar } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useEffect } from "react";
-import operlistLogo from "@assets/operlist2025_1763133653351.png";
 
 interface AdminShellProps {
   children: React.ReactNode;
@@ -88,50 +87,21 @@ export function AdminShell({ children }: AdminShellProps) {
           <header className="flex items-center justify-between p-4 border-b">
             <div className="flex items-center gap-3">
               <SidebarTrigger data-testid="button-sidebar-toggle" />
-              <img 
-                src={operlistLogo} 
-                alt="Operlist" 
-                className="h-10 cursor-pointer" 
-                onClick={() => setLocation('/')}
-                data-testid="logo-home-admin"
-              />
-              <div className="hidden md:flex items-center gap-2 ml-4">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setLocation('/vagas')}
-                  data-testid="button-nav-jobs-admin"
-                >
-                  <Briefcase className="h-4 w-4 mr-2" />
-                  Vagas
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setLocation('/eventos')}
-                  data-testid="button-nav-events-admin"
-                >
-                  <Calendar className="h-4 w-4 mr-2" />
-                  Feiras e Eventos
-                </Button>
-              </div>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="hidden lg:block text-right">
+              <div>
                 <h1 className="text-lg font-semibold">{pageInfo.title}</h1>
                 {pageInfo.description && (
                   <p className="text-xs text-muted-foreground">{pageInfo.description}</p>
                 )}
               </div>
-              <Button
-                variant="outline"
-                onClick={handleLogout}
-                data-testid="button-admin-logout"
-              >
-                <LogOut className="h-4 w-4 mr-2" />
-                Sair
-              </Button>
             </div>
+            <Button
+              variant="outline"
+              onClick={handleLogout}
+              data-testid="button-admin-logout"
+            >
+              <LogOut className="h-4 w-4 mr-2" />
+              Sair
+            </Button>
           </header>
 
           <main className="flex-1 overflow-auto p-6">
