@@ -620,8 +620,8 @@ export default function AdminOperators() {
                       alt={operator.fullName}
                       className="object-cover"
                     />
-                    <AvatarFallback className="text-lg">
-                      {operator.fullName.split(' ').map(n => n[0]).slice(0, 2).join('')}
+                    <AvatarFallback className="text-lg bg-primary/10">
+                      <HardHat className="h-8 w-8 text-primary" />
                     </AvatarFallback>
                   </Avatar>
 
@@ -736,8 +736,8 @@ export default function AdminOperators() {
                   alt={selectedOperator?.fullName}
                   className="object-cover"
                 />
-                <AvatarFallback>
-                  {selectedOperator?.fullName.split(' ').map(n => n[0]).slice(0, 2).join('')}
+                <AvatarFallback className="bg-primary/10">
+                  <HardHat className="h-6 w-6 text-primary" />
                 </AvatarFallback>
               </Avatar>
               <div className="flex-1">

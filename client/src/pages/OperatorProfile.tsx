@@ -39,7 +39,8 @@ import {
   Trash2,
   Check,
   ChevronsUpDown,
-  Camera
+  Camera,
+  HardHat
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
@@ -585,8 +586,8 @@ export default function OperatorProfile() {
                       alt={profileData.fullName}
                       className="object-cover"
                     />
-                    <AvatarFallback className="text-3xl">
-                      {profileData.fullName.split(' ').map(n => n[0]).slice(0, 2).join('')}
+                    <AvatarFallback className="text-3xl bg-primary/10">
+                      <HardHat className="h-16 w-16 text-primary" />
                     </AvatarFallback>
                   </Avatar>
                   <ObjectUploader
