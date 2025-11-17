@@ -22,7 +22,7 @@ export default function AdminSettings() {
   const { userType } = useAuth();
   const { toast } = useToast();
   
-  const [provider, setProvider] = useState("sendgrid");
+  const [provider, setProvider] = useState("gmail");
   const [apiKey, setApiKey] = useState("");
   const [senderEmail, setSenderEmail] = useState("");
   const [senderName, setSenderName] = useState("");
@@ -53,12 +53,12 @@ export default function AdminSettings() {
 
   useEffect(() => {
     if (emailSettings) {
-      setProvider(emailSettings.provider || "sendgrid");
+      setProvider(emailSettings.provider || "gmail");
       setApiKey(emailSettings.apiKey || "");
       setSenderEmail(emailSettings.senderEmail || "");
       setSenderName(emailSettings.senderName || "");
-      setSmtpHost(emailSettings.smtpHost || "");
-      setSmtpPort(emailSettings.smtpPort || "");
+      setSmtpHost(emailSettings.smtpHost || "smtp.gmail.com");
+      setSmtpPort(emailSettings.smtpPort || "587");
       setSmtpUser(emailSettings.smtpUser || "");
       setSmtpPassword(emailSettings.smtpPassword || "");
       setIsActive(emailSettings.isActive || "true");
@@ -80,13 +80,13 @@ export default function AdminSettings() {
     mutationFn: async () => {
       const data = {
         provider,
-        apiKey: provider === 'smtp' ? null : apiKey,
+        apiKey: null,
         senderEmail,
         senderName,
-        smtpHost: provider === 'smtp' ? smtpHost : null,
-        smtpPort: provider === 'smtp' ? smtpPort : null,
-        smtpUser: provider === 'smtp' ? smtpUser : null,
-        smtpPassword: provider === 'smtp' ? smtpPassword : null,
+        smtpHost: provider === 'gmail' ? 'smtp.gmail.com' : smtpHost,
+        smtpPort,
+        smtpUser,
+        smtpPassword,
         isActive,
       };
       return await apiRequest('POST', '/api/email-settings', data);
@@ -144,20 +144,11 @@ export default function AdminSettings() {
       return;
     }
 
-    if (provider === 'smtp' && (!smtpHost || !smtpPort)) {
+    if (!smtpHost || !smtpPort || !smtpUser || !smtpPassword) {
       toast({
         variant: "destructive",
         title: "Campos obrigatórios",
-        description: "Preencha as configurações SMTP.",
-      });
-      return;
-    }
-
-    if (provider !== 'smtp' && !apiKey) {
-      toast({
-        variant: "destructive",
-        title: "API Key obrigatória",
-        description: "Forneça a API Key para o provedor selecionado.",
+        description: "Preencha todas as configurações SMTP.",
       });
       return;
     }
@@ -400,10 +391,17 @@ export default function AdminSettings() {
             <div className="bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 flex gap-3">
               <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
               <div className="text-sm text-blue-900 dark:text-blue-100">
-                <p className="font-medium mb-1">Integrações Replit Disponíveis</p>
+                <p className="font-medium mb-1">Configuração de SMTP Gmail</p>
                 <p className="text-blue-700 dark:text-blue-300">
-                  SendGrid, Resend, Gmail e Outlook estão disponíveis como integrações nativas do Replit com gerenciamento automático de credenciais.
+                  Para usar Gmail SMTP, você precisa criar uma "Senha de App" nas configurações de segurança da sua conta Google. 
+                  Não use sua senha normal do Gmail.
                 </p>
+                <ul className="list-disc list-inside mt-2 text-blue-700 dark:text-blue-300 space-y-1">
+                  <li>Host: smtp.gmail.com</li>
+                  <li>Porta: 587 (TLS) ou 465 (SSL)</li>
+                  <li>Usuário: seu email completo do Gmail</li>
+                  <li>Senha: Senha de App (16 caracteres)</li>
+                </ul>
               </div>
             </div>
 
@@ -415,28 +413,12 @@ export default function AdminSettings() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="sendgrid">SendGrid</SelectItem>
-                    <SelectItem value="resend">Resend</SelectItem>
-                    <SelectItem value="gmail">Gmail</SelectItem>
-                    <SelectItem value="outlook">Outlook</SelectItem>
-                    <SelectItem value="smtp">SMTP Customizado</SelectItem>
+                    <SelectItem value="gmail">Gmail SMTP</SelectItem>
+                    <SelectItem value="smtp">Outro SMTP</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              {provider !== 'smtp' && (
-                <div className="space-y-2">
-                  <Label htmlFor="apiKey">API Key</Label>
-                  <Input
-                    id="apiKey"
-                    type="password"
-                    placeholder="Cole sua API key aqui"
-                    value={apiKey}
-                    onChange={(e) => setApiKey(e.target.value)}
-                    data-testid="input-api-key"
-                  />
-                </div>
-              )}
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
@@ -462,55 +444,58 @@ export default function AdminSettings() {
                 </div>
               </div>
 
-              {provider === 'smtp' && (
-                <>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="smtpHost">Host SMTP</Label>
-                      <Input
-                        id="smtpHost"
-                        placeholder="smtp.gmail.com"
-                        value={smtpHost}
-                        onChange={(e) => setSmtpHost(e.target.value)}
-                        data-testid="input-smtp-host"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="smtpPort">Porta SMTP</Label>
-                      <Input
-                        id="smtpPort"
-                        placeholder="587"
-                        value={smtpPort}
-                        onChange={(e) => setSmtpPort(e.target.value)}
-                        data-testid="input-smtp-port"
-                      />
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="smtpUser">Usuário SMTP</Label>
-                      <Input
-                        id="smtpUser"
-                        placeholder="usuario@email.com"
-                        value={smtpUser}
-                        onChange={(e) => setSmtpUser(e.target.value)}
-                        data-testid="input-smtp-user"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="smtpPassword">Senha SMTP</Label>
-                      <Input
-                        id="smtpPassword"
-                        type="password"
-                        placeholder="••••••••"
-                        value={smtpPassword}
-                        onChange={(e) => setSmtpPassword(e.target.value)}
-                        data-testid="input-smtp-password"
-                      />
-                    </div>
-                  </div>
-                </>
-              )}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="smtpHost">Host SMTP</Label>
+                  <Input
+                    id="smtpHost"
+                    placeholder="smtp.gmail.com"
+                    value={smtpHost}
+                    onChange={(e) => setSmtpHost(e.target.value)}
+                    data-testid="input-smtp-host"
+                    disabled={provider === 'gmail'}
+                  />
+                  {provider === 'gmail' && (
+                    <p className="text-xs text-muted-foreground">Gmail usa smtp.gmail.com automaticamente</p>
+                  )}
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="smtpPort">Porta SMTP</Label>
+                  <Input
+                    id="smtpPort"
+                    placeholder="587"
+                    value={smtpPort}
+                    onChange={(e) => setSmtpPort(e.target.value)}
+                    data-testid="input-smtp-port"
+                  />
+                  <p className="text-xs text-muted-foreground">Use 587 (TLS) ou 465 (SSL)</p>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="smtpUser">Usuário SMTP (Email Gmail)</Label>
+                  <Input
+                    id="smtpUser"
+                    type="email"
+                    placeholder="seuemail@gmail.com"
+                    value={smtpUser}
+                    onChange={(e) => setSmtpUser(e.target.value)}
+                    data-testid="input-smtp-user"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="smtpPassword">Senha de App Gmail</Label>
+                  <Input
+                    id="smtpPassword"
+                    type="password"
+                    placeholder="Senha de 16 caracteres"
+                    value={smtpPassword}
+                    onChange={(e) => setSmtpPassword(e.target.value)}
+                    data-testid="input-smtp-password"
+                  />
+                  <p className="text-xs text-muted-foreground">Não use sua senha normal do Gmail</p>
+                </div>
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="status">Status</Label>
