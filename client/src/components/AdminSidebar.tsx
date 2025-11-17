@@ -1,4 +1,4 @@
-import { Shield, LayoutDashboard, Building2, HardHat, CreditCard, DollarSign, Settings, Calendar, Image, Layers } from "lucide-react";
+import { LayoutDashboard, Building2, HardHat, CreditCard, DollarSign, Settings, Calendar, Image, Layers } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useLocation, Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
+import operlistLogo from "@assets/operlist2025_1763133653351.png";
 
 const menuItems = [
   {
@@ -97,9 +98,12 @@ export function AdminSidebar() {
     <Sidebar>
       <SidebarHeader className="p-4 border-b">
         <div className="flex items-center gap-3">
-          <div className="bg-primary/10 p-2 rounded-md">
-            <Shield className="h-5 w-5 text-primary" />
-          </div>
+          <img 
+            src={operlistLogo} 
+            alt="Operlist" 
+            className="h-8"
+            data-testid="logo-admin-sidebar"
+          />
           <div>
             <h2 className="font-semibold">Admin</h2>
             <p className="text-xs text-muted-foreground">Operlist</p>
