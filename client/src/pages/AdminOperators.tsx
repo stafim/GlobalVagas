@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import { HardHat, Mail, Phone, MapPin, Briefcase, Calendar, Award, Eye, Search, Download, Plus, User } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import type { Operator, InsertOperator } from "@shared/schema";
+import type { Operator, InsertOperator, Experience } from "@shared/schema";
 import { insertOperatorSchema } from "@shared/schema";
 import { useState, useMemo } from "react";
 import { Input } from "@/components/ui/input";
@@ -66,6 +66,11 @@ export default function AdminOperators() {
     queryKey: ['/api/operators'],
     retry: false,
     enabled: userType === 'admin',
+  });
+
+  const { data: experiences } = useQuery<Experience[]>({
+    queryKey: ['/api/experiences', selectedOperator?.id],
+    enabled: !!selectedOperator?.id,
   });
 
   const createOperatorMutation = useMutation({
@@ -777,6 +782,53 @@ export default function AdminOperators() {
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                     {selectedOperator.bio}
                   </p>
+                </div>
+              )}
+
+              {experiences && experiences.length > 0 && (
+                <div>
+                  <h4 className="font-semibold mb-3 flex items-center gap-2">
+                    <Briefcase className="h-4 w-4" />
+                    Experiências Profissionais
+                  </h4>
+                  <div className="space-y-4">
+                    {experiences.map((exp) => (
+                      <div key={exp.id} className="border rounded-lg p-4 space-y-2">
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <h5 className="font-semibold text-base">{exp.position}</h5>
+                            <p className="text-sm font-medium text-muted-foreground">{exp.company}</p>
+                          </div>
+                          {exp.isCurrent === 'true' && (
+                            <Badge variant="default" className="text-xs">
+                              Atual
+                            </Badge>
+                          )}
+                        </div>
+                        
+                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            <span>
+                              {exp.startDate} - {exp.isCurrent === 'true' ? 'Presente' : exp.endDate || 'N/A'}
+                            </span>
+                          </div>
+                          {exp.location && (
+                            <div className="flex items-center gap-1">
+                              <MapPin className="h-3 w-3" />
+                              <span>{exp.location}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {exp.description && (
+                          <p className="text-sm text-muted-foreground mt-2 whitespace-pre-wrap">
+                            {exp.description}
+                          </p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
             </div>
