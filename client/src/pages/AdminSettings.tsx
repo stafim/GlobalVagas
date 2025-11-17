@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Mail, Settings as SettingsIcon, Save, AlertCircle, Type, BarChart3 } from "lucide-react";
+import { Mail, Settings as SettingsIcon, Save, AlertCircle, Type, BarChart3, Send } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { EmailSettings } from "@shared/schema";
@@ -103,6 +103,25 @@ export default function AdminSettings() {
         variant: "destructive",
         title: "Erro ao salvar",
         description: "Não foi possível salvar as configurações. Tente novamente.",
+      });
+    },
+  });
+
+  const sendTestEmailMutation = useMutation({
+    mutationFn: async (recipientEmail: string) => {
+      return await apiRequest('POST', '/api/email-settings/test', { recipientEmail });
+    },
+    onSuccess: (_, recipientEmail) => {
+      toast({
+        title: "Email enviado!",
+        description: `Email de teste enviado com sucesso para ${recipientEmail}.`,
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        variant: "destructive",
+        title: "Erro ao enviar email",
+        description: error?.message || "Verifique as configurações SMTP e tente novamente.",
       });
     },
   });
@@ -511,7 +530,16 @@ export default function AdminSettings() {
               </div>
             </div>
 
-            <div className="flex justify-end pt-4 border-t">
+            <div className="flex justify-between items-center pt-4 border-t gap-3">
+              <Button 
+                variant="outline"
+                onClick={() => sendTestEmailMutation.mutate('stafim2@gmail.com')}
+                disabled={sendTestEmailMutation.isPending || !emailSettings}
+                data-testid="button-test-email"
+              >
+                <Send className="h-4 w-4 mr-2" />
+                {sendTestEmailMutation.isPending ? 'Enviando...' : 'Testar Email'}
+              </Button>
               <Button 
                 onClick={handleSaveEmail}
                 disabled={saveEmailSettingsMutation.isPending}

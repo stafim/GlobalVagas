@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { insertCompanySchema, insertOperatorSchema, insertAdminSchema, insertPlanSchema, insertClientSchema, insertSectorSchema, insertSubsectorSchema, insertEventSchema, insertBannerSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
+import { EmailService } from "./emailService";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/companies/register", async (req, res) => {
@@ -845,6 +846,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error saving email settings:", error);
       return res.status(500).json({ message: "Erro ao salvar configurações de email" });
+    }
+  });
+
+  app.post("/api/email-settings/test", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(403).json({ message: "Acesso negado" });
+      }
+
+      const { recipientEmail } = req.body;
+      
+      if (!recipientEmail) {
+        return res.status(400).json({ message: "Email do destinatário é obrigatório" });
+      }
+
+      const settings = await storage.getEmailSettings();
+      
+      if (!settings) {
+        return res.status(400).json({ message: "Configurações de email não encontradas. Configure o SMTP primeiro." });
+      }
+
+      if (settings.isActive !== 'true') {
+        return res.status(400).json({ message: "Serviço de email está inativo. Ative nas configurações primeiro." });
+      }
+
+      await EmailService.sendTestEmail(settings, recipientEmail);
+      
+      return res.status(200).json({ 
+        message: "Email de teste enviado com sucesso!",
+        recipient: recipientEmail 
+      });
+    } catch (error) {
+      console.error("Error sending test email:", error);
+      const errorMessage = error instanceof Error ? error.message : "Erro desconhecido";
+      return res.status(500).json({ 
+        message: "Erro ao enviar email de teste",
+        error: errorMessage
+      });
     }
   });
 
