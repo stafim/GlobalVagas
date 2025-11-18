@@ -15,6 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import type { Company } from "@shared/schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useMemo } from "react";
 
 const menuItems = [
   {
@@ -41,6 +42,9 @@ export function CompanySidebar() {
   
   const company = user as Company;
 
+  // Timestamp fixo para cache-busting do logo (só muda quando logoUrl muda)
+  const logoTimestamp = useMemo(() => Date.now(), [company?.logoUrl]);
+
   const prefetchData = (url: string) => {
     if (url === '/empresa/vagas') {
       queryClient.prefetchQuery({
@@ -56,7 +60,7 @@ export function CompanySidebar() {
         <div className="flex items-center gap-3">
           <Avatar className="h-12 w-12">
             <AvatarImage 
-              src={company?.logoUrl ? `${company.logoUrl}?t=${Date.now()}` : undefined} 
+              src={company?.logoUrl ? `${company.logoUrl}?t=${logoTimestamp}` : undefined} 
               alt={company?.companyName || 'Logo da empresa'} 
             />
             <AvatarFallback className="bg-primary/10 text-primary">
