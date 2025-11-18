@@ -79,18 +79,18 @@ export function CompanyShell({ children }: CompanyShellProps) {
 
   return (
     <SidebarProvider style={sidebarStyle as React.CSSProperties}>
-      <div className="flex h-screen w-full">
+      <div className="flex h-screen w-full bg-background">
         <CompanySidebar />
         <div className="flex flex-col flex-1 overflow-hidden">
-          <header className="flex items-center justify-between px-6 py-3 border-b bg-card">
-            <div className="flex items-center gap-4">
+          <header className="sticky top-0 z-50 flex items-center justify-between px-6 py-4 border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+            <div className="flex items-center gap-3">
               <SidebarTrigger data-testid="button-sidebar-toggle" />
-              <img 
-                src={operlistLogo} 
-                alt="Operlist" 
-                className="h-8 cursor-pointer"
-                onClick={() => setLocation('/')}
-              />
+              <div>
+                <h1 className="text-xl font-bold">{pageInfo.title}</h1>
+                {pageInfo.description && (
+                  <p className="text-xs text-muted-foreground">{pageInfo.description}</p>
+                )}
+              </div>
             </div>
             <Button 
               variant="ghost" 
@@ -98,19 +98,14 @@ export function CompanyShell({ children }: CompanyShellProps) {
               onClick={handleLogout}
               data-testid="button-logout"
               title="Sair"
+              className="hover-elevate"
             >
               <LogOut className="h-5 w-5" />
             </Button>
           </header>
           
-          <main className="flex-1 overflow-y-auto bg-background">
+          <main className="flex-1 overflow-y-auto">
             <div className="p-6">
-              <div className="mb-6">
-                <h1 className="text-2xl font-bold mb-1">{pageInfo.title}</h1>
-                {pageInfo.description && (
-                  <p className="text-sm text-muted-foreground">{pageInfo.description}</p>
-                )}
-              </div>
               {children}
             </div>
           </main>

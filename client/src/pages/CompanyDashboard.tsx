@@ -24,6 +24,9 @@ export default function CompanyDashboard() {
       icon: Briefcase,
       description: "Nenhuma vaga publicada ainda",
       trend: null,
+      gradient: "from-blue-500/10 to-blue-600/10",
+      iconColor: "text-blue-600 dark:text-blue-400",
+      bgIcon: "bg-blue-500/10",
     },
     {
       title: "Candidaturas",
@@ -31,6 +34,9 @@ export default function CompanyDashboard() {
       icon: Users,
       description: "Total de candidaturas recebidas",
       trend: null,
+      gradient: "from-green-500/10 to-green-600/10",
+      iconColor: "text-green-600 dark:text-green-400",
+      bgIcon: "bg-green-500/10",
     },
     {
       title: "Visualizações",
@@ -38,6 +44,9 @@ export default function CompanyDashboard() {
       icon: Eye,
       description: "Visualizações das suas vagas",
       trend: null,
+      gradient: "from-purple-500/10 to-purple-600/10",
+      iconColor: "text-purple-600 dark:text-purple-400",
+      bgIcon: "bg-purple-500/10",
     },
     {
       title: "Taxa de Conversão",
@@ -45,6 +54,9 @@ export default function CompanyDashboard() {
       icon: TrendingUp,
       description: "Candidaturas por visualização",
       trend: null,
+      gradient: "from-orange-500/10 to-orange-600/10",
+      iconColor: "text-orange-600 dark:text-orange-400",
+      bgIcon: "bg-orange-500/10",
     },
   ];
 
@@ -57,17 +69,28 @@ export default function CompanyDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat) => (
-          <Card key={stat.title} data-testid={`stat-${stat.title.toLowerCase().replace(/\s/g, '-')}`}>
-            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">
+          <Card 
+            key={stat.title} 
+            className={`hover-elevate bg-gradient-to-br ${stat.gradient} border-none`}
+            data-testid={`stat-${stat.title.toLowerCase().replace(/\s/g, '-')}`}
+          >
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className={`h-12 w-12 rounded-xl ${stat.bgIcon} flex items-center justify-center`}>
+                  <stat.icon className={`h-6 w-6 ${stat.iconColor}`} />
+                </div>
+                {stat.trend && (
+                  <Badge variant="secondary" className="font-semibold">
+                    {stat.trend}
+                  </Badge>
+                )}
+              </div>
+              <div className="text-3xl font-bold mb-1">{stat.value}</div>
+              <p className="text-sm font-medium text-muted-foreground">
                 {stat.title}
-              </CardTitle>
-              <stat.icon className="h-5 w-5 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stat.value}</div>
+              </p>
               <p className="text-xs text-muted-foreground mt-1">
                 {stat.description}
               </p>
