@@ -14,6 +14,7 @@ import { useLocation, Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import type { Company } from "@shared/schema";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const menuItems = [
   {
@@ -53,9 +54,15 @@ export function CompanySidebar() {
     <Sidebar>
       <SidebarHeader className="p-4 border-b">
         <div className="flex items-center gap-3">
-          <div className="bg-primary/10 p-2 rounded-md">
-            <Building2 className="h-5 w-5 text-primary" />
-          </div>
+          <Avatar className="h-12 w-12">
+            <AvatarImage 
+              src={company?.logoUrl ? `${company.logoUrl}?t=${Date.now()}` : undefined} 
+              alt={company?.companyName || 'Logo da empresa'} 
+            />
+            <AvatarFallback className="bg-primary/10 text-primary">
+              <Building2 className="h-6 w-6" />
+            </AvatarFallback>
+          </Avatar>
           <div className="flex-1 min-w-0">
             <h2 className="font-semibold truncate" data-testid="text-company-name">
               {company?.companyName || 'Empresa'}
