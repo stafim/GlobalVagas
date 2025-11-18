@@ -606,135 +606,102 @@ export default function CompanyJobs() {
           </CardContent>
         </Card>
       ) : filteredJobs.length > 0 ? (
-        <div className="space-y-4">
+        <div className="space-y-2">
           {filteredJobs.map((job) => (
             <Card key={job.id} className="hover-elevate border-l-4 transition-all" data-testid={`card-job-${job.id}`}
               style={{
                 borderLeftColor: job.status === 'active' ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))'
               }}
             >
-              <CardContent className="p-6">
-                <div className="flex gap-4">
-                  {/* Ícone destacado da vaga */}
-                  <div className={cn(
-                    "flex-shrink-0 w-14 h-14 rounded-lg flex items-center justify-center",
-                    job.status === 'active' 
-                      ? "bg-primary/10" 
-                      : "bg-muted"
-                  )}>
-                    <Briefcase className={cn(
-                      "h-7 w-7",
-                      job.status === 'active' 
-                        ? "text-primary" 
-                        : "text-muted-foreground"
-                    )} />
-                  </div>
-
-                  {/* Conteúdo principal */}
+              <CardContent className="p-4">
+                <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="flex-1 min-w-0">
-                    {/* Cabeçalho com título e status */}
-                    <div className="flex items-start justify-between gap-4 mb-3">
-                      <div className="flex-1">
-                        <h3 className="text-xl font-bold mb-2 text-foreground">{job.title}</h3>
-                        <div className="flex flex-wrap gap-2">
-                          <Badge variant="secondary" className="font-medium">
-                            <MapPin className="h-3.5 w-3.5 mr-1" />
-                            {job.location}
-                          </Badge>
-                          <Badge variant="secondary" className="font-medium">
-                            {job.workType}
-                          </Badge>
-                          <Badge variant="secondary" className="font-medium">
-                            {job.contractType}
-                          </Badge>
-                          {job.salary && (
-                            <Badge variant="secondary" className="font-medium">
-                              <DollarSign className="h-3.5 w-3.5 mr-1" />
-                              {job.salary}
-                            </Badge>
-                          )}
-                        </div>
-                      </div>
-                      <Badge
-                        className={cn(
-                          "shrink-0 font-semibold px-3 py-1",
-                          job.status === 'active'
-                            ? 'bg-green-500/15 text-green-700 border-green-500/30 dark:text-green-400 dark:border-green-500/40'
-                            : 'bg-gray-500/15 text-gray-700 border-gray-500/30 dark:text-gray-400 dark:border-gray-500/40'
-                        )}
-                        variant="outline"
-                      >
-                        {job.status === 'active' ? '● Ativa' : '○ Fechada'}
+                    <h3 className="text-lg font-semibold mb-1.5 text-foreground">{job.title}</h3>
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      <Badge variant="secondary" className="text-xs">
+                        <MapPin className="h-3 w-3 mr-1" />
+                        {job.location}
                       </Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        {job.workType}
+                      </Badge>
+                      <Badge variant="secondary" className="text-xs">
+                        {job.contractType}
+                      </Badge>
+                      {job.salary && (
+                        <Badge variant="secondary" className="text-xs">
+                          <DollarSign className="h-3 w-3 mr-1" />
+                          {job.salary}
+                        </Badge>
+                      )}
                     </div>
-                    
-                    {/* Descrição */}
-                    <p className="text-sm text-muted-foreground line-clamp-2 mb-4 leading-relaxed">
+                    <p className="text-sm text-muted-foreground line-clamp-1">
                       {job.description}
                     </p>
+                  </div>
+                  <Badge
+                    className={cn(
+                      "shrink-0 text-xs",
+                      job.status === 'active'
+                        ? 'bg-green-500/15 text-green-700 border-green-500/30 dark:text-green-400'
+                        : 'bg-gray-500/15 text-gray-700 border-gray-500/30 dark:text-gray-400'
+                    )}
+                    variant="outline"
+                  >
+                    {job.status === 'active' ? '● Ativa' : '○ Fechada'}
+                  </Badge>
+                </div>
 
-                    <Separator className="my-4" />
+                <div className="flex items-center justify-between gap-3 pt-2 border-t">
+                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                    <span className="flex items-center gap-1">
+                      <Clock className="h-3 w-3" />
+                      {new Date(job.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                    </span>
+                    {job.vacancies && (
+                      <span className="flex items-center gap-1">
+                        <Users className="h-3 w-3" />
+                        {job.vacancies} {job.vacancies === '1' ? 'vaga' : 'vagas'}
+                      </span>
+                    )}
+                  </div>
 
-                    {/* Footer com informações e ações */}
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                      <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
-                        <span className="flex items-center gap-1.5">
-                          <Clock className="h-4 w-4" />
-                          <span className="font-medium">
-                            {new Date(job.createdAt).toLocaleDateString('pt-BR')}
-                          </span>
-                        </span>
-                        {job.vacancies && (
-                          <span className="flex items-center gap-1.5">
-                            <Users className="h-4 w-4" />
-                            <span className="font-medium">
-                              {job.vacancies} {job.vacancies === '1' ? 'vaga' : 'vagas'}
-                            </span>
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setSelectedJob(job);
-                            setDetailsOpen(true);
-                          }}
-                          data-testid={`button-view-job-${job.id}`}
-                        >
-                          <Eye className="h-4 w-4 mr-1.5" />
-                          Detalhes
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            toast({
-                              title: "Em desenvolvimento",
-                              description: "Sistema de candidaturas em breve!",
-                            });
-                          }}
-                          data-testid={`button-candidates-${job.id}`}
-                        >
-                          <UserCheck className="h-4 w-4 mr-1.5" />
-                          Candidatos
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => {
-                            setJobToDelete(job.id);
-                            setDeleteDialogOpen(true);
-                          }}
-                          data-testid={`button-delete-job-${job.id}`}
-                        >
-                          <Trash2 className="h-4 w-4 mr-1.5" />
-                          Excluir
-                        </Button>
-                      </div>
-                    </div>
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setSelectedJob(job);
+                        setDetailsOpen(true);
+                      }}
+                      data-testid={`button-view-job-${job.id}`}
+                    >
+                      <Eye className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        toast({
+                          title: "Em desenvolvimento",
+                          description: "Sistema de candidaturas em breve!",
+                        });
+                      }}
+                      data-testid={`button-candidates-${job.id}`}
+                    >
+                      <UserCheck className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        setJobToDelete(job.id);
+                        setDeleteDialogOpen(true);
+                      }}
+                      data-testid={`button-delete-job-${job.id}`}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                 </div>
               </CardContent>
