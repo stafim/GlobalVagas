@@ -1599,6 +1599,46 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/companies/my-purchases", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      if (req.session.userType !== 'company') {
+        return res.status(403).json({ message: "Acesso negado" });
+      }
+
+      const company = await storage.getCompany(req.session.userId);
+      if (!company) {
+        return res.status(404).json({ message: "Empresa não encontrada" });
+      }
+
+      const client = await storage.getClientByCnpj(company.cnpj);
+      
+      if (!client) {
+        return res.status(200).json([]);
+      }
+
+      const purchases = await storage.getPurchasesByClient(client.id);
+      
+      const purchasesWithPlans = await Promise.all(
+        purchases.map(async (purchase) => {
+          const plan = await storage.getPlan(purchase.planId);
+          return {
+            ...purchase,
+            plan,
+          };
+        })
+      );
+
+      return res.status(200).json(purchasesWithPlans);
+    } catch (error) {
+      console.error("Error getting company purchases:", error);
+      return res.status(500).json({ message: "Erro ao buscar planos" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

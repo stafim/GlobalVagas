@@ -60,6 +60,9 @@ export function CompanyShell({ children }: CompanyShellProps) {
     if (location === '/empresa/vagas') {
       return { title: "Minhas Vagas", description: "Gerencie suas vagas publicadas" };
     }
+    if (location === '/empresa/plano') {
+      return { title: "Meu Plano", description: "Visualize seus planos e assinaturas" };
+    }
     if (location === '/empresa/perfil') {
       return { title: "Perfil da Empresa", description: "Informações e configurações da empresa" };
     }

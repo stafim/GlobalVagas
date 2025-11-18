@@ -1,4 +1,4 @@
-import { Building2, LayoutDashboard, Briefcase } from "lucide-react";
+import { Building2, LayoutDashboard, Briefcase, CreditCard } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -27,6 +27,11 @@ const menuItems = [
     title: "Minhas Vagas",
     url: "/empresa/vagas",
     icon: Briefcase,
+  },
+  {
+    title: "Meu Plano",
+    url: "/empresa/plano",
+    icon: CreditCard,
   },
   {
     title: "Perfil da Empresa",

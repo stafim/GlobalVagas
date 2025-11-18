@@ -14,6 +14,7 @@ import SignupOperator from "@/pages/SignupOperator";
 import CompanyDashboard from "@/pages/CompanyDashboard";
 import CompanyProfile from "@/pages/CompanyProfile";
 import CompanyJobs from "@/pages/CompanyJobs";
+import CompanyPlan from "@/pages/CompanyPlan";
 import OperatorDashboard from "@/pages/OperatorDashboard";
 import OperatorProfile from "@/pages/OperatorProfile";
 import UsersList from "@/pages/UsersList";
@@ -40,6 +41,7 @@ function Router() {
       <Route path="/cadastro/operator" component={SignupOperator} />
       <Route path="/dashboard/empresa" component={CompanyDashboard} />
       <Route path="/empresa/vagas" component={CompanyJobs} />
+      <Route path="/empresa/plano" component={CompanyPlan} />
       <Route path="/empresa/perfil" component={CompanyProfile} />
       <Route path="/dashboard/operador" component={OperatorDashboard} />
       <Route path="/perfil/operador" component={OperatorProfile} />
