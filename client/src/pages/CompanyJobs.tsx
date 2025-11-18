@@ -16,11 +16,13 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { insertJobSchema, type Job } from "@shared/schema";
+import { insertJobSchema, type Job, type Company } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Separator } from "@/components/ui/separator";
 import { brazilianCities } from "@/lib/brazilian-cities";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/use-auth";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const jobFormSchema = insertJobSchema.extend({
   title: z.string().min(5, "Título deve ter pelo menos 5 caracteres"),
@@ -33,6 +35,7 @@ const jobFormSchema = insertJobSchema.extend({
 type JobFormValues = z.infer<typeof jobFormSchema>;
 
 export default function CompanyJobs() {
+  const { user } = useAuth();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -42,6 +45,8 @@ export default function CompanyJobs() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
+
+  const company = user as Company;
 
   const { data: jobs = [], isLoading } = useQuery<Job[]>({
     queryKey: ['/api/jobs'],
@@ -156,6 +161,29 @@ export default function CompanyJobs() {
 
   return (
     <div className="space-y-6">
+      {/* Cabeçalho com Logo da Empresa */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-20 w-20">
+              <AvatarImage 
+                src={company?.logoUrl ? `${company.logoUrl}?t=${Date.now()}` : undefined} 
+                alt={company?.companyName || 'Logo da empresa'} 
+              />
+              <AvatarFallback className="bg-primary/10 text-primary text-2xl">
+                <Building2 className="h-10 w-10" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+              <h1 className="text-2xl font-bold" data-testid="text-company-name-header">
+                {company?.companyName || 'Empresa'}
+              </h1>
+              <p className="text-muted-foreground">Gerencie suas vagas de emprego</p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
         <div className="relative flex-1 max-w-md">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
