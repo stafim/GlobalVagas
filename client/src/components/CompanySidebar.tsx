@@ -56,42 +56,43 @@ export function CompanySidebar() {
 
   return (
     <Sidebar>
-      <SidebarHeader className="p-4 border-b">
+      <SidebarHeader className="p-6 border-b">
         <div className="flex items-center gap-3">
-          <Avatar className="h-12 w-12">
+          <Avatar className="h-14 w-14 border-2 border-primary/20">
             <AvatarImage 
               src={company?.logoUrl ? `${company.logoUrl}?t=${logoTimestamp}` : undefined} 
               alt={company?.companyName || 'Logo da empresa'} 
             />
-            <AvatarFallback className="bg-primary/10 text-primary">
-              <Building2 className="h-6 w-6" />
+            <AvatarFallback className="bg-gradient-to-br from-primary/10 to-primary/20 text-primary">
+              <Building2 className="h-7 w-7" />
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <h2 className="font-semibold truncate" data-testid="text-company-name">
+            <h2 className="font-bold truncate text-base" data-testid="text-company-name">
               {company?.companyName || 'Empresa'}
             </h2>
-            <p className="text-xs text-muted-foreground">Operlist</p>
+            <p className="text-xs text-muted-foreground font-medium">Área da Empresa</p>
           </div>
         </div>
       </SidebarHeader>
-      <SidebarContent className="pt-4">
+      <SidebarContent className="pt-6 px-3">
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-2">
               {menuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
                     isActive={location === item.url}
                     data-testid={`sidebar-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="h-11 px-4 rounded-lg font-medium"
                   >
                     <Link 
                       href={item.url}
                       onMouseEnter={() => prefetchData(item.url)}
                       onFocus={() => prefetchData(item.url)}
                     >
-                      <item.icon className="h-5 w-5" />
+                      <item.icon className="h-5 w-5 mr-3" />
                       <span>{item.title}</span>
                     </Link>
                   </SidebarMenuButton>
