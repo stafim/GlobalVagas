@@ -57,13 +57,6 @@ export default function CompanyDashboard() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
-        <Button onClick={handleNewJob} data-testid="button-new-job">
-          <Plus className="mr-2 h-5 w-5" />
-          Nova Vaga
-        </Button>
-      </div>
-
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {stats.map((stat) => (
           <Card key={stat.title} data-testid={`stat-${stat.title.toLowerCase().replace(/\s/g, '-')}`}>
