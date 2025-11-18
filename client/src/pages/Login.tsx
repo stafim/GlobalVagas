@@ -73,61 +73,15 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Lado esquerdo - Imagem/Brand */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-primary/90 to-primary relative overflow-hidden">
-        <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzBoLTJ2LTJoMnYyem0wLTRoLTJ2LTJoMnYyem0wLTRoLTJ2LTJoMnYyem0wLTRoLTJ2LTJoMnYyem0wLTRoLTJ2LTJoMnYyeiIvPjwvZz48L2c+PC9zdmc+')] opacity-10"></div>
-        <div className="relative z-10 flex flex-col justify-center px-12 text-white">
+    <div className="min-h-screen flex flex-col justify-center px-8 lg:px-16 bg-background">
+      <div className="w-full max-w-md mx-auto">
+        <div className="mb-10">
           <img 
             src={operlistLogo} 
             alt="Operlist" 
-            className="h-16 mb-12 brightness-0 invert"
+            className="h-12 mb-8"
+            data-testid="logo-login"
           />
-          <h1 className="text-5xl font-bold mb-6 leading-tight">
-            Conectando<br/>talentos ao<br/>sucesso
-          </h1>
-          <p className="text-xl text-white/90 mb-8">
-            A plataforma líder em conexão entre profissionais e empresas do setor operacional
-          </p>
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                </svg>
-              </div>
-              <span className="text-lg">Centenas de vagas disponíveis</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                </svg>
-              </div>
-              <span className="text-lg">Empresas verificadas</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
-                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/>
-                </svg>
-              </div>
-              <span className="text-lg">Processo simplificado</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Lado direito - Formulário */}
-      <div className="flex-1 flex flex-col justify-center px-8 lg:px-16 bg-background">
-        <div className="w-full max-w-md mx-auto">
-          <div className="mb-10">
-            <img 
-              src={operlistLogo} 
-              alt="Operlist" 
-              className="h-12 mb-8 lg:hidden"
-              data-testid="logo-login"
-            />
             <h1 className="font-bold text-4xl mb-3">
               Bem-vindo de volta!
             </h1>
@@ -209,7 +163,6 @@ export default function Login() {
             </p>
           </div>
         </div>
-      </div>
     </div>
   );
 }
