@@ -170,8 +170,8 @@ export default function CompanyJobs() {
         
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => setCurrentStep(1)} data-testid="button-new-job">
-              <Plus className="h-4 w-4 mr-2" />
+            <Button size="lg" onClick={() => setCurrentStep(1)} className="shadow-lg" data-testid="button-new-job">
+              <Plus className="h-5 w-5 mr-2" />
               Nova Vaga
             </Button>
           </DialogTrigger>
