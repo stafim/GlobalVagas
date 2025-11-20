@@ -54,6 +54,39 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform d
 - **Recharts**: For data visualization in the financial dashboard.
 ## Recent Changes
 
+### November 20, 2025 - Job Applications Management for Companies
+- **Company Candidate Viewing System**: Complete interface for companies to view and manage job applicants
+  - **New Page**: `/empresa/vaga/:id/candidatos` - Shows all candidates for a specific job
+  - **Candidate Cards**: Grid layout displaying:
+    - Profile photo or initials avatar
+    - Full name, profession, experience years
+    - Contact information (email, phone)
+    - Preferred location
+    - Application date/time
+    - Application status badge (Pending, Accepted, Rejected)
+  - **Detailed Candidate Modal**: Click on any candidate card to view:
+    - Complete contact information (with clickable email/phone links)
+    - Professional experience details
+    - Certifications
+    - Skills
+    - Bio/About section
+    - Quick action buttons (Send Email, Call)
+  - **Job Header**: Shows job title, location, contract type, status, and total candidate count
+  - **Empty States**: Helpful messages when no candidates have applied
+  - **Responsive Design**: 1 column (mobile), 2 columns (tablet), 3 columns (desktop)
+- **Backend Endpoints**:
+  - GET `/api/jobs/:jobId/applications` - Returns all applications for a job with complete operator data
+  - Security: Only job owner (company/client) can view applicants
+  - Uses JOIN between applications and operators tables
+- **Storage Method**: `getApplicationsWithOperatorByJob(jobId)` - Fetches applications with full operator details
+- **Integration in "Minhas Vagas"**:
+  - UserCheck icon button in each job card
+  - Direct link to view candidates for that job
+- **Access Control**: 
+  - Only authenticated companies can access
+  - Company can only see candidates for their own jobs
+  - Admins can see all candidates
+
 ### November 20, 2025 - Visit Counter System with Cookie Control
 - **Automatic Visit Tracking**: Counts unique visits to the home page using cookies
   - **Cookie-Based Deduplication**: Uses `visit_tracked` cookie with 30-minute expiration
