@@ -254,20 +254,18 @@ export default function JobView() {
           {/* Botão de Aplicar */}
           {hasApplied ? (
             <Button 
-              size="lg" 
+              size="default" 
               disabled
-              className="w-full"
               data-testid="button-already-applied"
             >
-              <CheckCircle2 className="mr-2 h-5 w-5" />
+              <CheckCircle2 className="mr-2 h-4 w-4" />
               Você já se candidatou a esta vaga
             </Button>
           ) : (
             <Button 
-              size="lg" 
+              size="default" 
               onClick={() => applyMutation.mutate()}
               disabled={applyMutation.isPending}
-              className="w-full"
               data-testid="button-apply"
             >
               {applyMutation.isPending ? "Aplicando..." : "Aplicar a esta vaga"}
