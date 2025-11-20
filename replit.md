@@ -138,6 +138,27 @@ npm run dev  # Starts both frontend and backend
   - Responsive layout for all screen sizes
   - Professional card-based design with hover effects
 
+### November 20, 2025 - Job Applications System
+- **Complete Job Application Flow**: Operators can now apply to jobs
+  - New `applications` table with job and operator relationships
+  - Status tracking (pending, accepted, rejected)
+  - Duplicate application prevention (one application per job per operator)
+  - Automatic timestamps for application tracking
+- **Job View Page**: Comprehensive job and company showcase at `/vaga/:id`
+  - Company profile section with banner, logo, about, mission, and culture
+  - Full job details: description, requirements, responsibilities, benefits
+  - "Aplicar a vaga" button for operators to apply
+  - Success message after successful application
+  - Disabled state showing "Você já se candidatou" if already applied
+  - Company contact information display
+- **API Endpoints**:
+  - POST `/api/applications` - Create job application
+  - GET `/api/applications/check/:jobId` - Check if operator already applied
+  - GET `/api/jobs/:id` - Get job details with company information
+- **Storage Methods**: Full CRUD for applications in DatabaseStorage
+  - `createApplication`, `getApplication`, `getApplicationsByJob`, `getApplicationsByOperator`
+  - `checkExistingApplication`, `updateApplicationStatus`
+
 ### November 20, 2025 - Company Presentation Page
 - **Company Profile Enhancement**: Complete redesign of company profile page
   - New "Página de Apresentação" section for companies to showcase themselves to candidates
@@ -153,6 +174,7 @@ npm run dev  # Starts both frontend and backend
   - Removed split-screen design from login page (now centered single-column form)
   - Removed colored left border from job cards (cleaner flat design)
   - Company Plan page showing purchased plans with status badges
+  - Fixed CompanyProfile update errors (endpoint and ObjectUploader usage)
 
 ### November 17, 2025 - Financial Dashboard & Branding Updates
 - **Complete Financial Reports System**: Implemented comprehensive sales analytics dashboard
