@@ -1806,10 +1806,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Public endpoint - track visit to home page
+  // Only counts if user doesn't have a valid cookie (30 minutes expiration)
   app.post("/api/track-visit", async (req, res) => {
     try {
+      // Check if user has already been tracked in the last 30 minutes
+      const hasVisitCookie = req.cookies?.visit_tracked === 'true';
+      
+      if (hasVisitCookie) {
+        // User already counted, don't increment
+        return res.status(200).json({ 
+          counted: false,
+          message: "Visita já registrada" 
+        });
+      }
+      
+      // Increment counter and set cookie
       const totalVisits = await storage.incrementVisitCounter();
-      return res.status(200).json({ totalVisits });
+      
+      // Set cookie to expire in 30 minutes (1800000 milliseconds)
+      res.cookie('visit_tracked', 'true', {
+        maxAge: 30 * 60 * 1000, // 30 minutes in milliseconds
+        httpOnly: true, // Prevent JavaScript access (security)
+        sameSite: 'lax', // CSRF protection
+      });
+      
+      return res.status(200).json({ 
+        counted: true,
+        totalVisits 
+      });
     } catch (error) {
       console.error("Error tracking visit:", error);
       return res.status(500).json({ message: "Erro ao registrar visita" });

@@ -1,12 +1,16 @@
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import memorystore from "memorystore";
+import cookieParser from "cookie-parser";
 import { db } from "./db";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
 const app = express();
 const MemoryStore = memorystore(session);
+
+// Cookie parser middleware (must be before session)
+app.use(cookieParser());
 
 app.use(
   session({

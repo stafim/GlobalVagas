@@ -54,8 +54,14 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform d
 - **Recharts**: For data visualization in the financial dashboard.
 ## Recent Changes
 
-### November 20, 2025 - Visit Counter System
-- **Automatic Visit Tracking**: Counts every visit to the home page
+### November 20, 2025 - Visit Counter System with Cookie Control
+- **Automatic Visit Tracking**: Counts unique visits to the home page using cookies
+  - **Cookie-Based Deduplication**: Uses `visit_tracked` cookie with 30-minute expiration
+    - First visit without cookie: Increments counter and sets cookie
+    - Subsequent visits with valid cookie: Does NOT increment counter
+    - Cookie expires after 30 minutes, allowing re-counting
+    - HttpOnly cookie for security (prevents JavaScript access)
+    - SameSite: lax for CSRF protection
   - New backend methods in DatabaseStorage:
     - `incrementVisitCounter()` - Increments total and daily counters
     - `getVisitStats()` - Returns total and today's visit statistics
@@ -64,8 +70,14 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform d
     - `visit_counter_today` - Visits today (resets daily)
     - `visit_counter_date` - Date of today's counter
 - **Backend Endpoints**:
-  - POST `/api/track-visit` - Public endpoint, increments counter when called
+  - POST `/api/track-visit` - Public endpoint, checks cookie before counting
+    - Returns `{counted: true, totalVisits: N}` when visit is counted
+    - Returns `{counted: false, message: "Visita já registrada"}` when cookie is valid
   - GET `/api/admin/visit-stats` - Admin-only endpoint, returns statistics
+- **Technical Implementation**:
+  - Express middleware: `cookie-parser` added to handle cookies
+  - Cookie configuration: 30-minute expiration (1800000ms)
+  - Backend validates cookie presence before incrementing counter
 - **Frontend Integration**:
   - Home page (`Home.tsx`) automatically tracks visits on load using `useEffect`
   - Silent tracking - doesn't interrupt user experience on failure
