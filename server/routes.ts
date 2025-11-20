@@ -205,7 +205,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const stats = await storage.getCompanyDashboardStats(req.session.userId);
       return res.status(200).json(stats);
     } catch (error: any) {
-      log(`Error getting company dashboard stats: ${error.message}`);
+      console.error(`Error getting company dashboard stats: ${error.message}`);
       return res.status(500).json({ message: "Erro ao buscar estatísticas" });
     }
   });

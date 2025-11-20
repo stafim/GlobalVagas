@@ -19,7 +19,7 @@ import {
   X
 } from "lucide-react";
 import { useLocation } from "wouter";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import type { Job } from "@shared/schema";
 
 interface JobWithCompany extends Job {
@@ -35,7 +35,7 @@ interface Filters {
 }
 
 export default function PublicJobs() {
-  const [, setLocation] = useLocation();
+  const [location, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(true);
   const [filters, setFilters] = useState<Filters>({
@@ -44,6 +44,15 @@ export default function PublicJobs() {
     companies: [],
     locations: [],
   });
+
+  // Read search query from URL on mount and when URL changes
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const buscaParam = params.get('busca');
+    if (buscaParam) {
+      setSearchTerm(buscaParam);
+    }
+  }, [location]);
 
   const { data: jobs = [], isLoading } = useQuery<JobWithCompany[]>({
     queryKey: ['/api/public/jobs'],

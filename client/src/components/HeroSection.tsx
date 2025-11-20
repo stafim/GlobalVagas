@@ -3,10 +3,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import heroImage from "@assets/generated_images/Mining_heavy_equipment_scene_02b6e20e.png";
 
 export function HeroSection() {
   const [searchQuery, setSearchQuery] = useState("");
+  const [, setLocation] = useLocation();
 
   const { data: settingsData } = useQuery<Record<string, string>>({
     queryKey: ['/api/settings'],
@@ -18,7 +20,12 @@ export function HeroSection() {
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Hero search triggered:", searchQuery);
+    // Redirect to jobs page with search query
+    if (searchQuery.trim()) {
+      setLocation(`/vagas?busca=${encodeURIComponent(searchQuery.trim())}`);
+    } else {
+      setLocation('/vagas');
+    }
   };
 
   return (
