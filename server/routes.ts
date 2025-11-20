@@ -1515,6 +1515,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public endpoint - list all active jobs with company info
+  app.get("/api/public/jobs", async (req, res) => {
+    try {
+      const jobs = await storage.getActiveJobs();
+      
+      // Enrich jobs with company information
+      const jobsWithCompany = await Promise.all(
+        jobs.map(async (job) => {
+          if (job.companyId) {
+            const company = await storage.getCompany(job.companyId);
+            return {
+              ...job,
+              companyName: company?.companyName,
+              companyLogo: company?.logoUrl,
+            };
+          }
+          return job;
+        })
+      );
+
+      return res.status(200).json(jobsWithCompany);
+    } catch (error) {
+      console.error("Error getting public jobs:", error);
+      return res.status(500).json({ message: "Erro ao buscar vagas" });
+    }
+  });
+
   app.get("/api/jobs", async (req, res) => {
     try {
       if (!req.session.userId) {
