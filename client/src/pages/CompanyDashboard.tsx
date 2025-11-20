@@ -1,4 +1,3 @@
-import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -70,7 +69,6 @@ export default function CompanyDashboard() {
 
   return (
     <>
-      <Header />
       <div className="max-w-7xl mx-auto px-6 py-6">
         <div className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">

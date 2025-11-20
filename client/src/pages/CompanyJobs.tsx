@@ -1,4 +1,3 @@
-import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -229,7 +228,6 @@ export default function CompanyJobs() {
 
   return (
     <>
-      <Header />
       <div className="max-w-7xl mx-auto px-6 py-6">
         <div className="space-y-6">
           <div className="flex flex-col gap-4">

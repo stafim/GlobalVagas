@@ -1,4 +1,3 @@
-import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
@@ -37,7 +36,6 @@ export default function CompanyPlan() {
   if (isLoading) {
     return (
       <>
-        <Header />
         <div className="max-w-7xl mx-auto px-6 py-6">
           <div className="space-y-6">
             <div className="grid gap-4 md:grid-cols-3">
@@ -62,7 +60,6 @@ export default function CompanyPlan() {
   if (purchases.length === 0) {
     return (
       <>
-        <Header />
         <div className="max-w-7xl mx-auto px-6 py-6">
           <Card>
         <CardContent className="flex flex-col items-center justify-center py-16 text-center">
@@ -84,7 +81,6 @@ export default function CompanyPlan() {
 
   return (
     <>
-      <Header />
       <div className="max-w-7xl mx-auto px-6 py-6">
         <div className="space-y-6">
       {/* Estatísticas */}
