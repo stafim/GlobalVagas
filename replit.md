@@ -104,6 +104,15 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform d
   - **Click outside to close**: Dropdown closes when clicking outside
   - **Smart filtering**: Searches across job title, company name, location, and description
   - **Fallback button**: "Buscar" button redirects to `/vagas?busca=termo` for full results
+- **Latest Jobs Section on Home Page**: Displays the 10 most recently created jobs
+  - Shows last 10 jobs sorted by creation date (newest first)
+  - Grid layout: 2 columns on desktop, 1 column on mobile
+  - Each card displays: company logo, job title, company name, description, work type, contract type, salary, location, and posting date
+  - Click on any job card to view full details
+  - "Ver Mais Vagas" button at the bottom redirects to `/vagas` page
+  - Loading skeletons while data is fetching
+  - Empty state when no jobs are available
+  - Fully integrated with real database data
 - **Advanced Filter Sidebar**: Comprehensive filtering system
   - **Tipo de Trabalho**: Presencial, Remoto, Híbrido
   - **Tipo de Contrato**: CLT, PJ, Estágio, Temporário
