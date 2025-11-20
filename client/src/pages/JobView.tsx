@@ -25,6 +25,7 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Job, Company } from "@shared/schema";
 import { useState, useEffect } from "react";
+import { Header } from "@/components/Header";
 
 export default function JobView() {
   const [, params] = useRoute("/vaga/:id");
@@ -104,18 +105,20 @@ export default function JobView() {
   const { job, company } = jobQuery.data;
 
   return (
-    <div className="w-full">
-      {/* Banner da empresa */}
-      {company?.bannerUrl && (
-        <div className="relative w-full overflow-hidden">
-          <img 
-            src={`${company.bannerUrl}?t=${Date.now()}`}
-            alt={company.companyName}
-            className="w-full h-80 object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        </div>
-      )}
+    <>
+      <Header />
+      <div className="w-full">
+        {/* Banner da empresa */}
+        {company?.bannerUrl && (
+          <div className="relative w-full overflow-hidden">
+            <img 
+              src={`${company.bannerUrl}?t=${Date.now()}`}
+              alt={company.companyName}
+              className="w-full h-80 object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+          </div>
+        )}
 
       <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
         {/* Perfil da Empresa */}
@@ -341,5 +344,6 @@ export default function JobView() {
       </Card>
       </div>
     </div>
+    </>
   );
 }
