@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Briefcase, Plus, Search, MapPin, Clock, DollarSign, Users, ChevronRight, ChevronLeft, Building2, Check, ChevronsUpDown, Eye, Trash2, UserCheck, ExternalLink } from "lucide-react";
+import { Briefcase, Plus, Search, MapPin, Clock, DollarSign, Users, ChevronRight, ChevronLeft, Building2, Check, ChevronsUpDown, Eye, Trash2, UserCheck, ExternalLink, Pause, Play } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
@@ -89,6 +89,29 @@ export default function CompanyJobs() {
       toast({
         variant: "destructive",
         title: "Erro ao excluir vaga",
+        description: "Tente novamente mais tarde.",
+      });
+    },
+  });
+
+  const toggleStatusMutation = useMutation({
+    mutationFn: async ({ jobId, newStatus }: { jobId: string; newStatus: string }) => {
+      const response = await apiRequest('PATCH', `/api/jobs/${jobId}/status`, { status: newStatus });
+      return response.json();
+    },
+    onSuccess: (_, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['/api/jobs'] });
+      toast({
+        title: variables.newStatus === 'active' ? "Vaga ativada!" : "Vaga suspensa!",
+        description: variables.newStatus === 'active' 
+          ? "A vaga agora está visível para candidatos." 
+          : "A vaga foi pausada temporariamente.",
+      });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Erro ao atualizar status",
         description: "Tente novamente mais tarde.",
       });
     },
@@ -697,6 +720,19 @@ export default function CompanyJobs() {
                       data-testid={`button-candidates-${job.id}`}
                     >
                       <UserCheck className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => {
+                        const newStatus = job.status === 'active' ? 'suspended' : 'active';
+                        toggleStatusMutation.mutate({ jobId: job.id, newStatus });
+                      }}
+                      disabled={toggleStatusMutation.isPending}
+                      data-testid={`button-toggle-status-${job.id}`}
+                      title={job.status === 'active' ? 'Suspender vaga' : 'Ativar vaga'}
+                    >
+                      {job.status === 'active' ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
                     </Button>
                     <Button
                       size="sm"
