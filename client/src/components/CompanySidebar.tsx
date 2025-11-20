@@ -1,4 +1,4 @@
-import { Building2, LayoutDashboard, Briefcase, CreditCard } from "lucide-react";
+import { Building2, LayoutDashboard, Briefcase, CreditCard, Settings } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -37,6 +37,11 @@ const menuItems = [
     title: "Perfil da Empresa",
     url: "/empresa/perfil",
     icon: Building2,
+  },
+  {
+    title: "Configurações",
+    url: "/empresa/configuracoes",
+    icon: Settings,
   },
 ];
 
