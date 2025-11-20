@@ -94,11 +94,16 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform d
   - No authentication required - publicly accessible
   - New backend endpoint: GET `/api/public/jobs` (public, no auth needed)
   - Returns only active jobs with company information (name, logo)
-- **Hero Section Search Integration**: Search from home page redirects to jobs page
-  - Hero search form in home page now functional
-  - Typing search term and clicking "Buscar" redirects to `/vagas?busca=termo`
-  - Search term is automatically applied to jobs page filter
-  - URL parameter preserved for sharing and bookmarking
+- **Real-Time Search Autocomplete in Hero Section**: Live job search with instant results
+  - **Search as you type**: Results appear instantly while typing (no need to press "Buscar")
+  - **Dropdown with top 5 results**: Shows up to 5 matching jobs with company logo, title, location, and work type
+  - **Click to view job**: Clicking any result opens the job details page
+  - **Empty state**: Shows message when no jobs match the search term
+  - **"Ver todas" link**: Button to view all matching jobs on `/vagas` page
+  - **Clear button**: X button to clear search and close dropdown
+  - **Click outside to close**: Dropdown closes when clicking outside
+  - **Smart filtering**: Searches across job title, company name, location, and description
+  - **Fallback button**: "Buscar" button redirects to `/vagas?busca=termo` for full results
 - **Advanced Filter Sidebar**: Comprehensive filtering system
   - **Tipo de Trabalho**: Presencial, Remoto, Híbrido
   - **Tipo de Contrato**: CLT, PJ, Estágio, Temporário
