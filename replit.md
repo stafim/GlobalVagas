@@ -184,6 +184,26 @@ npm run dev  # Starts both frontend and backend
   - Logo clickable to home page
   - Theme toggle and language selection
 
+### November 20, 2025 - Company Dashboard Enhancements
+- **Real-time Dashboard Statistics**: Live data replacing mock statistics
+  - New backend endpoint: GET `/api/companies/dashboard-stats`
+  - Statistics method `getCompanyDashboardStats()` in DatabaseStorage
+  - Active Jobs count (status = 'active')
+  - Total Applications with recent count (last 7 days badge)
+  - Total Jobs count (active + suspended)
+  - Average applications per job calculation
+  - Loading skeletons while fetching data
+- **Recent Jobs Summary Card**: Visual overview of latest job postings
+  - Displays 3 most recent jobs with key information
+  - Each job shows: title, location, creation date, status badge
+  - Click on job card navigates to public job view page (`/vaga/:id`)
+  - Status badges: green "● Ativa" for active, gray "⏸ Suspensa" for suspended
+  - "Ver todas" button in header links to full jobs list
+  - "Ver mais X vagas" button if more than 3 jobs exist
+  - Empty state with "Publicar Primeira Vaga" call-to-action
+  - Skeleton loading animation during data fetch
+  - Hover effects on job cards for better UX
+
 ### November 20, 2025 - Company Presentation Page
 - **Company Profile Enhancement**: Complete redesign of company profile page
   - New "Página de Apresentação" section for companies to showcase themselves to candidates
