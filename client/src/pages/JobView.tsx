@@ -133,7 +133,6 @@ export default function JobView() {
               </AvatarFallback>
             </Avatar>
             <div className="flex-1">
-              <CardTitle className="text-2xl mb-2">{company?.companyName}</CardTitle>
               <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
                 {company?.industry && (
                   <div className="flex items-center gap-1">
