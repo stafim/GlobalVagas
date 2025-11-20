@@ -37,7 +37,7 @@ export default function CompanyProfile() {
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: Partial<Company>) => {
-      const response = await apiRequest("PUT", `/api/companies/${company.id}`, data);
+      const response = await apiRequest("PATCH", "/api/companies/profile", data);
       if (!response.ok) {
         throw new Error("Erro ao atualizar perfil");
       }
@@ -94,7 +94,7 @@ export default function CompanyProfile() {
         const uploadedFile = result.successful[0];
         const bannerURL = uploadedFile.uploadURL;
 
-        const response = await apiRequest("PUT", `/api/companies/${company.id}`, {
+        const response = await apiRequest("PATCH", "/api/companies/profile", {
           bannerUrl: bannerURL,
         });
 
@@ -200,17 +200,11 @@ export default function CompanyProfile() {
                 };
               }}
               onComplete={handleBannerUpload}
+              buttonClassName="gap-2"
               data-testid="uploader-company-banner"
             >
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="gap-2"
-                data-testid="button-upload-banner"
-              >
-                <Camera className="h-4 w-4" />
-                {company?.bannerUrl ? "Trocar Banner" : "Adicionar Banner"}
-              </Button>
+              <Camera className="h-4 w-4" />
+              {company?.bannerUrl ? "Trocar Banner" : "Adicionar Banner"}
             </ObjectUploader>
             <p className="text-xs text-muted-foreground">
               Imagem de capa que aparecerá no topo da sua página. Recomendado: 1200x400px
@@ -324,17 +318,11 @@ export default function CompanyProfile() {
                 };
               }}
               onComplete={handleLogoUpload}
+              buttonClassName="gap-2"
               data-testid="uploader-company-logo"
             >
-              <Button 
-                variant="outline" 
-                size="sm"
-                className="gap-2"
-                data-testid="button-upload-logo"
-              >
-                <Camera className="h-4 w-4" />
-                {company?.logoUrl ? "Trocar Logo" : "Adicionar Logo"}
-              </Button>
+              <Camera className="h-4 w-4" />
+              {company?.logoUrl ? "Trocar Logo" : "Adicionar Logo"}
             </ObjectUploader>
           </div>
 
