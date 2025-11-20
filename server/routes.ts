@@ -1638,6 +1638,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/jobs/:id/status", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const { status } = req.body;
+
+      if (!status || !['active', 'suspended'].includes(status)) {
+        return res.status(400).json({ message: "Status inválido. Use 'active' ou 'suspended'" });
+      }
+
+      const existingJob = await storage.getJob(req.params.id);
+      
+      if (!existingJob) {
+        return res.status(404).json({ message: "Vaga não encontrada" });
+      }
+
+      if (req.session.userType === 'company' && existingJob.companyId !== req.session.userId) {
+        return res.status(403).json({ message: "Você não tem permissão para alterar esta vaga" });
+      }
+
+      if (req.session.userType === 'admin' && existingJob.clientId && existingJob.clientId !== req.session.userId) {
+        return res.status(403).json({ message: "Você não tem permissão para alterar esta vaga" });
+      }
+
+      const updatedJob = await storage.updateJob(req.params.id, { status });
+      return res.status(200).json(updatedJob);
+    } catch (error) {
+      console.error("Error updating job status:", error);
+      return res.status(500).json({ message: "Erro ao atualizar status da vaga" });
+    }
+  });
+
   // Applications endpoints
   app.post("/api/applications", async (req, res) => {
     try {
