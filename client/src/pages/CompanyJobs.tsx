@@ -632,7 +632,7 @@ export default function CompanyJobs() {
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-1">
+                    <p className="text-sm text-muted-foreground line-clamp-2">
                       {job.description}
                     </p>
                   </div>
