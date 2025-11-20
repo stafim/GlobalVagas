@@ -116,6 +116,13 @@ export interface IStorage {
     totalOperators: number;
     totalClients: number;
   }>;
+  
+  getCompanyDashboardStats(companyId: string): Promise<{
+    activeJobs: number;
+    totalJobs: number;
+    totalApplications: number;
+    recentApplications: number;
+  }>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -685,6 +692,44 @@ export class DatabaseStorage implements IStorage {
       totalCompanies: companiesResult?.count || 0,
       totalOperators: operatorsResult?.count || 0,
       totalClients: clientsResult?.count || 0,
+    };
+  }
+  
+  async getCompanyDashboardStats(companyId: string): Promise<{
+    activeJobs: number;
+    totalJobs: number;
+    totalApplications: number;
+    recentApplications: number;
+  }> {
+    // Buscar todos os jobs da empresa
+    const companyJobs = await this.getJobsByCompany(companyId);
+    const totalJobs = companyJobs.length;
+    const activeJobs = companyJobs.filter(job => job.status === 'active').length;
+    
+    // Buscar todas as candidaturas para as vagas da empresa
+    const jobIds = companyJobs.map(job => job.id);
+    let totalApplications = 0;
+    let recentApplications = 0;
+    
+    if (jobIds.length > 0) {
+      for (const jobId of jobIds) {
+        const jobApplications = await this.getApplicationsByJob(jobId);
+        totalApplications += jobApplications.length;
+        
+        // Candidaturas dos últimos 7 dias
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        recentApplications += jobApplications.filter(app => 
+          new Date(app.createdAt) >= sevenDaysAgo
+        ).length;
+      }
+    }
+    
+    return {
+      activeJobs,
+      totalJobs,
+      totalApplications,
+      recentApplications,
     };
   }
 }

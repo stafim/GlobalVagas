@@ -196,6 +196,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/companies/dashboard-stats", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autenticado" });
+      }
+
+      const stats = await storage.getCompanyDashboardStats(req.session.userId);
+      return res.status(200).json(stats);
+    } catch (error: any) {
+      log(`Error getting company dashboard stats: ${error.message}`);
+      return res.status(500).json({ message: "Erro ao buscar estatísticas" });
+    }
+  });
+
   app.patch("/api/companies/profile", async (req, res) => {
     try {
       if (!req.session.userId || req.session.userType !== 'company') {

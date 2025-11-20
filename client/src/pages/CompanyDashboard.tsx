@@ -1,6 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { 
   Building2, 
   Briefcase, 
@@ -12,17 +13,29 @@ import {
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
+
+interface DashboardStats {
+  activeJobs: number;
+  totalJobs: number;
+  totalApplications: number;
+  recentApplications: number;
+}
 
 export default function CompanyDashboard() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
+  const { data: statsData, isLoading } = useQuery<DashboardStats>({
+    queryKey: ['/api/companies/dashboard-stats'],
+  });
+
   const stats = [
     {
       title: "Vagas Ativas",
-      value: "0",
+      value: statsData?.activeJobs?.toString() || "0",
       icon: Briefcase,
-      description: "Nenhuma vaga publicada ainda",
+      description: statsData && statsData.activeJobs > 0 ? `${statsData.totalJobs - statsData.activeJobs} suspensas` : "Nenhuma vaga publicada ainda",
       trend: null,
       gradient: "from-blue-500/10 to-blue-600/10",
       iconColor: "text-blue-600 dark:text-blue-400",
@@ -30,29 +43,29 @@ export default function CompanyDashboard() {
     },
     {
       title: "Candidaturas",
-      value: "0",
+      value: statsData?.totalApplications?.toString() || "0",
       icon: Users,
-      description: "Total de candidaturas recebidas",
-      trend: null,
+      description: statsData && statsData.recentApplications > 0 ? `+${statsData.recentApplications} nos últimos 7 dias` : "Total de candidaturas recebidas",
+      trend: statsData && statsData.recentApplications > 0 ? `+${statsData.recentApplications}` : null,
       gradient: "from-green-500/10 to-green-600/10",
       iconColor: "text-green-600 dark:text-green-400",
       bgIcon: "bg-green-500/10",
     },
     {
-      title: "Visualizações",
-      value: "0",
-      icon: Eye,
-      description: "Visualizações das suas vagas",
+      title: "Total de Vagas",
+      value: statsData?.totalJobs?.toString() || "0",
+      icon: FileText,
+      description: "Vagas publicadas (ativas e suspensas)",
       trend: null,
       gradient: "from-purple-500/10 to-purple-600/10",
       iconColor: "text-purple-600 dark:text-purple-400",
       bgIcon: "bg-purple-500/10",
     },
     {
-      title: "Taxa de Conversão",
-      value: "0%",
+      title: "Média por Vaga",
+      value: statsData && statsData.totalJobs > 0 ? Math.round(statsData.totalApplications / statsData.totalJobs).toString() : "0",
       icon: TrendingUp,
-      description: "Candidaturas por visualização",
+      description: "Candidaturas por vaga em média",
       trend: null,
       gradient: "from-orange-500/10 to-orange-600/10",
       iconColor: "text-orange-600 dark:text-orange-400",
@@ -61,11 +74,30 @@ export default function CompanyDashboard() {
   ];
 
   const handleNewJob = () => {
-    toast({
-      title: "Em desenvolvimento",
-      description: "A funcionalidade de criar vagas estará disponível em breve",
-    });
+    setLocation('/empresa/vagas');
   };
+
+  if (isLoading) {
+    return (
+      <>
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <Card key={i}>
+                  <CardContent className="p-6">
+                    <Skeleton className="h-12 w-12 rounded-xl mb-4" />
+                    <Skeleton className="h-8 w-16 mb-2" />
+                    <Skeleton className="h-4 w-32" />
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        </div>
+      </>
+    );
+  }
 
   return (
     <>
