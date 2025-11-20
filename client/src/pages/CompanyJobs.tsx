@@ -608,11 +608,7 @@ export default function CompanyJobs() {
       ) : filteredJobs.length > 0 ? (
         <div className="space-y-2">
           {filteredJobs.map((job) => (
-            <Card key={job.id} className="hover-elevate border-l-4 transition-all" data-testid={`card-job-${job.id}`}
-              style={{
-                borderLeftColor: job.status === 'active' ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))'
-              }}
-            >
+            <Card key={job.id} className="hover-elevate transition-all" data-testid={`card-job-${job.id}`}>
               <CardContent className="p-4">
                 <div className="flex items-start justify-between gap-3 mb-2">
                   <div className="flex-1 min-w-0">
