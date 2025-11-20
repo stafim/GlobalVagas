@@ -790,8 +790,10 @@ export default function CompanyJobs() {
                         </Badge>
                       )}
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {job.description}
+                    <p className="text-sm text-muted-foreground truncate">
+                      {job.description.length > 20 
+                        ? `${job.description.substring(0, 20)}...` 
+                        : job.description}
                     </p>
                   </div>
                   <Badge
