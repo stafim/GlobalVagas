@@ -630,7 +630,7 @@ export default function CompanyJobs() {
           </CardContent>
         </Card>
       ) : filteredJobs.length > 0 ? (
-        <div className="space-y-2">
+        <div className="space-y-4">
           {filteredJobs.map((job) => (
             <Card key={job.id} className="hover-elevate transition-all" data-testid={`card-job-${job.id}`}>
               <CardContent className="p-4">
