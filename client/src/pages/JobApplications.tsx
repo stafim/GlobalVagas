@@ -18,7 +18,7 @@ import {
   User,
   FileText
 } from "lucide-react";
-import { useLocation } from "wouter";
+import { useLocation, useRoute } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { format } from "date-fns";
@@ -31,8 +31,9 @@ export default function JobApplications() {
   const [, setLocation] = useLocation();
   const [selectedCandidate, setSelectedCandidate] = useState<ApplicationWithOperator | null>(null);
   
-  // Get jobId from URL path
-  const jobId = window.location.pathname.split('/').pop();
+  // Get jobId from URL params
+  const [, params] = useRoute("/empresa/vaga/:id/candidatos");
+  const jobId = params?.id;
 
   const { data: job, isLoading: isLoadingJob } = useQuery<Job>({
     queryKey: ['/api/jobs', jobId],
