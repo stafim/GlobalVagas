@@ -76,17 +76,30 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform d
   - Responsive 4-column grid layout (2 cols on tablet, 4 on desktop)
   - Loading skeletons during data fetch
 
-### November 20, 2025 - Public Jobs Listing Page
+### November 20, 2025 - Public Jobs Listing Page with Advanced Filters
 - **Complete Public Jobs Page**: New page accessible via Header "Vagas" menu at `/vagas`
   - Lists ALL active jobs from ALL companies in the system
   - No authentication required - publicly accessible
   - New backend endpoint: GET `/api/public/jobs` (public, no auth needed)
   - Returns only active jobs with company information (name, logo)
-- **Search and Filter**: Real-time search functionality
-  - Search by job title, company name, location, or description
-  - Live filtering as user types
-  - Results count display
+- **Advanced Filter Sidebar**: Comprehensive filtering system
+  - **Tipo de Trabalho**: Presencial, Remoto, Híbrido
+  - **Tipo de Contrato**: CLT, PJ, Estágio, Temporário
+  - **Localização**: Dynamic list based on available job locations
+  - **Empresa**: Dynamic list based on companies with active jobs
+  - Filter toggle button with active filter count badge
+  - "Limpar" button to clear all filters at once
+  - Sticky positioning for easy access while scrolling
+  - Collapsible sidebar (show/hide filters)
+- **Search and Filter**: Combined search and filter functionality
+  - Real-time text search by job title, company name, location, or description
+  - Multi-criteria filtering (all filters work together)
+  - Results count display updates dynamically
+  - Checkboxes with proper labels for accessibility
 - **Job Cards**: Clean, informative job cards with hover effects and click navigation
-- **Responsive Grid Layout**: 1 column (mobile), 2 columns (tablet), 3 columns (desktop)
+- **Responsive Layout**: 
+  - Sidebar: Full width on mobile, fixed 320px on desktop
+  - Grid: 1 column (mobile), 2 columns (tablet without sidebar), 3 columns (desktop with sidebar collapsed)
+  - Flexible layout adapts when filters are hidden
 - **Empty States**: Handled for no jobs or no search results
 - **Loading States**: Skeleton cards during data fetch

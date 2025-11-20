@@ -1,9 +1,12 @@
 import { useQuery } from "@tanstack/react-query";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Separator } from "@/components/ui/separator";
 import { Header } from "@/components/Header";
 import { 
   MapPin, 
@@ -11,10 +14,12 @@ import {
   Clock,
   DollarSign,
   Search,
-  Building2
+  Building2,
+  Filter,
+  X
 } from "lucide-react";
 import { useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import type { Job } from "@shared/schema";
 
 interface JobWithCompany extends Job {
@@ -22,24 +27,105 @@ interface JobWithCompany extends Job {
   companyLogo?: string;
 }
 
+interface Filters {
+  workTypes: string[];
+  contractTypes: string[];
+  companies: string[];
+  locations: string[];
+}
+
 export default function PublicJobs() {
   const [, setLocation] = useLocation();
   const [searchTerm, setSearchTerm] = useState("");
+  const [showFilters, setShowFilters] = useState(true);
+  const [filters, setFilters] = useState<Filters>({
+    workTypes: [],
+    contractTypes: [],
+    companies: [],
+    locations: [],
+  });
 
   const { data: jobs = [], isLoading } = useQuery<JobWithCompany[]>({
     queryKey: ['/api/public/jobs'],
   });
 
+  // Get unique values for filters
+  const filterOptions = useMemo(() => {
+    const companies = new Set<string>();
+    const locations = new Set<string>();
+    
+    jobs.forEach(job => {
+      if (job.companyName) companies.add(job.companyName);
+      if (job.location) locations.add(job.location);
+    });
+
+    return {
+      companies: Array.from(companies).sort(),
+      locations: Array.from(locations).sort(),
+    };
+  }, [jobs]);
+
   const filteredJobs = jobs.filter(job => {
-    if (!searchTerm) return true;
-    const search = searchTerm.toLowerCase();
-    return (
-      job.title?.toLowerCase().includes(search) ||
-      job.location?.toLowerCase().includes(search) ||
-      job.companyName?.toLowerCase().includes(search) ||
-      job.description?.toLowerCase().includes(search)
-    );
+    // Text search
+    if (searchTerm) {
+      const search = searchTerm.toLowerCase();
+      const matchesSearch = 
+        job.title?.toLowerCase().includes(search) ||
+        job.location?.toLowerCase().includes(search) ||
+        job.companyName?.toLowerCase().includes(search) ||
+        job.description?.toLowerCase().includes(search);
+      
+      if (!matchesSearch) return false;
+    }
+
+    // Work type filter
+    if (filters.workTypes.length > 0 && job.workType) {
+      if (!filters.workTypes.includes(job.workType)) return false;
+    }
+
+    // Contract type filter
+    if (filters.contractTypes.length > 0 && job.contractType) {
+      if (!filters.contractTypes.includes(job.contractType)) return false;
+    }
+
+    // Company filter
+    if (filters.companies.length > 0 && job.companyName) {
+      if (!filters.companies.includes(job.companyName)) return false;
+    }
+
+    // Location filter
+    if (filters.locations.length > 0 && job.location) {
+      if (!filters.locations.includes(job.location)) return false;
+    }
+
+    return true;
   });
+
+  const toggleFilter = (category: keyof Filters, value: string) => {
+    setFilters(prev => {
+      const current = prev[category];
+      const newValues = current.includes(value)
+        ? current.filter(v => v !== value)
+        : [...current, value];
+      
+      return { ...prev, [category]: newValues };
+    });
+  };
+
+  const clearAllFilters = () => {
+    setFilters({
+      workTypes: [],
+      contractTypes: [],
+      companies: [],
+      locations: [],
+    });
+  };
+
+  const hasActiveFilters = 
+    filters.workTypes.length > 0 ||
+    filters.contractTypes.length > 0 ||
+    filters.companies.length > 0 ||
+    filters.locations.length > 0;
 
   const formatSalary = (salary: string | null) => {
     if (!salary) return null;
@@ -78,9 +164,9 @@ export default function PublicJobs() {
             </p>
           </div>
 
-          {/* Search Bar */}
-          <div className="mb-8">
-            <div className="relative max-w-2xl">
+          {/* Search Bar and Filter Toggle */}
+          <div className="mb-8 flex flex-col sm:flex-row gap-4">
+            <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-muted-foreground" />
               <Input
                 placeholder="Buscar por cargo, empresa ou localização..."
@@ -90,22 +176,154 @@ export default function PublicJobs() {
                 data-testid="input-search-jobs"
               />
             </div>
-          </div>
-
-          {/* Results Count */}
-          <div className="mb-6">
-            <p className="text-sm text-muted-foreground">
-              {isLoading ? (
-                <span>Carregando vagas...</span>
-              ) : (
-                <span>
-                  <strong>{filteredJobs.length}</strong> {filteredJobs.length === 1 ? 'vaga encontrada' : 'vagas encontradas'}
-                </span>
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+              className="sm:w-auto h-12"
+              data-testid="button-toggle-filters"
+            >
+              <Filter className="h-5 w-5 mr-2" />
+              {showFilters ? 'Ocultar' : 'Mostrar'} Filtros
+              {hasActiveFilters && (
+                <Badge variant="default" className="ml-2">
+                  {filters.workTypes.length + filters.contractTypes.length + filters.companies.length + filters.locations.length}
+                </Badge>
               )}
-            </p>
+            </Button>
           </div>
 
-          {/* Jobs Grid */}
+          {/* Main Content with Sidebar */}
+          <div className="flex flex-col lg:flex-row gap-6">
+            {/* Sidebar Filters */}
+            {showFilters && (
+              <aside className="lg:w-80 flex-shrink-0">
+                <Card className="sticky top-6">
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                    <CardTitle className="text-lg">Filtros</CardTitle>
+                    {hasActiveFilters && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={clearAllFilters}
+                        data-testid="button-clear-filters"
+                      >
+                        <X className="h-4 w-4 mr-1" />
+                        Limpar
+                      </Button>
+                    )}
+                  </CardHeader>
+                  <CardContent className="space-y-6">
+                    {/* Work Type Filter */}
+                    <div className="space-y-3">
+                      <h3 className="font-semibold text-sm">Tipo de Trabalho</h3>
+                      <div className="space-y-2">
+                        {['presencial', 'remoto', 'hibrido'].map((type) => (
+                          <div key={type} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`work-${type}`}
+                              checked={filters.workTypes.includes(type)}
+                              onCheckedChange={() => toggleFilter('workTypes', type)}
+                              data-testid={`checkbox-work-${type}`}
+                            />
+                            <Label htmlFor={`work-${type}`} className="text-sm cursor-pointer">
+                              {getWorkTypeLabel(type)}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Contract Type Filter */}
+                    <div className="space-y-3">
+                      <h3 className="font-semibold text-sm">Tipo de Contrato</h3>
+                      <div className="space-y-2">
+                        {['clt', 'pj', 'estagio', 'temporario'].map((type) => (
+                          <div key={type} className="flex items-center space-x-2">
+                            <Checkbox
+                              id={`contract-${type}`}
+                              checked={filters.contractTypes.includes(type)}
+                              onCheckedChange={() => toggleFilter('contractTypes', type)}
+                              data-testid={`checkbox-contract-${type}`}
+                            />
+                            <Label htmlFor={`contract-${type}`} className="text-sm cursor-pointer">
+                              {getContractTypeLabel(type)}
+                            </Label>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <Separator />
+
+                    {/* Location Filter */}
+                    {filterOptions.locations.length > 0 && (
+                      <>
+                        <div className="space-y-3">
+                          <h3 className="font-semibold text-sm">Localização</h3>
+                          <div className="space-y-2 max-h-48 overflow-y-auto">
+                            {filterOptions.locations.map((location) => (
+                              <div key={location} className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`location-${location}`}
+                                  checked={filters.locations.includes(location)}
+                                  onCheckedChange={() => toggleFilter('locations', location)}
+                                  data-testid={`checkbox-location-${location}`}
+                                />
+                                <Label htmlFor={`location-${location}`} className="text-sm cursor-pointer">
+                                  {location}
+                                </Label>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                        <Separator />
+                      </>
+                    )}
+
+                    {/* Company Filter */}
+                    {filterOptions.companies.length > 0 && (
+                      <div className="space-y-3">
+                        <h3 className="font-semibold text-sm">Empresa</h3>
+                        <div className="space-y-2 max-h-48 overflow-y-auto">
+                          {filterOptions.companies.map((company) => (
+                            <div key={company} className="flex items-center space-x-2">
+                              <Checkbox
+                                id={`company-${company}`}
+                                checked={filters.companies.includes(company)}
+                                onCheckedChange={() => toggleFilter('companies', company)}
+                                data-testid={`checkbox-company-${company}`}
+                              />
+                              <Label htmlFor={`company-${company}`} className="text-sm cursor-pointer">
+                                {company}
+                              </Label>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </aside>
+            )}
+
+            {/* Main Content */}
+            <div className="flex-1">
+              {/* Results Count */}
+              <div className="mb-6">
+                <p className="text-sm text-muted-foreground">
+                  {isLoading ? (
+                    <span>Carregando vagas...</span>
+                  ) : (
+                    <span>
+                      <strong>{filteredJobs.length}</strong> {filteredJobs.length === 1 ? 'vaga encontrada' : 'vagas encontradas'}
+                    </span>
+                  )}
+                </p>
+              </div>
+
+              {/* Jobs Grid */}
           {isLoading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[1, 2, 3, 4, 5, 6].map((i) => (
@@ -238,6 +456,8 @@ export default function PublicJobs() {
               ))}
             </div>
           )}
+            </div>
+          </div>
         </div>
       </div>
     </>
