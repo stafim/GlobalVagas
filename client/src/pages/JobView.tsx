@@ -109,7 +109,7 @@ export default function JobView() {
       {company?.bannerUrl && (
         <div className="relative rounded-lg overflow-hidden">
           <img 
-            src={company.bannerUrl} 
+            src={`${company.bannerUrl}?t=${Date.now()}`}
             alt={company.companyName}
             className="w-full h-64 object-cover"
           />
