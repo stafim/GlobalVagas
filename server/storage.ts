@@ -1,4 +1,4 @@
-import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication } from "@shared/schema";
+import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, questions, jobQuestions, applicationAnswers, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 
@@ -113,6 +113,22 @@ export interface IStorage {
   checkExistingApplication(jobId: string, operatorId: string): Promise<Application | undefined>;
   createApplication(application: InsertApplication): Promise<Application>;
   updateApplicationStatus(id: string, status: string): Promise<Application>;
+  
+  getQuestion(id: string): Promise<Question | undefined>;
+  getQuestionsByCompany(companyId: string): Promise<Question[]>;
+  getQuestionsByClient(clientId: string): Promise<Question[]>;
+  createQuestion(question: InsertQuestion): Promise<Question>;
+  updateQuestion(id: string, question: Partial<InsertQuestion>): Promise<Question>;
+  deleteQuestion(id: string): Promise<void>;
+  
+  getJobQuestion(id: string): Promise<JobQuestion | undefined>;
+  getJobQuestionsByJob(jobId: string): Promise<Array<JobQuestion & { question: Question }>>;
+  createJobQuestion(jobQuestion: InsertJobQuestion): Promise<JobQuestion>;
+  deleteJobQuestion(id: string): Promise<void>;
+  
+  getApplicationAnswer(id: string): Promise<ApplicationAnswer | undefined>;
+  getApplicationAnswersByApplication(applicationId: string): Promise<Array<ApplicationAnswer & { question: Question }>>;
+  createApplicationAnswer(answer: InsertApplicationAnswer): Promise<ApplicationAnswer>;
   
   getStats(): Promise<{
     totalCompanies: number;
@@ -797,6 +813,108 @@ export class DatabaseStorage implements IStorage {
       totalApplications,
       recentApplications,
     };
+  }
+
+  async getQuestion(id: string): Promise<Question | undefined> {
+    const [question] = await db.select().from(questions).where(eq(questions.id, id));
+    return question || undefined;
+  }
+
+  async getQuestionsByCompany(companyId: string): Promise<Question[]> {
+    return await db.select().from(questions)
+      .where(eq(questions.companyId, companyId))
+      .orderBy(desc(questions.createdAt));
+  }
+
+  async getQuestionsByClient(clientId: string): Promise<Question[]> {
+    return await db.select().from(questions)
+      .where(eq(questions.clientId, clientId))
+      .orderBy(desc(questions.createdAt));
+  }
+
+  async createQuestion(insertQuestion: InsertQuestion): Promise<Question> {
+    const [question] = await db
+      .insert(questions)
+      .values(insertQuestion)
+      .returning();
+    return question;
+  }
+
+  async updateQuestion(id: string, updateData: Partial<InsertQuestion>): Promise<Question> {
+    const [question] = await db
+      .update(questions)
+      .set(updateData)
+      .where(eq(questions.id, id))
+      .returning();
+    return question;
+  }
+
+  async deleteQuestion(id: string): Promise<void> {
+    await db.delete(questions).where(eq(questions.id, id));
+  }
+
+  async getJobQuestion(id: string): Promise<JobQuestion | undefined> {
+    const [jobQuestion] = await db.select().from(jobQuestions).where(eq(jobQuestions.id, id));
+    return jobQuestion || undefined;
+  }
+
+  async getJobQuestionsByJob(jobId: string): Promise<Array<JobQuestion & { question: Question }>> {
+    const results = await db
+      .select({
+        jobQuestion: jobQuestions,
+        question: questions,
+      })
+      .from(jobQuestions)
+      .innerJoin(questions, eq(jobQuestions.questionId, questions.id))
+      .where(eq(jobQuestions.jobId, jobId))
+      .orderBy(jobQuestions.displayOrder);
+
+    return results.map((result) => ({
+      ...result.jobQuestion,
+      question: result.question,
+    }));
+  }
+
+  async createJobQuestion(insertJobQuestion: InsertJobQuestion): Promise<JobQuestion> {
+    const [jobQuestion] = await db
+      .insert(jobQuestions)
+      .values(insertJobQuestion)
+      .returning();
+    return jobQuestion;
+  }
+
+  async deleteJobQuestion(id: string): Promise<void> {
+    await db.delete(jobQuestions).where(eq(jobQuestions.id, id));
+  }
+
+  async getApplicationAnswer(id: string): Promise<ApplicationAnswer | undefined> {
+    const [answer] = await db.select().from(applicationAnswers).where(eq(applicationAnswers.id, id));
+    return answer || undefined;
+  }
+
+  async getApplicationAnswersByApplication(applicationId: string): Promise<Array<ApplicationAnswer & { question: Question }>> {
+    const results = await db
+      .select({
+        answer: applicationAnswers,
+        question: questions,
+      })
+      .from(applicationAnswers)
+      .innerJoin(questions, eq(applicationAnswers.questionId, questions.id))
+      .where(eq(applicationAnswers.applicationId, applicationId))
+      .orderBy(applicationAnswers.createdAt);
+
+    return results.map((result) => ({
+      ...result.answer,
+      question: result.question,
+    }));
+  }
+
+  async createApplicationAnswer(insertAnswer: InsertApplicationAnswer): Promise<ApplicationAnswer> {
+    const [answer] = await db
+      .insert(applicationAnswers)
+      .values(insertAnswer)
+      .returning();
+    return answer;
   }
 }
 

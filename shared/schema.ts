@@ -355,3 +355,62 @@ export const insertApplicationSchema = createInsertSchema(applications).omit({
 
 export type InsertApplication = z.infer<typeof insertApplicationSchema>;
 export type Application = typeof applications.$inferSelect;
+
+export const questions = pgTable("questions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyId: varchar("company_id").references(() => companies.id, { onDelete: 'cascade' }),
+  clientId: varchar("client_id").references(() => clients.id, { onDelete: 'cascade' }),
+  questionText: text("question_text").notNull(),
+  questionType: text("question_type").notNull(),
+  options: text("options"),
+  isActive: text("is_active").notNull().default('true'),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({
+  companyIdIdx: index("questions_company_id_idx").on(table.companyId),
+  clientIdIdx: index("questions_client_id_idx").on(table.clientId),
+}));
+
+export const insertQuestionSchema = createInsertSchema(questions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertQuestion = z.infer<typeof insertQuestionSchema>;
+export type Question = typeof questions.$inferSelect;
+
+export const jobQuestions = pgTable("job_questions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  jobId: varchar("job_id").notNull().references(() => jobs.id, { onDelete: 'cascade' }),
+  questionId: varchar("question_id").notNull().references(() => questions.id, { onDelete: 'cascade' }),
+  isRequired: text("is_required").notNull().default('false'),
+  displayOrder: text("display_order"),
+}, (table) => ({
+  jobIdIdx: index("job_questions_job_id_idx").on(table.jobId),
+  questionIdIdx: index("job_questions_question_id_idx").on(table.questionId),
+}));
+
+export const insertJobQuestionSchema = createInsertSchema(jobQuestions).omit({
+  id: true,
+});
+
+export type InsertJobQuestion = z.infer<typeof insertJobQuestionSchema>;
+export type JobQuestion = typeof jobQuestions.$inferSelect;
+
+export const applicationAnswers = pgTable("application_answers", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  applicationId: varchar("application_id").notNull().references(() => applications.id, { onDelete: 'cascade' }),
+  questionId: varchar("question_id").notNull().references(() => questions.id, { onDelete: 'cascade' }),
+  answerText: text("answer_text"),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({
+  applicationIdIdx: index("application_answers_application_id_idx").on(table.applicationId),
+  questionIdIdx: index("application_answers_question_id_idx").on(table.questionId),
+}));
+
+export const insertApplicationAnswerSchema = createInsertSchema(applicationAnswers).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertApplicationAnswer = z.infer<typeof insertApplicationAnswerSchema>;
+export type ApplicationAnswer = typeof applicationAnswers.$inferSelect;
