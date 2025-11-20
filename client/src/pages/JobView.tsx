@@ -107,10 +107,10 @@ export default function JobView() {
   return (
     <>
       <Header />
-      <div className="w-full">
+      <div className="w-full pt-16">
         {/* Banner da empresa */}
         {company?.bannerUrl && (
-          <div className="relative w-full overflow-hidden">
+          <div className="relative w-full overflow-hidden -mt-16">
             <img 
               src={`${company.bannerUrl}?t=${Date.now()}`}
               alt={company.companyName}
