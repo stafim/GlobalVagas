@@ -1,4 +1,4 @@
-import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob } from "@shared/schema";
+import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 
@@ -103,6 +103,13 @@ export interface IStorage {
   createJob(job: InsertJob): Promise<Job>;
   updateJob(id: string, job: Partial<InsertJob>): Promise<Job>;
   deleteJob(id: string): Promise<void>;
+  
+  getApplication(id: string): Promise<Application | undefined>;
+  getApplicationsByJob(jobId: string): Promise<Application[]>;
+  getApplicationsByOperator(operatorId: string): Promise<Application[]>;
+  checkExistingApplication(jobId: string, operatorId: string): Promise<Application | undefined>;
+  createApplication(application: InsertApplication): Promise<Application>;
+  updateApplicationStatus(id: string, status: string): Promise<Application>;
   
   getStats(): Promise<{
     totalCompanies: number;
@@ -623,6 +630,46 @@ export class DatabaseStorage implements IStorage {
 
   async deleteJob(id: string): Promise<void> {
     await db.delete(jobs).where(eq(jobs.id, id));
+  }
+
+  async getApplication(id: string): Promise<Application | undefined> {
+    const [application] = await db.select().from(applications).where(eq(applications.id, id));
+    return application || undefined;
+  }
+
+  async getApplicationsByJob(jobId: string): Promise<Application[]> {
+    return await db.select().from(applications).where(eq(applications.jobId, jobId));
+  }
+
+  async getApplicationsByOperator(operatorId: string): Promise<Application[]> {
+    return await db.select().from(applications).where(eq(applications.operatorId, operatorId)).orderBy(desc(applications.appliedAt));
+  }
+
+  async checkExistingApplication(jobId: string, operatorId: string): Promise<Application | undefined> {
+    const [application] = await db.select().from(applications).where(
+      and(
+        eq(applications.jobId, jobId),
+        eq(applications.operatorId, operatorId)
+      )
+    );
+    return application || undefined;
+  }
+
+  async createApplication(insertApplication: InsertApplication): Promise<Application> {
+    const [application] = await db
+      .insert(applications)
+      .values(insertApplication)
+      .returning();
+    return application;
+  }
+
+  async updateApplicationStatus(id: string, status: string): Promise<Application> {
+    const [application] = await db
+      .update(applications)
+      .set({ status })
+      .where(eq(applications.id, id))
+      .returning();
+    return application;
   }
 
   async getStats(): Promise<{
