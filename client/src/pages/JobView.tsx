@@ -104,21 +104,22 @@ export default function JobView() {
   const { job, company } = jobQuery.data;
 
   return (
-    <div className="max-w-5xl mx-auto p-6 space-y-6">
+    <div className="w-full">
       {/* Banner da empresa */}
       {company?.bannerUrl && (
-        <div className="relative rounded-lg overflow-hidden">
+        <div className="relative w-full overflow-hidden">
           <img 
             src={`${company.bannerUrl}?t=${Date.now()}`}
             alt={company.companyName}
-            className="w-full h-64 object-cover"
+            className="w-full h-80 object-cover"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
         </div>
       )}
 
-      {/* Perfil da Empresa */}
-      <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
+      <div className="max-w-7xl mx-auto px-6 py-6 space-y-6">
+        {/* Perfil da Empresa */}
+        <Card className="bg-gradient-to-br from-primary/5 to-primary/10 border-primary/20">
         <CardHeader>
           <div className="flex items-start gap-4">
             <Avatar className="h-24 w-24">
@@ -341,6 +342,7 @@ export default function JobView() {
           </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 }
