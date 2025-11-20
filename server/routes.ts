@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertCompanySchema, insertOperatorSchema, insertAdminSchema, insertPlanSchema, insertClientSchema, insertSectorSchema, insertSubsectorSchema, insertEventSchema, insertBannerSchema, insertJobSchema } from "@shared/schema";
+import { insertCompanySchema, insertOperatorSchema, insertAdminSchema, insertPlanSchema, insertClientSchema, insertSectorSchema, insertSubsectorSchema, insertEventSchema, insertBannerSchema, insertJobSchema, insertQuestionSchema, insertJobQuestionSchema, insertApplicationAnswerSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { EmailService } from "./emailService";
@@ -1879,6 +1879,229 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error getting visit stats:", error);
       return res.status(500).json({ message: "Erro ao buscar estatísticas" });
+    }
+  });
+
+  // Questions endpoints
+  app.get("/api/company/questions", async (req, res) => {
+    try {
+      if (!req.session.userId || (req.session.userType !== 'company' && req.session.userType !== 'admin')) {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      let questions;
+      if (req.session.userType === 'company') {
+        questions = await storage.getQuestionsByCompany(req.session.userId);
+      } else {
+        questions = await storage.getQuestionsByClient(req.session.userId);
+      }
+
+      return res.status(200).json(questions);
+    } catch (error) {
+      console.error("Error fetching questions:", error);
+      return res.status(500).json({ message: "Erro ao buscar perguntas" });
+    }
+  });
+
+  app.post("/api/company/questions", async (req, res) => {
+    try {
+      if (!req.session.userId || (req.session.userType !== 'company' && req.session.userType !== 'admin')) {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const result = insertQuestionSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: fromZodError(result.error).message 
+        });
+      }
+
+      let questionData = result.data;
+      if (req.session.userType === 'company') {
+        questionData = { ...questionData, companyId: req.session.userId, clientId: null };
+      } else {
+        questionData = { ...questionData, clientId: req.session.userId, companyId: null };
+      }
+
+      const question = await storage.createQuestion(questionData);
+      return res.status(201).json(question);
+    } catch (error) {
+      console.error("Error creating question:", error);
+      return res.status(500).json({ message: "Erro ao criar pergunta" });
+    }
+  });
+
+  app.patch("/api/company/questions/:id", async (req, res) => {
+    try {
+      if (!req.session.userId || (req.session.userType !== 'company' && req.session.userType !== 'admin')) {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const existingQuestion = await storage.getQuestion(req.params.id);
+      if (!existingQuestion) {
+        return res.status(404).json({ message: "Pergunta não encontrada" });
+      }
+
+      if (req.session.userType === 'company' && existingQuestion.companyId !== req.session.userId) {
+        return res.status(403).json({ message: "Você não tem permissão para editar esta pergunta" });
+      }
+
+      if (req.session.userType === 'admin' && existingQuestion.clientId !== req.session.userId) {
+        return res.status(403).json({ message: "Você não tem permissão para editar esta pergunta" });
+      }
+
+      const question = await storage.updateQuestion(req.params.id, req.body);
+      return res.status(200).json(question);
+    } catch (error) {
+      console.error("Error updating question:", error);
+      return res.status(500).json({ message: "Erro ao atualizar pergunta" });
+    }
+  });
+
+  app.delete("/api/company/questions/:id", async (req, res) => {
+    try {
+      if (!req.session.userId || (req.session.userType !== 'company' && req.session.userType !== 'admin')) {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const existingQuestion = await storage.getQuestion(req.params.id);
+      if (!existingQuestion) {
+        return res.status(404).json({ message: "Pergunta não encontrada" });
+      }
+
+      if (req.session.userType === 'company' && existingQuestion.companyId !== req.session.userId) {
+        return res.status(403).json({ message: "Você não tem permissão para deletar esta pergunta" });
+      }
+
+      if (req.session.userType === 'admin' && existingQuestion.clientId !== req.session.userId) {
+        return res.status(403).json({ message: "Você não tem permissão para deletar esta pergunta" });
+      }
+
+      await storage.deleteQuestion(req.params.id);
+      return res.status(200).json({ message: "Pergunta deletada com sucesso" });
+    } catch (error) {
+      console.error("Error deleting question:", error);
+      return res.status(500).json({ message: "Erro ao deletar pergunta" });
+    }
+  });
+
+  // Job Questions endpoints
+  app.get("/api/jobs/:jobId/questions", async (req, res) => {
+    try {
+      const jobQuestions = await storage.getJobQuestionsByJob(req.params.jobId);
+      return res.status(200).json(jobQuestions);
+    } catch (error) {
+      console.error("Error fetching job questions:", error);
+      return res.status(500).json({ message: "Erro ao buscar perguntas da vaga" });
+    }
+  });
+
+  app.post("/api/jobs/:jobId/questions", async (req, res) => {
+    try {
+      if (!req.session.userId || (req.session.userType !== 'company' && req.session.userType !== 'admin')) {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const job = await storage.getJob(req.params.jobId);
+      if (!job) {
+        return res.status(404).json({ message: "Vaga não encontrada" });
+      }
+
+      if (req.session.userType === 'company' && job.companyId !== req.session.userId) {
+        return res.status(403).json({ message: "Você não tem permissão para adicionar perguntas a esta vaga" });
+      }
+
+      if (req.session.userType === 'admin' && job.clientId !== req.session.userId) {
+        return res.status(403).json({ message: "Você não tem permissão para adicionar perguntas a esta vaga" });
+      }
+
+      const result = insertJobQuestionSchema.safeParse({
+        ...req.body,
+        jobId: req.params.jobId,
+      });
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: fromZodError(result.error).message 
+        });
+      }
+
+      const jobQuestion = await storage.createJobQuestion(result.data);
+      return res.status(201).json(jobQuestion);
+    } catch (error) {
+      console.error("Error creating job question:", error);
+      return res.status(500).json({ message: "Erro ao adicionar pergunta à vaga" });
+    }
+  });
+
+  app.delete("/api/job-questions/:id", async (req, res) => {
+    try {
+      if (!req.session.userId || (req.session.userType !== 'company' && req.session.userType !== 'admin')) {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const jobQuestion = await storage.getJobQuestion(req.params.id);
+      if (!jobQuestion) {
+        return res.status(404).json({ message: "Associação não encontrada" });
+      }
+
+      await storage.deleteJobQuestion(req.params.id);
+      return res.status(200).json({ message: "Pergunta removida da vaga com sucesso" });
+    } catch (error) {
+      console.error("Error deleting job question:", error);
+      return res.status(500).json({ message: "Erro ao remover pergunta da vaga" });
+    }
+  });
+
+  // Application Answers endpoints
+  app.get("/api/applications/:applicationId/answers", async (req, res) => {
+    try {
+      if (!req.session.userId || (req.session.userType !== 'company' && req.session.userType !== 'admin' && req.session.userType !== 'operator')) {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const answers = await storage.getApplicationAnswersByApplication(req.params.applicationId);
+      return res.status(200).json(answers);
+    } catch (error) {
+      console.error("Error fetching application answers:", error);
+      return res.status(500).json({ message: "Erro ao buscar respostas" });
+    }
+  });
+
+  app.post("/api/applications/:applicationId/answers", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'operator') {
+        return res.status(401).json({ message: "Apenas operadores podem enviar respostas" });
+      }
+
+      const { answers } = req.body;
+
+      if (!Array.isArray(answers)) {
+        return res.status(400).json({ message: "Respostas devem ser um array" });
+      }
+
+      const createdAnswers = [];
+      for (const answer of answers) {
+        const result = insertApplicationAnswerSchema.safeParse({
+          ...answer,
+          applicationId: req.params.applicationId,
+        });
+        
+        if (!result.success) {
+          return res.status(400).json({ 
+            message: fromZodError(result.error).message 
+          });
+        }
+
+        const createdAnswer = await storage.createApplicationAnswer(result.data);
+        createdAnswers.push(createdAnswer);
+      }
+
+      return res.status(201).json(createdAnswers);
+    } catch (error) {
+      console.error("Error creating application answers:", error);
+      return res.status(500).json({ message: "Erro ao salvar respostas" });
     }
   });
 
