@@ -138,6 +138,22 @@ npm run dev  # Starts both frontend and backend
   - Responsive layout for all screen sizes
   - Professional card-based design with hover effects
 
+### November 20, 2025 - Company Presentation Page
+- **Company Profile Enhancement**: Complete redesign of company profile page
+  - New "Página de Apresentação" section for companies to showcase themselves to candidates
+  - **Banner Upload**: Companies can upload a presentation banner (1200x400px recommended)
+  - **About Section**: Detailed company description, history, and presence in the market
+  - **Mission Section**: Company's mission and objectives
+  - **Culture & Values Section**: Company culture, benefits, work environment, and growth opportunities
+  - Schema updated: Added `about`, `mission`, `culture`, `bannerUrl` fields to companies table
+  - Fully functional edit mode with form validation
+  - Separate sections for presentation content vs. basic company info
+  - Inspired by professional job boards like Greenhouse
+- **UI Improvements**:
+  - Removed split-screen design from login page (now centered single-column form)
+  - Removed colored left border from job cards (cleaner flat design)
+  - Company Plan page showing purchased plans with status badges
+
 ### November 17, 2025 - Financial Dashboard & Branding Updates
 - **Complete Financial Reports System**: Implemented comprehensive sales analytics dashboard
   - Real-time statistics cards: Total Revenue, Total Sales, Active Sales, Active Clients
