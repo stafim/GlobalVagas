@@ -108,6 +108,7 @@ export interface IStorage {
   
   getApplication(id: string): Promise<Application | undefined>;
   getApplicationsByJob(jobId: string): Promise<Application[]>;
+  getApplicationsWithOperatorByJob(jobId: string): Promise<Array<Application & { operator: Operator }>>;
   getApplicationsByOperator(operatorId: string): Promise<Application[]>;
   checkExistingApplication(jobId: string, operatorId: string): Promise<Application | undefined>;
   createApplication(application: InsertApplication): Promise<Application>;
@@ -696,6 +697,23 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(applications).where(eq(applications.jobId, jobId));
   }
 
+  async getApplicationsWithOperatorByJob(jobId: string): Promise<Array<Application & { operator: Operator }>> {
+    const results = await db
+      .select({
+        application: applications,
+        operator: operators,
+      })
+      .from(applications)
+      .innerJoin(operators, eq(applications.operatorId, operators.id))
+      .where(eq(applications.jobId, jobId))
+      .orderBy(desc(applications.appliedAt));
+
+    return results.map((result) => ({
+      ...result.application,
+      operator: result.operator,
+    }));
+  }
+
   async getApplicationsByOperator(operatorId: string): Promise<Application[]> {
     return await db.select().from(applications).where(eq(applications.operatorId, operatorId)).orderBy(desc(applications.appliedAt));
   }
@@ -768,7 +786,7 @@ export class DatabaseStorage implements IStorage {
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
         recentApplications += jobApplications.filter(app => 
-          new Date(app.createdAt) >= sevenDaysAgo
+          new Date(app.appliedAt) >= sevenDaysAgo
         ).length;
       }
     }

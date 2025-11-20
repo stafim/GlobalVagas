@@ -1765,6 +1765,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/jobs/:jobId/applications", async (req, res) => {
+    try {
+      if (!req.session.userId || (req.session.userType !== 'company' && req.session.userType !== 'admin')) {
+        return res.status(401).json({ message: "Apenas empresas podem ver candidatos" });
+      }
+
+      const jobId = req.params.jobId;
+      
+      // Verify the job belongs to the company (unless admin)
+      if (req.session.userType === 'company') {
+        const job = await storage.getJob(jobId);
+        if (!job) {
+          return res.status(404).json({ message: "Vaga não encontrada" });
+        }
+        if (job.companyId !== req.session.userId && job.clientId !== req.session.userId) {
+          return res.status(403).json({ message: "Você não tem permissão para ver candidatos desta vaga" });
+        }
+      }
+
+      const applicationsWithOperators = await storage.getApplicationsWithOperatorByJob(jobId);
+      return res.status(200).json(applicationsWithOperators);
+    } catch (error) {
+      console.error("Error fetching job applications:", error);
+      return res.status(500).json({ message: "Erro ao buscar candidatos" });
+    }
+  });
+
   app.get("/api/companies/my-purchases", async (req, res) => {
     try {
       if (!req.session.userId) {
