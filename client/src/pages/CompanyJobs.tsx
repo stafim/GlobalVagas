@@ -847,19 +847,16 @@ export default function CompanyJobs() {
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        toast({
-                          title: "Em desenvolvimento",
-                          description: "Sistema de candidaturas em breve!",
-                        });
-                      }}
-                      data-testid={`button-candidates-${job.id}`}
-                    >
-                      <UserCheck className="h-4 w-4" />
-                    </Button>
+                    <Link href={`/empresa/vaga/${job.id}/candidatos`}>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        title="Ver candidatos"
+                        data-testid={`button-candidates-${job.id}`}
+                      >
+                        <UserCheck className="h-4 w-4" />
+                      </Button>
+                    </Link>
                     <Button
                       size="sm"
                       variant="ghost"
