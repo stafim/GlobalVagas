@@ -9,9 +9,10 @@ import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Briefcase, Plus, Search, MapPin, Clock, DollarSign, Users, ChevronRight, ChevronLeft, Building2, Check, ChevronsUpDown, Eye, Trash2, UserCheck } from "lucide-react";
+import { Briefcase, Plus, Search, MapPin, Clock, DollarSign, Users, ChevronRight, ChevronLeft, Building2, Check, ChevronsUpDown, Eye, Trash2, UserCheck, ExternalLink } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -663,6 +664,16 @@ export default function CompanyJobs() {
                   </div>
 
                   <div className="flex items-center gap-1.5">
+                    <Link href={`/vaga/${job.id}`}>
+                      <Button
+                        size="sm"
+                        variant="default"
+                        data-testid={`button-view-job-page-${job.id}`}
+                      >
+                        <ExternalLink className="h-4 w-4 mr-1.5" />
+                        Visualizar Vaga
+                      </Button>
+                    </Link>
                     <Button
                       size="sm"
                       variant="ghost"
@@ -670,7 +681,7 @@ export default function CompanyJobs() {
                         setSelectedJob(job);
                         setDetailsOpen(true);
                       }}
-                      data-testid={`button-view-job-${job.id}`}
+                      data-testid={`button-view-details-${job.id}`}
                     >
                       <Eye className="h-4 w-4" />
                     </Button>

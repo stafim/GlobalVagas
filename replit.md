@@ -129,6 +129,7 @@ npm run dev  # Starts both frontend and backend
   - Statistics cards: Active Jobs, Total Jobs, Closed Jobs
   - Job listing with search functionality
   - Job cards displaying key information (location, work type, contract, salary, status)
+  - "Visualizar Vaga" button on each job card that navigates to the public job page
   - Empty state with call-to-action for first job
   - Fully integrated with company sidebar navigation at `/empresa/vagas`
 - **User Experience Enhancements**:
