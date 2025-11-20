@@ -29,6 +29,10 @@ export const companies = pgTable("companies", {
   industry: text("industry"),
   size: text("size"),
   logoUrl: text("logo_url"),
+  about: text("about"),
+  mission: text("mission"),
+  culture: text("culture"),
+  bannerUrl: text("banner_url"),
 }, (table) => ({
   emailIdx: index("companies_email_idx").on(table.email),
   cnpjIdx: index("companies_cnpj_idx").on(table.cnpj),
