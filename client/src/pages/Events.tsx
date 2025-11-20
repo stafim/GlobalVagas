@@ -223,10 +223,23 @@ export default function Events() {
                   {event.coverImageUrl && (
                     <div 
                       className="h-48 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
-                      onClick={() => setSelectedImage(event.coverImageUrl!.startsWith('/objects') ? event.coverImageUrl! : `/objects${event.coverImageUrl}`)}
+                      onClick={() => {
+                        const imgSrc = event.coverImageUrl!.startsWith('/objects') 
+                          ? event.coverImageUrl! 
+                          : event.coverImageUrl!.startsWith('attached_assets')
+                          ? `/${event.coverImageUrl}`
+                          : `/objects${event.coverImageUrl}`;
+                        setSelectedImage(imgSrc);
+                      }}
                     >
                       <img 
-                        src={event.coverImageUrl.startsWith('/objects') ? event.coverImageUrl : `/objects${event.coverImageUrl}`}
+                        src={
+                          event.coverImageUrl.startsWith('/objects') 
+                            ? event.coverImageUrl 
+                            : event.coverImageUrl.startsWith('attached_assets')
+                            ? `/${event.coverImageUrl}`
+                            : `/objects${event.coverImageUrl}`
+                        }
                         alt={event.title}
                         className="w-full h-full object-cover"
                       />
@@ -349,10 +362,23 @@ export default function Events() {
               {selectedEvent.coverImageUrl && (
                 <div 
                   className="w-full h-64 overflow-hidden rounded-md cursor-pointer hover:opacity-90 transition-opacity"
-                  onClick={() => setSelectedImage(selectedEvent.coverImageUrl!.startsWith('/objects') ? selectedEvent.coverImageUrl! : `/objects${selectedEvent.coverImageUrl}`)}
+                  onClick={() => {
+                    const imgSrc = selectedEvent.coverImageUrl!.startsWith('/objects') 
+                      ? selectedEvent.coverImageUrl! 
+                      : selectedEvent.coverImageUrl!.startsWith('attached_assets')
+                      ? `/${selectedEvent.coverImageUrl}`
+                      : `/objects${selectedEvent.coverImageUrl}`;
+                    setSelectedImage(imgSrc);
+                  }}
                 >
                   <img 
-                    src={selectedEvent.coverImageUrl.startsWith('/objects') ? selectedEvent.coverImageUrl : `/objects${selectedEvent.coverImageUrl}`}
+                    src={
+                      selectedEvent.coverImageUrl.startsWith('/objects') 
+                        ? selectedEvent.coverImageUrl 
+                        : selectedEvent.coverImageUrl.startsWith('attached_assets')
+                        ? `/${selectedEvent.coverImageUrl}`
+                        : `/objects${selectedEvent.coverImageUrl}`
+                    }
                     alt={selectedEvent.title}
                     className="w-full h-full object-cover"
                   />

@@ -135,3 +135,13 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform d
   - Flexible layout adapts when filters are hidden
 - **Empty States**: Handled for no jobs or no search results
 - **Loading States**: Skeleton cards during data fetch
+
+### November 20, 2025 - Mining and Heavy Machinery Events
+- **5 New Trade Shows and Workshops**: Created mining and heavy machinery related events with AI-generated images
+  - **Expo Mineração & Tecnologia 2025** (Belo Horizonte/MG, Mar 15-18, 2025): Largest mining equipment trade show in Latin America, featuring excavators, off-road trucks, drilling rigs, and automation systems
+  - **Workshop: Operação Segura de Equipamentos Pesados** (Itabira/MG, Feb 20-21, 2025): 2-day intensive hands-on training for heavy equipment operation with certified instructors
+  - **Congresso Internacional de Mineração** (São Paulo/SP, Apr 10-13, 2025): International mining congress focusing on sustainability, technological innovation, and operational safety
+  - **Feira de Tecnologia para Mineração Subterrânea** (São Paulo/SP, May 22-24, 2025): Specialized underground mining technology fair with drilling rigs, transport vehicles, and automation systems
+  - **Expo Máquinas Pesadas & Construção** (Rio de Janeiro/RJ, Jun 5-8, 2025): Free large-scale construction and mining equipment expo with bulldozers, loaders, and articulated trucks
+  - All events include: detailed descriptions, pricing (R$150-890 or free), capacity (30-10,000 attendees), organizer contact information, and professional cover images
+  - High-quality AI-generated cover images featuring: exhibition halls, heavy machinery displays, training sessions, industrial equipment, and professional event settings
