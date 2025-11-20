@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Briefcase, Plus, Search, MapPin, Clock, DollarSign, Users, ChevronRight, ChevronLeft, Building2, Check, ChevronsUpDown, Eye, Trash2, UserCheck, ExternalLink, Pause, Play } from "lucide-react";
+import { Briefcase, Plus, Search, MapPin, Clock, DollarSign, Users, ChevronRight, ChevronLeft, Building2, Check, ChevronsUpDown, Eye, Trash2, UserCheck, ExternalLink, Pause, Play, Filter, X } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
@@ -36,6 +36,11 @@ type JobFormValues = z.infer<typeof jobFormSchema>;
 export default function CompanyJobs() {
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
+  const [locationFilter, setLocationFilter] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(1);
   const [locationOpen, setLocationOpen] = useState(false);
@@ -171,41 +176,101 @@ export default function CompanyJobs() {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
-  const filteredJobs = jobs.filter((job) =>
-    job.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const clearFilters = () => {
+    setSearchTerm("");
+    setLocationFilter("");
+    setStatusFilter("all");
+    setDateFrom("");
+    setDateTo("");
+  };
+
+  const hasActiveFilters = searchTerm || locationFilter || statusFilter !== "all" || dateFrom || dateTo;
+
+  const filteredJobs = jobs.filter((job) => {
+    // Filtro por nome da vaga
+    if (searchTerm && !job.title.toLowerCase().includes(searchTerm.toLowerCase())) {
+      return false;
+    }
+
+    // Filtro por localização
+    if (locationFilter && !job.location.toLowerCase().includes(locationFilter.toLowerCase())) {
+      return false;
+    }
+
+    // Filtro por status
+    if (statusFilter !== "all" && job.status !== statusFilter) {
+      return false;
+    }
+
+    // Filtro por data de criação
+    if (dateFrom) {
+      const jobDate = new Date(job.createdAt);
+      const fromDate = new Date(dateFrom);
+      if (jobDate < fromDate) {
+        return false;
+      }
+    }
+
+    if (dateTo) {
+      const jobDate = new Date(job.createdAt);
+      const toDate = new Date(dateTo);
+      toDate.setHours(23, 59, 59, 999); // Incluir o dia inteiro
+      if (jobDate > toDate) {
+        return false;
+      }
+    }
+
+    return true;
+  });
 
   const activeJobs = jobs.filter((job) => job.status === 'active').length;
   const suspendedJobs = jobs.filter((job) => job.status === 'suspended').length;
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-        <div className="relative flex-1 max-w-md">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar vagas..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-10"
-            data-testid="input-search-jobs"
-          />
-        </div>
-        
-        <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-          <DialogTrigger asChild>
-            <Button size="lg" onClick={() => setCurrentStep(1)} className="shadow-lg" data-testid="button-new-job">
-              <Plus className="h-5 w-5 mr-2" />
-              Nova Vaga
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nome da vaga..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10"
+              data-testid="input-search-jobs"
+            />
+          </div>
+          
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              size="default"
+              onClick={() => setShowFilters(!showFilters)}
+              data-testid="button-toggle-filters"
+            >
+              <Filter className="h-4 w-4 mr-2" />
+              Filtros
+              {hasActiveFilters && (
+                <span className="ml-2 bg-primary text-primary-foreground rounded-full w-5 h-5 flex items-center justify-center text-xs">
+                  !
+                </span>
+              )}
             </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Criar Nova Vaga</DialogTitle>
-              <DialogDescription>
-                Preencha as informações da vaga em {currentStep} de 3 etapas
-              </DialogDescription>
-            </DialogHeader>
+            
+            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+              <DialogTrigger asChild>
+                <Button size="lg" onClick={() => setCurrentStep(1)} className="shadow-lg" data-testid="button-new-job">
+                  <Plus className="h-5 w-5 mr-2" />
+                  Nova Vaga
+                </Button>
+              </DialogTrigger>
+              <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                  <DialogTitle>Criar Nova Vaga</DialogTitle>
+                  <DialogDescription>
+                    Preencha as informações da vaga em {currentStep} de 3 etapas
+                  </DialogDescription>
+                </DialogHeader>
 
             <div className="flex items-center justify-between mb-6">
               {[1, 2, 3].map((step) => (
@@ -574,6 +639,76 @@ export default function CompanyJobs() {
             </Form>
           </DialogContent>
         </Dialog>
+          </div>
+        </div>
+
+        {/* Painel de Filtros Expandido */}
+        {showFilters && (
+          <Card className="p-4">
+            <div className="grid gap-4 md:grid-cols-3">
+              <div>
+                <label className="text-sm font-medium mb-2 block">Localização</label>
+                <Input
+                  placeholder="Ex: São Paulo, SP"
+                  value={locationFilter}
+                  onChange={(e) => setLocationFilter(e.target.value)}
+                  data-testid="input-filter-location"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">Status</label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger data-testid="select-filter-status">
+                    <SelectValue placeholder="Todos" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas</SelectItem>
+                    <SelectItem value="active">Ativas</SelectItem>
+                    <SelectItem value="suspended">Suspensas</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <label className="text-sm font-medium mb-2 block">Data de Criação</label>
+                <div className="flex gap-2">
+                  <Input
+                    type="date"
+                    placeholder="De"
+                    value={dateFrom}
+                    onChange={(e) => setDateFrom(e.target.value)}
+                    data-testid="input-filter-date-from"
+                  />
+                  <Input
+                    type="date"
+                    placeholder="Até"
+                    value={dateTo}
+                    onChange={(e) => setDateTo(e.target.value)}
+                    data-testid="input-filter-date-to"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {hasActiveFilters && (
+              <div className="mt-4 pt-4 border-t flex justify-between items-center">
+                <p className="text-sm text-muted-foreground">
+                  {filteredJobs.length} {filteredJobs.length === 1 ? 'vaga encontrada' : 'vagas encontradas'}
+                </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearFilters}
+                  data-testid="button-clear-filters"
+                >
+                  <X className="h-4 w-4 mr-2" />
+                  Limpar Filtros
+                </Button>
+              </div>
+            )}
+          </Card>
+        )}
       </div>
 
       <div className="grid gap-4 md:grid-cols-3 mb-6">
