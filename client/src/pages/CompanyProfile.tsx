@@ -94,8 +94,8 @@ export default function CompanyProfile() {
         const uploadedFile = result.successful[0];
         const bannerURL = uploadedFile.uploadURL;
 
-        const response = await apiRequest("PATCH", "/api/companies/profile", {
-          bannerUrl: bannerURL,
+        const response = await apiRequest("PUT", "/api/companies/banner", {
+          bannerURL: bannerURL,
         });
 
         if (response.ok) {

@@ -867,6 +867,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.put("/api/companies/banner", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autenticado" });
+      }
+
+      if (!req.body.bannerURL) {
+        return res.status(400).json({ message: "bannerURL é obrigatório" });
+      }
+
+      const objectStorageService = new ObjectStorageService();
+      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+        req.body.bannerURL,
+        {
+          owner: req.session.userId,
+          visibility: "public",
+        }
+      );
+
+      await storage.updateCompany(req.session.userId, { bannerUrl: objectPath });
+
+      res.status(200).json({ objectPath });
+    } catch (error) {
+      console.error("Error setting company banner:", error);
+      res.status(500).json({ message: "Erro ao atualizar banner da empresa" });
+    }
+  });
+
   app.get("/objects/:objectPath(*)", async (req, res) => {
     const objectStorageService = new ObjectStorageService();
     try {
