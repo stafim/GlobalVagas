@@ -153,7 +153,7 @@ export default function CompanyJobs() {
   );
 
   const activeJobs = jobs.filter((job) => job.status === 'active').length;
-  const closedJobs = jobs.filter((job) => job.status === 'closed').length;
+  const suspendedJobs = jobs.filter((job) => job.status === 'suspended').length;
 
   return (
     <div className="space-y-6">
@@ -587,14 +587,14 @@ export default function CompanyJobs() {
         <Card>
           <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">
-              Vagas Fechadas
+              Vagas Suspensas
             </CardTitle>
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold" data-testid="text-closed-jobs">{closedJobs}</div>
+            <div className="text-2xl font-bold" data-testid="text-suspended-jobs">{suspendedJobs}</div>
             <p className="text-xs text-muted-foreground mt-1">
-              Vagas finalizadas
+              Temporariamente pausadas
             </p>
           </CardContent>
         </Card>
@@ -641,11 +641,11 @@ export default function CompanyJobs() {
                       "shrink-0 text-xs",
                       job.status === 'active'
                         ? 'bg-green-500/15 text-green-700 border-green-500/30 dark:text-green-400'
-                        : 'bg-gray-500/15 text-gray-700 border-gray-500/30 dark:text-gray-400'
+                        : 'bg-orange-500/15 text-orange-700 border-orange-500/30 dark:text-orange-400'
                     )}
                     variant="outline"
                   >
-                    {job.status === 'active' ? '● Ativa' : '○ Fechada'}
+                    {job.status === 'active' ? '● Ativa' : '⏸ Suspensa'}
                   </Badge>
                 </div>
 
@@ -772,10 +772,10 @@ export default function CompanyJobs() {
                   className={
                     selectedJob.status === 'active'
                       ? 'bg-green-500/10 text-green-700 dark:text-green-400'
-                      : 'bg-gray-500/10 text-gray-700 dark:text-gray-400'
+                      : 'bg-orange-500/10 text-orange-700 dark:text-orange-400'
                   }
                 >
-                  {selectedJob.status === 'active' ? 'Ativa' : 'Fechada'}
+                  {selectedJob.status === 'active' ? 'Ativa' : 'Suspensa'}
                 </Badge>
               </div>
 
