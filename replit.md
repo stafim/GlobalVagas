@@ -160,6 +160,30 @@ npm run dev  # Starts both frontend and backend
   - `createApplication`, `getApplication`, `getApplicationsByJob`, `getApplicationsByOperator`
   - `checkExistingApplication`, `updateApplicationStatus`
 
+### November 20, 2025 - Job Status Management System
+- **Dual Status System for Jobs**: Vagas now have two distinct statuses
+  - **Ativa (Active)**: Jobs visible to operators, accepting applications
+  - **Suspensa (Suspended)**: Jobs temporarily paused, not visible/accepting applications
+  - Status badge displayed with appropriate colors (green for Active, orange for Suspended)
+- **Company Job Management**: Enhanced control panel at `/empresa/vagas`
+  - Statistics updated: "Active Jobs", "Total Jobs", "Suspended Jobs" (replaced "Closed Jobs")
+  - Toggle button (Play/Pause icon) on each job card to switch between Active/Suspended
+  - Visual indicators: ● for Active, ⏸ for Suspended
+  - Two-line description truncation with `line-clamp-2` for cleaner card display
+- **Public Job View Protection**: `/vaga/:id` page enforces status rules
+  - Suspended jobs display warning badge and message
+  - Application button disabled for suspended jobs with explanatory text
+  - Clear messaging: "Esta vaga foi temporariamente pausada pela empresa"
+- **Backend Implementation**:
+  - New endpoint: PATCH `/api/jobs/:id/status` - Update job status
+  - Validation: Only accepts 'active' or 'suspended' values
+  - Permission checks: Companies can only manage their own jobs
+  - Status field indexed in database for efficient queries
+- **Header Navigation**: Added standard site header to JobView page
+  - Consistent navigation (Vagas, Feiras e Eventos, Admin, Login/User menu)
+  - Logo clickable to home page
+  - Theme toggle and language selection
+
 ### November 20, 2025 - Company Presentation Page
 - **Company Profile Enhancement**: Complete redesign of company profile page
   - New "Página de Apresentação" section for companies to showcase themselves to candidates
