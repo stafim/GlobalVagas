@@ -29,6 +29,7 @@ import AdminBanners from "@/pages/AdminBanners";
 import AdminSettings from "@/pages/AdminSettings";
 import AdminFinanceiro from "@/pages/AdminFinanceiro";
 import Events from "@/pages/Events";
+import JobView from "@/pages/JobView";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -45,6 +46,7 @@ function Router() {
       <Route path="/empresa/perfil" component={CompanyProfile} />
       <Route path="/dashboard/operador" component={OperatorDashboard} />
       <Route path="/perfil/operador" component={OperatorProfile} />
+      <Route path="/vaga/:id" component={JobView} />
       <Route path="/eventos" component={Events} />
       <Route path="/usuarios" component={UsersList} />
       <Route path="/admin/login" component={AdminLogin} />
