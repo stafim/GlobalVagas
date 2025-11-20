@@ -1,3 +1,4 @@
+import { Header } from "@/components/Header";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -137,8 +138,11 @@ export default function CompanyProfile() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-end">
+    <>
+      <Header />
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="space-y-6">
+          <div className="flex justify-end">
         {!isEditing ? (
           <Button onClick={() => setIsEditing(true)} data-testid="button-edit-profile">
             Editar Perfil
@@ -447,6 +451,8 @@ export default function CompanyProfile() {
           </div>
         </CardContent>
       </Card>
-    </div>
+        </div>
+      </div>
+    </>
   );
 }

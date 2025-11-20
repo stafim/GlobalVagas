@@ -1,3 +1,4 @@
+import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useQuery } from "@tanstack/react-query";
@@ -35,8 +36,11 @@ export default function CompanyPlan() {
 
   if (isLoading) {
     return (
-      <div className="space-y-6">
-        <div className="grid gap-4 md:grid-cols-3">
+      <>
+        <Header />
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="space-y-6">
+            <div className="grid gap-4 md:grid-cols-3">
           {[1, 2, 3].map((i) => (
             <Card key={i}>
               <CardHeader>
@@ -48,14 +52,19 @@ export default function CompanyPlan() {
               </CardContent>
             </Card>
           ))}
+            </div>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   if (purchases.length === 0) {
     return (
-      <Card>
+      <>
+        <Header />
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <Card>
         <CardContent className="flex flex-col items-center justify-center py-16 text-center">
           <div className="bg-muted rounded-full p-6 mb-4">
             <CreditCard className="h-12 w-12 text-muted-foreground" />
@@ -68,11 +77,16 @@ export default function CompanyPlan() {
           </p>
         </CardContent>
       </Card>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <>
+      <Header />
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="space-y-6">
       {/* Estatísticas */}
       <div className="grid gap-4 md:grid-cols-3">
         <Card className="bg-gradient-to-br from-green-500/10 to-green-600/10 border-none">
@@ -229,6 +243,8 @@ export default function CompanyPlan() {
           </div>
         </div>
       )}
-    </div>
+        </div>
+      </div>
+    </>
   );
 }

@@ -1,3 +1,4 @@
+import { Header } from "@/components/Header";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -227,8 +228,11 @@ export default function CompanyJobs() {
   const suspendedJobs = jobs.filter((job) => job.status === 'suspended').length;
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4">
+    <>
+      <Header />
+      <div className="max-w-7xl mx-auto px-6 py-6">
+        <div className="space-y-6">
+          <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
@@ -1046,6 +1050,8 @@ export default function CompanyJobs() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+        </div>
+      </div>
+    </>
   );
 }
