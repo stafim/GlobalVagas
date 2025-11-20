@@ -1504,7 +1504,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Vaga não encontrada" });
       }
 
-      return res.status(200).json(job);
+      // Get company information
+      let company = null;
+      if (job.companyId) {
+        company = await storage.getCompany(job.companyId);
+        if (company) {
+          // Remove sensitive data
+          const { password: _, ...companyWithoutPassword } = company;
+          company = companyWithoutPassword as any;
+        }
+      }
+
+      return res.status(200).json({ job, company });
     } catch (error) {
       console.error("Error getting job:", error);
       return res.status(500).json({ message: "Erro ao buscar vaga" });
@@ -1596,6 +1607,58 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error deleting job:", error);
       return res.status(500).json({ message: "Erro ao deletar vaga" });
+    }
+  });
+
+  // Applications endpoints
+  app.post("/api/applications", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'operator') {
+        return res.status(401).json({ message: "Apenas operadores podem se candidatar a vagas" });
+      }
+
+      const { jobId } = req.body;
+
+      if (!jobId) {
+        return res.status(400).json({ message: "jobId é obrigatório" });
+      }
+
+      // Check if job exists
+      const job = await storage.getJob(jobId);
+      if (!job) {
+        return res.status(404).json({ message: "Vaga não encontrada" });
+      }
+
+      // Check if already applied
+      const existingApplication = await storage.checkExistingApplication(jobId, req.session.userId);
+      if (existingApplication) {
+        return res.status(400).json({ message: "Você já se candidatou a esta vaga" });
+      }
+
+      const application = await storage.createApplication({
+        jobId,
+        operatorId: req.session.userId,
+        status: 'pending',
+      });
+
+      return res.status(201).json(application);
+    } catch (error) {
+      console.error("Error creating application:", error);
+      return res.status(500).json({ message: "Erro ao se candidatar à vaga" });
+    }
+  });
+
+  app.get("/api/applications/check/:jobId", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'operator') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const application = await storage.checkExistingApplication(req.params.jobId, req.session.userId);
+      return res.status(200).json({ hasApplied: !!application });
+    } catch (error) {
+      console.error("Error checking application:", error);
+      return res.status(500).json({ message: "Erro ao verificar candidatura" });
     }
   });
 
