@@ -248,13 +248,35 @@ export default function JobView() {
                     {job.salary}
                   </Badge>
                 )}
+                {job.status === 'suspended' && (
+                  <Badge 
+                    variant="outline" 
+                    className="bg-orange-500/15 text-orange-700 border-orange-500/30 dark:text-orange-400"
+                  >
+                    ⏸ Vaga Suspensa
+                  </Badge>
+                )}
               </div>
             </div>
           </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Botão de Aplicar */}
-          {hasApplied ? (
+          {job.status === 'suspended' ? (
+            <div className="space-y-2">
+              <Button 
+                size="default" 
+                disabled
+                variant="secondary"
+                data-testid="button-job-suspended"
+              >
+                ⏸ Vaga Suspensa - Não aceita candidaturas
+              </Button>
+              <p className="text-xs text-muted-foreground">
+                Esta vaga foi temporariamente pausada pela empresa e não está aceitando novas candidaturas no momento.
+              </p>
+            </div>
+          ) : hasApplied ? (
             <Button 
               size="default" 
               disabled
