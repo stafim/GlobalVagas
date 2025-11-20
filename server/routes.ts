@@ -1805,6 +1805,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public endpoint - track visit to home page
+  app.post("/api/track-visit", async (req, res) => {
+    try {
+      const totalVisits = await storage.incrementVisitCounter();
+      return res.status(200).json({ totalVisits });
+    } catch (error) {
+      console.error("Error tracking visit:", error);
+      return res.status(500).json({ message: "Erro ao registrar visita" });
+    }
+  });
+
+  // Admin endpoint - get visit statistics
+  app.get("/api/admin/visit-stats", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const stats = await storage.getVisitStats();
+      return res.status(200).json(stats);
+    } catch (error) {
+      console.error("Error getting visit stats:", error);
+      return res.status(500).json({ message: "Erro ao buscar estatísticas" });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

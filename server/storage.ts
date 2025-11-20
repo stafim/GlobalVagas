@@ -94,6 +94,8 @@ export interface IStorage {
   getSetting(key: string): Promise<Setting | undefined>;
   getAllSettings(): Promise<Setting[]>;
   upsertSetting(setting: InsertSetting): Promise<Setting>;
+  incrementVisitCounter(): Promise<number>;
+  getVisitStats(): Promise<{ totalVisits: number; todayVisits: number }>;
   
   getJob(id: string): Promise<Job | undefined>;
   getAllJobs(): Promise<Job[]>;
@@ -595,6 +597,52 @@ export class DatabaseStorage implements IStorage {
         .returning();
       return created;
     }
+  }
+
+  async incrementVisitCounter(): Promise<number> {
+    const today = new Date().toISOString().split('T')[0];
+    
+    // Get current counters
+    const totalSetting = await this.getSetting('visit_counter_total');
+    const todaySetting = await this.getSetting('visit_counter_today');
+    const dateSetting = await this.getSetting('visit_counter_date');
+    
+    const currentTotal = totalSetting ? parseInt(totalSetting.value) : 0;
+    const currentToday = todaySetting ? parseInt(todaySetting.value) : 0;
+    const lastDate = dateSetting?.value || '';
+    
+    // Increment total
+    const newTotal = currentTotal + 1;
+    await this.upsertSetting({ key: 'visit_counter_total', value: newTotal.toString() });
+    
+    // Reset today counter if date changed
+    if (lastDate !== today) {
+      await this.upsertSetting({ key: 'visit_counter_today', value: '1' });
+      await this.upsertSetting({ key: 'visit_counter_date', value: today });
+    } else {
+      const newToday = currentToday + 1;
+      await this.upsertSetting({ key: 'visit_counter_today', value: newToday.toString() });
+    }
+    
+    return newTotal;
+  }
+
+  async getVisitStats(): Promise<{ totalVisits: number; todayVisits: number }> {
+    const today = new Date().toISOString().split('T')[0];
+    
+    const totalSetting = await this.getSetting('visit_counter_total');
+    const todaySetting = await this.getSetting('visit_counter_today');
+    const dateSetting = await this.getSetting('visit_counter_date');
+    
+    const totalVisits = totalSetting ? parseInt(totalSetting.value) : 0;
+    let todayVisits = 0;
+    
+    // Only count today's visits if the date matches
+    if (dateSetting?.value === today && todaySetting) {
+      todayVisits = parseInt(todaySetting.value);
+    }
+    
+    return { totalVisits, todayVisits };
   }
 
   async getJob(id: string): Promise<Job | undefined> {

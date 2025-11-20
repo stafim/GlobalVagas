@@ -5,7 +5,8 @@ import { FilterSidebar } from "@/components/FilterSidebar";
 import { JobCard, type JobCardProps } from "@/components/JobCard";
 import { CategorySection } from "@/components/CategorySection";
 import { Footer } from "@/components/Footer";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { apiRequest } from "@/lib/queryClient";
 import techLogo from "@assets/generated_images/Tech_company_logo_placeholder_52258a35.png";
 import healthLogo from "@assets/generated_images/Healthcare_company_logo_placeholder_59b2d215.png";
 import financeLogo from "@assets/generated_images/Finance_company_logo_placeholder_e438b06d.png";
@@ -13,6 +14,19 @@ import retailLogo from "@assets/generated_images/Retail_company_logo_placeholder
 
 export default function Home() {
   const [language, setLanguage] = useState("PT");
+
+  useEffect(() => {
+    // Track visit to home page
+    const trackVisit = async () => {
+      try {
+        await apiRequest("POST", "/api/track-visit", {});
+      } catch (error) {
+        // Silently fail - don't interrupt user experience
+        console.log("Visit tracking failed:", error);
+      }
+    };
+    trackVisit();
+  }, []);
 
   const handleLanguageToggle = () => {
     setLanguage(language === "PT" ? "EN" : "PT");

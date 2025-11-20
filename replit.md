@@ -52,3 +52,41 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform d
 - **Drizzle ORM**: TypeScript ORM for database interaction.
 - **express-session**: Session management middleware for Express.
 - **Recharts**: For data visualization in the financial dashboard.
+## Recent Changes
+
+### November 20, 2025 - Visit Counter System
+- **Automatic Visit Tracking**: Counts every visit to the home page
+  - New backend methods in DatabaseStorage:
+    - `incrementVisitCounter()` - Increments total and daily counters
+    - `getVisitStats()` - Returns total and today's visit statistics
+  - Uses `settings` table to store counter data:
+    - `visit_counter_total` - Total visits all-time
+    - `visit_counter_today` - Visits today (resets daily)
+    - `visit_counter_date` - Date of today's counter
+- **Backend Endpoints**:
+  - POST `/api/track-visit` - Public endpoint, increments counter when called
+  - GET `/api/admin/visit-stats` - Admin-only endpoint, returns statistics
+- **Frontend Integration**:
+  - Home page (`Home.tsx`) automatically tracks visits on load using `useEffect`
+  - Silent tracking - doesn't interrupt user experience on failure
+- **Admin Dashboard Display**:
+  - New "Visitas ao Site" card showing total visits
+  - Shows today's visits as secondary metric ("X hoje")
+  - Eye icon for visual clarity
+  - Responsive 4-column grid layout (2 cols on tablet, 4 on desktop)
+  - Loading skeletons during data fetch
+
+### November 20, 2025 - Public Jobs Listing Page
+- **Complete Public Jobs Page**: New page accessible via Header "Vagas" menu at `/vagas`
+  - Lists ALL active jobs from ALL companies in the system
+  - No authentication required - publicly accessible
+  - New backend endpoint: GET `/api/public/jobs` (public, no auth needed)
+  - Returns only active jobs with company information (name, logo)
+- **Search and Filter**: Real-time search functionality
+  - Search by job title, company name, location, or description
+  - Live filtering as user types
+  - Results count display
+- **Job Cards**: Clean, informative job cards with hover effects and click navigation
+- **Responsive Grid Layout**: 1 column (mobile), 2 columns (tablet), 3 columns (desktop)
+- **Empty States**: Handled for no jobs or no search results
+- **Loading States**: Skeleton cards during data fetch

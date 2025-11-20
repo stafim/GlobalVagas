@@ -3,7 +3,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { Building2, HardHat, Users } from "lucide-react";
+import { Building2, HardHat, Users, Eye } from "lucide-react";
 import type { Company, Operator } from "@shared/schema";
 
 export default function AdminDashboard() {
@@ -19,9 +19,18 @@ export default function AdminDashboard() {
     retry: false,
   });
 
+  const { data: visitStats, isLoading: isLoadingVisits } = useQuery<{
+    totalVisits: number;
+    todayVisits: number;
+  }>({
+    queryKey: ['/api/admin/visit-stats'],
+    enabled: userType === 'admin',
+    retry: false,
+  });
+
   return (
     <div className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-3 mb-8">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -73,6 +82,31 @@ export default function AdminDashboard() {
                   data?.total.operators || 0
                 )}
               </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between gap-3 space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">
+                Visitas ao Site
+              </CardTitle>
+              <Eye className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold" data-testid="text-total-visits">
+                {isLoadingVisits ? (
+                  <Skeleton className="h-8 w-16" />
+                ) : (
+                  visitStats?.totalVisits || 0
+                )}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {isLoadingVisits ? (
+                  <Skeleton className="h-4 w-24" />
+                ) : (
+                  `${visitStats?.todayVisits || 0} hoje`
+                )}
+              </p>
             </CardContent>
           </Card>
         </div>
