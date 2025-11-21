@@ -2405,6 +2405,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Credits endpoints
+  app.get("/api/company/credits", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const balance = await storage.getCompanyCredits(req.session.userId);
+      return res.status(200).json({ balance });
+    } catch (error) {
+      console.error("Error fetching company credits:", error);
+      return res.status(500).json({ message: "Erro ao buscar créditos" });
+    }
+  });
+
+  app.get("/api/company/credit-transactions", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const transactions = await storage.getCreditTransactionsByCompany(req.session.userId);
+      return res.status(200).json(transactions);
+    } catch (error) {
+      console.error("Error fetching credit transactions:", error);
+      return res.status(500).json({ message: "Erro ao buscar transações" });
+    }
+  });
+
+  app.post("/api/company/credits/add", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const { amount, description, relatedPlanId } = req.body;
+
+      if (!amount || amount <= 0) {
+        return res.status(400).json({ message: "Valor inválido" });
+      }
+
+      if (!description) {
+        return res.status(400).json({ message: "Descrição é obrigatória" });
+      }
+
+      const transaction = await storage.addCreditsToCompany(
+        req.session.userId,
+        Number(amount),
+        description,
+        relatedPlanId
+      );
+
+      return res.status(201).json(transaction);
+    } catch (error) {
+      console.error("Error adding credits:", error);
+      return res.status(500).json({ message: "Erro ao adicionar créditos" });
+    }
+  });
+
   // Job Questions endpoints
   app.get("/api/jobs/:jobId/questions", async (req, res) => {
     try {

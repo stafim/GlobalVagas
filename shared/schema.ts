@@ -33,6 +33,7 @@ export const companies = pgTable("companies", {
   mission: text("mission"),
   culture: text("culture"),
   bannerUrl: text("banner_url"),
+  credits: text("credits").notNull().default('0'),
 }, (table) => ({
   emailIdx: index("companies_email_idx").on(table.email),
   cnpjIdx: index("companies_cnpj_idx").on(table.cnpj),
@@ -494,3 +495,27 @@ export const insertPasswordResetCodeSchema = createInsertSchema(passwordResetCod
 
 export type InsertPasswordResetCode = z.infer<typeof insertPasswordResetCodeSchema>;
 export type PasswordResetCode = typeof passwordResetCodes.$inferSelect;
+
+export const creditTransactions = pgTable("credit_transactions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyId: varchar("company_id").notNull().references(() => companies.id, { onDelete: 'cascade' }),
+  type: text("type").notNull(),
+  amount: text("amount").notNull(),
+  description: text("description").notNull(),
+  relatedPlanId: varchar("related_plan_id").references(() => plans.id),
+  relatedJobId: varchar("related_job_id").references(() => jobs.id),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  balanceAfter: text("balance_after").notNull(),
+}, (table) => ({
+  companyIdIdx: index("credit_transactions_company_id_idx").on(table.companyId),
+  createdAtIdx: index("credit_transactions_created_at_idx").on(table.createdAt),
+  typeIdx: index("credit_transactions_type_idx").on(table.type),
+}));
+
+export const insertCreditTransactionSchema = createInsertSchema(creditTransactions).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertCreditTransaction = z.infer<typeof insertCreditTransactionSchema>;
+export type CreditTransaction = typeof creditTransactions.$inferSelect;

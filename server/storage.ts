@@ -1,4 +1,4 @@
-import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, savedJobs, questions, jobQuestions, applicationAnswers, siteVisits, newsletterSubscriptions, passwordResetCodes, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type SavedJob, type InsertSavedJob, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit, type NewsletterSubscription, type InsertNewsletterSubscription, type PasswordResetCode, type InsertPasswordResetCode } from "@shared/schema";
+import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, savedJobs, questions, jobQuestions, applicationAnswers, siteVisits, newsletterSubscriptions, passwordResetCodes, creditTransactions, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type SavedJob, type InsertSavedJob, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit, type NewsletterSubscription, type InsertNewsletterSubscription, type PasswordResetCode, type InsertPasswordResetCode, type CreditTransaction, type InsertCreditTransaction } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, not, like, sql } from "drizzle-orm";
 
@@ -161,6 +161,12 @@ export interface IStorage {
     totalApplications: number;
     recentApplications: number;
   }>;
+  
+  getCreditTransactionsByCompany(companyId: string): Promise<CreditTransaction[]>;
+  createCreditTransaction(transaction: InsertCreditTransaction): Promise<CreditTransaction>;
+  getCompanyCredits(companyId: string): Promise<number>;
+  addCreditsToCompany(companyId: string, amount: number, description: string, relatedPlanId?: string): Promise<CreditTransaction>;
+  deductCreditsFromCompany(companyId: string, amount: number, description: string, relatedJobId?: string): Promise<CreditTransaction>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1093,6 +1099,87 @@ export class DatabaseStorage implements IStorage {
     await db
       .delete(passwordResetCodes)
       .where(lte(passwordResetCodes.expiresAt, now));
+  }
+
+  async getCreditTransactionsByCompany(companyId: string): Promise<CreditTransaction[]> {
+    return await db
+      .select()
+      .from(creditTransactions)
+      .where(eq(creditTransactions.companyId, companyId))
+      .orderBy(desc(creditTransactions.createdAt));
+  }
+
+  async createCreditTransaction(transaction: InsertCreditTransaction): Promise<CreditTransaction> {
+    const [newTransaction] = await db
+      .insert(creditTransactions)
+      .values(transaction)
+      .returning();
+    return newTransaction;
+  }
+
+  async getCompanyCredits(companyId: string): Promise<number> {
+    const [company] = await db
+      .select()
+      .from(companies)
+      .where(eq(companies.id, companyId));
+    return company ? parseInt(company.credits) : 0;
+  }
+
+  async addCreditsToCompany(
+    companyId: string,
+    amount: number,
+    description: string,
+    relatedPlanId?: string
+  ): Promise<CreditTransaction> {
+    const currentCredits = await this.getCompanyCredits(companyId);
+    const newBalance = currentCredits + amount;
+
+    await db
+      .update(companies)
+      .set({ credits: newBalance.toString() })
+      .where(eq(companies.id, companyId));
+
+    const transaction = await this.createCreditTransaction({
+      companyId,
+      type: 'credit',
+      amount: amount.toString(),
+      description,
+      relatedPlanId,
+      balanceAfter: newBalance.toString(),
+    });
+
+    return transaction;
+  }
+
+  async deductCreditsFromCompany(
+    companyId: string,
+    amount: number,
+    description: string,
+    relatedJobId?: string
+  ): Promise<CreditTransaction> {
+    const currentCredits = await this.getCompanyCredits(companyId);
+    
+    if (currentCredits < amount) {
+      throw new Error('Créditos insuficientes');
+    }
+
+    const newBalance = currentCredits - amount;
+
+    await db
+      .update(companies)
+      .set({ credits: newBalance.toString() })
+      .where(eq(companies.id, companyId));
+
+    const transaction = await this.createCreditTransaction({
+      companyId,
+      type: 'debit',
+      amount: amount.toString(),
+      description,
+      relatedJobId,
+      balanceAfter: newBalance.toString(),
+    });
+
+    return transaction;
   }
 }
 
