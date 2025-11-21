@@ -108,7 +108,7 @@ export default function CompanyJobs() {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => window.location.href = '/empresa/creditos'}
+              onClick={() => window.location.href = '/empresa/plano'}
               data-testid="button-buy-credits-toast"
             >
               Comprar Créditos
@@ -1211,7 +1211,7 @@ export default function CompanyJobs() {
               <AlertDialogAction
                 onClick={() => {
                   setCreditsDialogOpen(false);
-                  window.location.href = '/empresa/creditos';
+                  window.location.href = '/empresa/plano';
                 }}
                 data-testid="button-buy-credits"
               >
