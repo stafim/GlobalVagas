@@ -519,3 +519,41 @@ export const insertCreditTransactionSchema = createInsertSchema(creditTransactio
 
 export type InsertCreditTransaction = z.infer<typeof insertCreditTransactionSchema>;
 export type CreditTransaction = typeof creditTransactions.$inferSelect;
+
+export const workTypes = pgTable("work_types", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyId: varchar("company_id").notNull().references(() => companies.id, { onDelete: 'cascade' }),
+  name: text("name").notNull(),
+  description: text("description"),
+  isActive: text("is_active").notNull().default('true'),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({
+  companyIdIdx: index("work_types_company_id_idx").on(table.companyId),
+}));
+
+export const insertWorkTypeSchema = createInsertSchema(workTypes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertWorkType = z.infer<typeof insertWorkTypeSchema>;
+export type WorkType = typeof workTypes.$inferSelect;
+
+export const contractTypes = pgTable("contract_types", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyId: varchar("company_id").notNull().references(() => companies.id, { onDelete: 'cascade' }),
+  name: text("name").notNull(),
+  description: text("description"),
+  isActive: text("is_active").notNull().default('true'),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({
+  companyIdIdx: index("contract_types_company_id_idx").on(table.companyId),
+}));
+
+export const insertContractTypeSchema = createInsertSchema(contractTypes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertContractType = z.infer<typeof insertContractTypeSchema>;
+export type ContractType = typeof contractTypes.$inferSelect;
