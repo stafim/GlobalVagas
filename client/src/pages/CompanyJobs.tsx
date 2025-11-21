@@ -33,6 +33,7 @@ const jobFormSchema = insertJobSchema.extend({
 });
 
 type JobFormValues = z.infer<typeof jobFormSchema>;
+type JobWithApplicationCount = Job & { applicationCount?: number };
 
 export default function CompanyJobs() {
   const { toast } = useToast();
@@ -51,7 +52,7 @@ export default function CompanyJobs() {
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
 
-  const { data: jobs = [], isLoading } = useQuery<Job[]>({
+  const { data: jobs = [], isLoading } = useQuery<JobWithApplicationCount[]>({
     queryKey: ['/api/jobs'],
   });
 
@@ -903,6 +904,10 @@ export default function CompanyJobs() {
                         {job.vacancies} {job.vacancies === '1' ? 'vaga' : 'vagas'}
                       </span>
                     )}
+                    <span className="flex items-center gap-1">
+                      <UserCheck className="h-3 w-3" />
+                      {job.applicationCount || 0} {job.applicationCount === 1 ? 'candidatura' : 'candidaturas'}
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-1.5">

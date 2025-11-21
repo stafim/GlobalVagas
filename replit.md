@@ -50,3 +50,63 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 - **express-session**: Session management.
 - **Recharts**: For data visualization.
 - **cookie-parser**: Express middleware for cookie handling.
+
+## Recent Changes
+
+### November 21, 2025 - Application Count Display in Job Cards
+- **Enhanced Job Cards**: Added application count display to each job card in CompanyJobs page
+  - Shows total number of candidates who applied to each job
+  - Format: "X candidatura" or "X candidaturas" (singular/plural)
+  - Displayed alongside job creation date and vacancy count
+  - Uses UserCheck icon for visual consistency
+  - Backend optimization: GET `/api/jobs` now includes `applicationCount` for each job
+- **Backend Enhancement**:
+  - Modified GET `/api/jobs` endpoint to enrich job data with application counts
+  - Uses `getApplicationsByJob()` to fetch count for each job
+  - Returns `JobWithApplicationCount` type with optional applicationCount field
+- **Frontend Updates**:
+  - Created `JobWithApplicationCount` type extending Job with applicationCount
+  - Updated CompanyJobs query to use the new type
+  - Added display in job card footer with icon and count
+  - Proper singular/plural handling for Portuguese text
+
+### November 21, 2025 - Complete Questionnaire System Integration
+- **4-Step Job Creation Wizard**: Upgraded from 3 to 4 steps, adding question selection as final step
+  - **Step 1**: Basic job information (title, location, salary, etc.)
+  - **Step 2**: Detailed job description
+  - **Step 3**: Job requirements and qualifications
+  - **Step 4 (NEW)**: Select questions from company question bank for job questionnaire
+  - Questions are optional - companies can skip this step if no questionnaire is needed
+  - Display order is automatically assigned based on selection order
+- **Job Application with Questionnaire Dialog**: Dynamic questionnaire system for operators
+  - When applying to jobs with questions, operators see a dialog with all selected questions
+  - Supports all 3 question types: text (short answer), textarea (long answer), multiple_choice (dropdown)
+  - Operators must fill out questionnaire before final application submission
+  - Application and answers saved together in a single transaction
+  - If job has no questions, standard "Candidatar-se" flow without dialog
+- **Candidate Answers Display**: Companies can view operator responses in candidate details
+  - **New Section in JobApplications Modal**: "Respostas do Questionário" section
+  - Displays each question with corresponding operator answer
+  - Shows question number, question text, and operator's response
+  - Empty state when job has no questions or operator hasn't answered
+  - Clean card-based layout with subtle background for easy reading
+- **Backend Enhancements**:
+  - GET `/api/jobs/:jobId/questions` - Returns clean Question[] array (extracts from JobQuestion relations)
+  - POST `/api/jobs/:jobId/questions` - Accepts questionIds array for bulk association with auto display_order
+  - POST `/api/applications` - Saves both application AND answers in single request
+  - GET `/api/applications/:applicationId/answers` - Returns ApplicationAnswer & { question: Question }[]
+- **Storage Methods**:
+  - `getJobQuestionsByJob(jobId)` - Returns JobQuestion & { question: Question }[]
+  - `getApplicationAnswersByApplication(applicationId)` - Returns answers with full question data
+  - All methods use proper JOINs to efficiently fetch related data
+- **Data Flow**:
+  1. Company creates/selects questions in CompanyQuestions page
+  2. Company selects questions during job creation (Step 4)
+  3. Operator views questions in dialog when applying to job
+  4. Operator answers are saved with application
+  5. Company views answers in candidate details modal
+- **Integration Points**:
+  - CompanyJobs.tsx: 4-step wizard with question selection
+  - JobView.tsx: Questionnaire dialog for operators
+  - JobApplications.tsx: Answers display in candidate modal
+  - All pages properly typed with shared schema types

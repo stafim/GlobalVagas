@@ -1558,7 +1558,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Acesso negado" });
       }
 
-      return res.status(200).json(jobs);
+      // Enrich jobs with application count
+      const jobsWithApplicationCount = await Promise.all(
+        jobs.map(async (job) => {
+          const applications = await storage.getApplicationsByJob(job.id);
+          return {
+            ...job,
+            applicationCount: applications.length,
+          };
+        })
+      );
+
+      return res.status(200).json(jobsWithApplicationCount);
     } catch (error) {
       console.error("Error getting jobs:", error);
       return res.status(500).json({ message: "Erro ao buscar vagas" });
