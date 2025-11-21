@@ -57,6 +57,23 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform d
 
 ## Recent Changes
 
+### November 21, 2025 - Reorganized Company Sidebar Navigation
+- **Improved Menu Structure**: Reorganized company sidebar for better organization and clarity
+  - Removed collapsible "Configurações" menu
+  - Created three distinct sections with visual labels:
+    - **Menu Principal** (unlabeled): Dashboard, Minhas Vagas, Meu Plano, Meus Créditos, Perfil da Empresa
+    - **Questionários** (labeled): Banco de Perguntas
+    - **Cadastros Básicos** (labeled): Tipos de Trabalho, Tipos de Contrato
+- **Better Visual Hierarchy**: 
+  - Section labels with uppercase, tracked spacing, and muted color
+  - Clear separation between groups with spacing (mt-6)
+  - All items at same level - no nested menus
+  - Cleaner, more professional appearance
+- **Purpose**: Makes it easier to find and access different sections of company management
+  - Separates main navigation from configuration options
+  - Groups related functionality together logically
+  - Improves user experience with clearer information architecture
+
 ### November 21, 2025 - Company Configuration CRUDs: Work Types & Contract Types
 - **New Configuration Management**: Created two new CRUD systems for company settings
   - **Tipos de Trabalho (Work Types)**: Manage work schedule types (Full-time, Part-time, etc.)
