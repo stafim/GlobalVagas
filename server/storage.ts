@@ -1,4 +1,4 @@
-import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, questions, jobQuestions, applicationAnswers, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer } from "@shared/schema";
+import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, questions, jobQuestions, applicationAnswers, siteVisits, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte } from "drizzle-orm";
 
@@ -96,6 +96,10 @@ export interface IStorage {
   upsertSetting(setting: InsertSetting): Promise<Setting>;
   incrementVisitCounter(): Promise<number>;
   getVisitStats(): Promise<{ totalVisits: number; todayVisits: number }>;
+  
+  createSiteVisit(visit: InsertSiteVisit): Promise<SiteVisit>;
+  getAllSiteVisits(): Promise<SiteVisit[]>;
+  getSiteVisitsByDateRange(startDate: string, endDate: string): Promise<SiteVisit[]>;
   
   getJob(id: string): Promise<Job | undefined>;
   getAllJobs(): Promise<Job[]>;
@@ -660,6 +664,29 @@ export class DatabaseStorage implements IStorage {
     }
     
     return { totalVisits, todayVisits };
+  }
+
+  async createSiteVisit(visit: InsertSiteVisit): Promise<SiteVisit> {
+    const [siteVisit] = await db
+      .insert(siteVisits)
+      .values(visit)
+      .returning();
+    return siteVisit;
+  }
+
+  async getAllSiteVisits(): Promise<SiteVisit[]> {
+    return await db.select().from(siteVisits).orderBy(desc(siteVisits.visitedAt));
+  }
+
+  async getSiteVisitsByDateRange(startDate: string, endDate: string): Promise<SiteVisit[]> {
+    return await db
+      .select()
+      .from(siteVisits)
+      .where(and(
+        gte(siteVisits.visitedAt, startDate),
+        lte(siteVisits.visitedAt, endDate)
+      ))
+      .orderBy(desc(siteVisits.visitedAt));
   }
 
   async getJob(id: string): Promise<Job | undefined> {

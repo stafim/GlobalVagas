@@ -1863,6 +1863,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Check if user has already been tracked in the last 30 minutes
       const hasVisitCookie = req.cookies?.visit_tracked === 'true';
       
+      // Get IP address
+      const ipAddress = (req.headers['x-forwarded-for'] as string)?.split(',')[0] || 
+                        req.socket.remoteAddress || 
+                        'unknown';
+      
+      // Get geolocation from IP
+      let country = null;
+      let city = null;
+      let region = null;
+      
+      if (ipAddress && ipAddress !== 'unknown' && ipAddress !== '::1' && !ipAddress.startsWith('127.')) {
+        try {
+          const geoip = (await import('geoip-lite')).default;
+          const geo = geoip.lookup(ipAddress);
+          if (geo) {
+            country = geo.country || null;
+            city = null; // geoip-lite doesn't provide city in free version
+            region = geo.region || null;
+          }
+        } catch (geoError) {
+          console.error('Error getting geolocation:', geoError);
+        }
+      }
+      
+      // Always save visit details to database
+      const userAgent = req.headers['user-agent'] || null;
+      await storage.createSiteVisit({
+        ipAddress: ipAddress || 'unknown',
+        country,
+        city,
+        region,
+        userAgent,
+      });
+      
       if (hasVisitCookie) {
         // User already counted, don't increment
         return res.status(200).json({ 
@@ -1903,6 +1937,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error getting visit stats:", error);
       return res.status(500).json({ message: "Erro ao buscar estatísticas" });
+    }
+  });
+
+  // Admin endpoint - get all site visits with details
+  app.get("/api/admin/site-visits", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const visits = await storage.getAllSiteVisits();
+      return res.status(200).json(visits);
+    } catch (error) {
+      console.error("Error getting site visits:", error);
+      return res.status(500).json({ message: "Erro ao buscar visitas" });
     }
   });
 

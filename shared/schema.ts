@@ -414,3 +414,24 @@ export const insertApplicationAnswerSchema = createInsertSchema(applicationAnswe
 
 export type InsertApplicationAnswer = z.infer<typeof insertApplicationAnswerSchema>;
 export type ApplicationAnswer = typeof applicationAnswers.$inferSelect;
+
+export const siteVisits = pgTable("site_visits", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  ipAddress: text("ip_address").notNull(),
+  country: text("country"),
+  city: text("city"),
+  region: text("region"),
+  userAgent: text("user_agent"),
+  visitedAt: text("visited_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({
+  visitedAtIdx: index("site_visits_visited_at_idx").on(table.visitedAt),
+  ipAddressIdx: index("site_visits_ip_address_idx").on(table.ipAddress),
+}));
+
+export const insertSiteVisitSchema = createInsertSchema(siteVisits).omit({
+  id: true,
+  visitedAt: true,
+});
+
+export type InsertSiteVisit = z.infer<typeof insertSiteVisitSchema>;
+export type SiteVisit = typeof siteVisits.$inferSelect;
