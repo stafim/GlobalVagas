@@ -51,6 +51,12 @@ export function ObjectUploader({
         method: 'POST',
         formData: true,
         fieldName: 'file',
+        getResponseData(responseText: string) {
+          const response = JSON.parse(responseText);
+          return {
+            uploadURL: response.filePath || response.uploadURL,
+          };
+        },
       })
       .on("complete", (result) => {
         if (onComplete) {
