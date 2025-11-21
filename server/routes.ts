@@ -1989,6 +1989,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "jobId é obrigatório" });
       }
 
+      // Check if operator profile is complete
+      const profileCheck = await storage.isOperatorProfileComplete(req.session.userId);
+      if (!profileCheck.complete) {
+        return res.status(400).json({ 
+          message: "Seu perfil está incompleto. Complete seu perfil para se candidatar a vagas.",
+          profileIncomplete: true,
+          missingFields: profileCheck.missingFields
+        });
+      }
+
       // Check if job exists
       const job = await storage.getJob(jobId);
       if (!job) {
