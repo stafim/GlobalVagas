@@ -53,6 +53,14 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 
 ## Recent Changes
 
+### November 21, 2025 - Fixed "Nova Pergunta" Button in Company Questions
+- **Bug Fix**: Corrected Dialog control issue preventing "Nova Pergunta" button from working
+  - Removed conflicting `DialogTrigger` wrapper that was interfering with manual state control
+  - Button now directly controls dialog state via `setIsCreateDialogOpen(true)`
+  - Dialog remains controlled by `isCreateDialogOpen || !!editingQuestion` state
+  - Modal opens correctly when creating new questions or editing existing ones
+  - Proper separation between trigger button and dialog component
+
 ### November 21, 2025 - WhatsApp Contact Button in Job Applications
 - **WhatsApp Integration**: Added WhatsApp button to contact candidates directly
   - Green WhatsApp button displayed in candidate details modal (replaced phone call button)
