@@ -53,6 +53,13 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 
 ## Recent Changes
 
+### November 21, 2025 - Visual Separators Between Job Cards
+- **Enhanced Job Listing Layout**: Added visual separators (Separator component) between job cards in CompanyJobs page
+  - Improves visual organization and makes it easier to distinguish between different job postings
+  - Separator appears between each card but not after the last one
+  - Increased spacing from `space-y-4` to `space-y-6` for better breathing room
+  - Maintains clean, organized appearance while preventing visual clutter
+
 ### November 21, 2025 - CV Download Feature in Job Applications
 - **PDF Download Button**: Added ability to download candidate curriculum vitae (CV) as PDF
   - Download icon (FileDown) appears in each candidate card

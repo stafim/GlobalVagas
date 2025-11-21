@@ -848,128 +848,133 @@ export default function CompanyJobs() {
           </CardContent>
         </Card>
       ) : filteredJobs.length > 0 ? (
-        <div className="space-y-4">
-          {filteredJobs.map((job) => (
-            <Card key={job.id} className="hover-elevate transition-all" data-testid={`card-job-${job.id}`}>
-              <CardContent className="p-4">
-                <div className="flex items-start justify-between gap-3 mb-2">
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-lg font-semibold mb-1.5 text-foreground">{job.title}</h3>
-                    <div className="flex flex-wrap gap-1.5 mb-2">
-                      <Badge variant="secondary" className="text-xs">
-                        <MapPin className="h-3 w-3 mr-1" />
-                        {job.location}
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        {job.workType}
-                      </Badge>
-                      <Badge variant="secondary" className="text-xs">
-                        {job.contractType}
-                      </Badge>
-                      {job.salary && (
+        <div className="space-y-6">
+          {filteredJobs.map((job, index) => (
+            <div key={job.id}>
+              <Card className="hover-elevate transition-all" data-testid={`card-job-${job.id}`}>
+                <CardContent className="p-4">
+                  <div className="flex items-start justify-between gap-3 mb-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg font-semibold mb-1.5 text-foreground">{job.title}</h3>
+                      <div className="flex flex-wrap gap-1.5 mb-2">
                         <Badge variant="secondary" className="text-xs">
-                          <DollarSign className="h-3 w-3 mr-1" />
-                          {job.salary}
+                          <MapPin className="h-3 w-3 mr-1" />
+                          {job.location}
                         </Badge>
-                      )}
+                        <Badge variant="secondary" className="text-xs">
+                          {job.workType}
+                        </Badge>
+                        <Badge variant="secondary" className="text-xs">
+                          {job.contractType}
+                        </Badge>
+                        {job.salary && (
+                          <Badge variant="secondary" className="text-xs">
+                            <DollarSign className="h-3 w-3 mr-1" />
+                            {job.salary}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {job.description.length > 20 
+                          ? `${job.description.substring(0, 20)}...` 
+                          : job.description}
+                      </p>
                     </div>
-                    <p className="text-sm text-muted-foreground truncate">
-                      {job.description.length > 20 
-                        ? `${job.description.substring(0, 20)}...` 
-                        : job.description}
-                    </p>
-                  </div>
-                  <Badge
-                    className={cn(
-                      "shrink-0 text-xs",
-                      job.status === 'active'
-                        ? 'bg-green-500/15 text-green-700 border-green-500/30 dark:text-green-400'
-                        : 'bg-orange-500/15 text-orange-700 border-orange-500/30 dark:text-orange-400'
-                    )}
-                    variant="outline"
-                  >
-                    {job.status === 'active' ? '● Ativa' : '⏸ Suspensa'}
-                  </Badge>
-                </div>
-
-                <div className="flex items-center justify-between gap-3 pt-2 border-t">
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {new Date(job.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
-                    </span>
-                    {job.vacancies && (
-                      <span className="flex items-center gap-1">
-                        <Users className="h-3 w-3" />
-                        {job.vacancies} {job.vacancies === '1' ? 'vaga' : 'vagas'}
-                      </span>
-                    )}
-                    <span className="flex items-center gap-1">
-                      <UserCheck className="h-3 w-3" />
-                      {job.applicationCount || 0} {job.applicationCount === 1 ? 'candidatura' : 'candidaturas'}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    <Link href={`/vaga/${job.id}`}>
-                      <Button
-                        size="sm"
-                        variant="default"
-                        data-testid={`button-view-job-page-${job.id}`}
-                      >
-                        <ExternalLink className="h-4 w-4 mr-1.5" />
-                        Visualizar Vaga
-                      </Button>
-                    </Link>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setSelectedJob(job);
-                        setDetailsOpen(true);
-                      }}
-                      data-testid={`button-view-details-${job.id}`}
+                    <Badge
+                      className={cn(
+                        "shrink-0 text-xs",
+                        job.status === 'active'
+                          ? 'bg-green-500/15 text-green-700 border-green-500/30 dark:text-green-400'
+                          : 'bg-orange-500/15 text-orange-700 border-orange-500/30 dark:text-orange-400'
+                      )}
+                      variant="outline"
                     >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Link href={`/empresa/vaga/${job.id}/candidatos`}>
+                      {job.status === 'active' ? '● Ativa' : '⏸ Suspensa'}
+                    </Badge>
+                  </div>
+
+                  <div className="flex items-center justify-between gap-3 pt-2 border-t">
+                    <div className="flex items-center gap-3 text-xs text-muted-foreground">
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {new Date(job.createdAt).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                      </span>
+                      {job.vacancies && (
+                        <span className="flex items-center gap-1">
+                          <Users className="h-3 w-3" />
+                          {job.vacancies} {job.vacancies === '1' ? 'vaga' : 'vagas'}
+                        </span>
+                      )}
+                      <span className="flex items-center gap-1">
+                        <UserCheck className="h-3 w-3" />
+                        {job.applicationCount || 0} {job.applicationCount === 1 ? 'candidatura' : 'candidaturas'}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <Link href={`/vaga/${job.id}`}>
+                        <Button
+                          size="sm"
+                          variant="default"
+                          data-testid={`button-view-job-page-${job.id}`}
+                        >
+                          <ExternalLink className="h-4 w-4 mr-1.5" />
+                          Visualizar Vaga
+                        </Button>
+                      </Link>
                       <Button
                         size="sm"
                         variant="ghost"
-                        title="Ver candidatos"
-                        data-testid={`button-candidates-${job.id}`}
+                        onClick={() => {
+                          setSelectedJob(job);
+                          setDetailsOpen(true);
+                        }}
+                        data-testid={`button-view-details-${job.id}`}
                       >
-                        <UserCheck className="h-4 w-4" />
+                        <Eye className="h-4 w-4" />
                       </Button>
-                    </Link>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        const newStatus = job.status === 'active' ? 'suspended' : 'active';
-                        toggleStatusMutation.mutate({ jobId: job.id, newStatus });
-                      }}
-                      disabled={toggleStatusMutation.isPending}
-                      data-testid={`button-toggle-status-${job.id}`}
-                      title={job.status === 'active' ? 'Suspender vaga' : 'Ativar vaga'}
-                    >
-                      {job.status === 'active' ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => {
-                        setJobToDelete(job.id);
-                        setDeleteDialogOpen(true);
-                      }}
-                      data-testid={`button-delete-job-${job.id}`}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
+                      <Link href={`/empresa/vaga/${job.id}/candidatos`}>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          title="Ver candidatos"
+                          data-testid={`button-candidates-${job.id}`}
+                        >
+                          <UserCheck className="h-4 w-4" />
+                        </Button>
+                      </Link>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          const newStatus = job.status === 'active' ? 'suspended' : 'active';
+                          toggleStatusMutation.mutate({ jobId: job.id, newStatus });
+                        }}
+                        disabled={toggleStatusMutation.isPending}
+                        data-testid={`button-toggle-status-${job.id}`}
+                        title={job.status === 'active' ? 'Suspender vaga' : 'Ativar vaga'}
+                      >
+                        {job.status === 'active' ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          setJobToDelete(job.id);
+                          setDeleteDialogOpen(true);
+                        }}
+                        data-testid={`button-delete-job-${job.id}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+              {index < filteredJobs.length - 1 && (
+                <Separator className="my-6" />
+              )}
+            </div>
           ))}
         </div>
       ) : (
