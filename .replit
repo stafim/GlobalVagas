@@ -63,7 +63,7 @@ integrations = ["javascript_mem_db:1.0.0", "javascript_object_storage:1.0.0"]
 expertMode = true
 
 [objectStorage]
-defaultBucketID = "replit-objstore-04290629-17f3-4282-9c01-072e871a15a7"
+defaultBucketID = "replit-objstore-fce62259-0583-4ca8-810b-35e833613781"
 
 [userenv]
 
