@@ -1985,6 +1985,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/operator/applications", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'operator') {
+        return res.status(401).json({ message: "Apenas operadores podem ver suas candidaturas" });
+      }
+
+      const operatorId = req.session.userId;
+      const applications = await storage.getApplicationsByOperator(operatorId);
+      return res.status(200).json(applications);
+    } catch (error) {
+      console.error("Error fetching operator applications:", error);
+      return res.status(500).json({ message: "Erro ao buscar candidaturas" });
+    }
+  });
+
   app.get("/api/companies/my-purchases", async (req, res) => {
     try {
       if (!req.session.userId) {

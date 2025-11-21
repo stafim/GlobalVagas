@@ -17,12 +17,25 @@ import {
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
+import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
-import type { Operator } from "@shared/schema";
+import type { Operator, Application, SavedJob, Job } from "@shared/schema";
 
 export default function OperatorDashboard() {
   const [, setLocation] = useLocation();
   const { user, userType, isLoading, isAuthenticated } = useAuth();
+
+  // Fetch saved jobs
+  const { data: savedJobs = [] } = useQuery<Array<SavedJob & { job: Job }>>({
+    queryKey: ['/api/operator/saved-jobs'],
+    enabled: isAuthenticated && userType === 'operator',
+  });
+
+  // Fetch applications
+  const { data: applications = [] } = useQuery<Application[]>({
+    queryKey: ['/api/operator/applications'],
+    enabled: isAuthenticated && userType === 'operator',
+  });
 
   useEffect(() => {
     if (!isLoading && (!isAuthenticated || userType !== 'operator')) {
@@ -72,18 +85,23 @@ export default function OperatorDashboard() {
   if (!isAuthenticated || userType !== 'operator') {
     return null;
   }
+
+  // Count responses from companies (accepted/rejected applications)
+  const responsesCount = applications.filter(
+    app => app.status === 'accepted' || app.status === 'rejected'
+  ).length;
   
   const stats = [
     {
       title: "Candidaturas Enviadas",
-      value: "0",
+      value: applications.length.toString(),
       icon: FileText,
       description: "Total de candidaturas",
       trend: null,
     },
     {
       title: "Vagas Salvas",
-      value: "0",
+      value: savedJobs.length.toString(),
       icon: Bookmark,
       description: "Vagas de interesse",
       trend: null,
@@ -97,7 +115,7 @@ export default function OperatorDashboard() {
     },
     {
       title: "Respostas Recebidas",
-      value: "0",
+      value: responsesCount.toString(),
       icon: CheckCircle2,
       description: "Retorno das empresas",
       trend: null,
