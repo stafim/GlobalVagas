@@ -1906,6 +1906,85 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Saved Jobs Routes
+  app.post("/api/jobs/:id/save", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'operator') {
+        return res.status(401).json({ message: "Apenas operadores podem salvar vagas" });
+      }
+
+      const jobId = req.params.id;
+      const operatorId = req.session.userId;
+
+      // Check if job exists
+      const job = await storage.getJob(jobId);
+      if (!job) {
+        return res.status(404).json({ message: "Vaga não encontrada" });
+      }
+
+      // Check if already saved
+      const alreadySaved = await storage.checkIfJobIsSaved(operatorId, jobId);
+      if (alreadySaved) {
+        return res.status(400).json({ message: "Vaga já está salva" });
+      }
+
+      const savedJob = await storage.saveJob(operatorId, jobId);
+      return res.status(201).json(savedJob);
+    } catch (error) {
+      console.error("Error saving job:", error);
+      return res.status(500).json({ message: "Erro ao salvar vaga" });
+    }
+  });
+
+  app.delete("/api/jobs/:id/save", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'operator') {
+        return res.status(401).json({ message: "Apenas operadores podem remover vagas salvas" });
+      }
+
+      const jobId = req.params.id;
+      const operatorId = req.session.userId;
+
+      await storage.unsaveJob(operatorId, jobId);
+      return res.status(200).json({ message: "Vaga removida dos favoritos" });
+    } catch (error) {
+      console.error("Error unsaving job:", error);
+      return res.status(500).json({ message: "Erro ao remover vaga dos favoritos" });
+    }
+  });
+
+  app.get("/api/jobs/:id/is-saved", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'operator') {
+        return res.status(200).json({ isSaved: false });
+      }
+
+      const jobId = req.params.id;
+      const operatorId = req.session.userId;
+
+      const isSaved = await storage.checkIfJobIsSaved(operatorId, jobId);
+      return res.status(200).json({ isSaved });
+    } catch (error) {
+      console.error("Error checking if job is saved:", error);
+      return res.status(500).json({ message: "Erro ao verificar vaga salva" });
+    }
+  });
+
+  app.get("/api/operator/saved-jobs", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'operator') {
+        return res.status(401).json({ message: "Apenas operadores podem ver vagas salvas" });
+      }
+
+      const operatorId = req.session.userId;
+      const savedJobs = await storage.getSavedJobsByOperator(operatorId);
+      return res.status(200).json(savedJobs);
+    } catch (error) {
+      console.error("Error fetching saved jobs:", error);
+      return res.status(500).json({ message: "Erro ao buscar vagas salvas" });
+    }
+  });
+
   app.get("/api/companies/my-purchases", async (req, res) => {
     try {
       if (!req.session.userId) {

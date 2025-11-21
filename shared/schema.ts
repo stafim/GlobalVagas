@@ -356,6 +356,25 @@ export const insertApplicationSchema = createInsertSchema(applications).omit({
 export type InsertApplication = z.infer<typeof insertApplicationSchema>;
 export type Application = typeof applications.$inferSelect;
 
+export const savedJobs = pgTable("saved_jobs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  operatorId: varchar("operator_id").notNull().references(() => operators.id, { onDelete: 'cascade' }),
+  jobId: varchar("job_id").notNull().references(() => jobs.id, { onDelete: 'cascade' }),
+  savedAt: text("saved_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({
+  operatorIdIdx: index("saved_jobs_operator_id_idx").on(table.operatorId),
+  jobIdIdx: index("saved_jobs_job_id_idx").on(table.jobId),
+  uniqueSave: index("saved_jobs_unique_save").on(table.operatorId, table.jobId),
+}));
+
+export const insertSavedJobSchema = createInsertSchema(savedJobs).omit({
+  id: true,
+  savedAt: true,
+});
+
+export type InsertSavedJob = z.infer<typeof insertSavedJobSchema>;
+export type SavedJob = typeof savedJobs.$inferSelect;
+
 export const questions = pgTable("questions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: varchar("company_id").references(() => companies.id, { onDelete: 'cascade' }),

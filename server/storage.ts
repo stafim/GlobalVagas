@@ -1,4 +1,4 @@
-import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, questions, jobQuestions, applicationAnswers, siteVisits, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit } from "@shared/schema";
+import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, savedJobs, questions, jobQuestions, applicationAnswers, siteVisits, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type SavedJob, type InsertSavedJob, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, not, like, sql } from "drizzle-orm";
 
@@ -117,6 +117,11 @@ export interface IStorage {
   checkExistingApplication(jobId: string, operatorId: string): Promise<Application | undefined>;
   createApplication(application: InsertApplication): Promise<Application>;
   updateApplicationStatus(id: string, status: string): Promise<Application>;
+  
+  saveJob(operatorId: string, jobId: string): Promise<SavedJob>;
+  unsaveJob(operatorId: string, jobId: string): Promise<void>;
+  getSavedJobsByOperator(operatorId: string): Promise<Array<SavedJob & { job: Job }>>;
+  checkIfJobIsSaved(operatorId: string, jobId: string): Promise<boolean>;
   
   getQuestion(id: string): Promise<Question | undefined>;
   getQuestionsByCompany(companyId: string): Promise<Question[]>;
@@ -797,6 +802,50 @@ export class DatabaseStorage implements IStorage {
       .where(eq(applications.id, id))
       .returning();
     return application;
+  }
+
+  async saveJob(operatorId: string, jobId: string): Promise<SavedJob> {
+    const [savedJob] = await db
+      .insert(savedJobs)
+      .values({ operatorId, jobId })
+      .returning();
+    return savedJob;
+  }
+
+  async unsaveJob(operatorId: string, jobId: string): Promise<void> {
+    await db
+      .delete(savedJobs)
+      .where(and(
+        eq(savedJobs.operatorId, operatorId),
+        eq(savedJobs.jobId, jobId)
+      ));
+  }
+
+  async getSavedJobsByOperator(operatorId: string): Promise<Array<SavedJob & { job: Job }>> {
+    const results = await db
+      .select()
+      .from(savedJobs)
+      .leftJoin(jobs, eq(savedJobs.jobId, jobs.id))
+      .where(eq(savedJobs.operatorId, operatorId))
+      .orderBy(desc(savedJobs.savedAt));
+    
+    return results.map(row => ({
+      ...row.saved_jobs,
+      job: row.jobs!
+    }));
+  }
+
+  async checkIfJobIsSaved(operatorId: string, jobId: string): Promise<boolean> {
+    const [result] = await db
+      .select()
+      .from(savedJobs)
+      .where(and(
+        eq(savedJobs.operatorId, operatorId),
+        eq(savedJobs.jobId, jobId)
+      ))
+      .limit(1);
+    
+    return !!result;
   }
 
   async getStats(): Promise<{

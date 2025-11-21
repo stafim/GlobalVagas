@@ -3,7 +3,9 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { useState } from "react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export interface JobCardProps {
   id: string;
@@ -22,6 +24,7 @@ export interface JobCardProps {
 }
 
 export function JobCard({
+  id,
   title,
   company,
   companyLogo,
@@ -35,7 +38,54 @@ export function JobCard({
   applicants,
   verified = false,
 }: JobCardProps) {
-  const [bookmarked, setBookmarked] = useState(false);
+  const { toast } = useToast();
+
+  // Check if job is saved
+  const { data: savedData } = useQuery<{ isSaved: boolean }>({
+    queryKey: ['/api/jobs', id, 'is-saved'],
+  });
+
+  const bookmarked = savedData?.isSaved || false;
+
+  // Save job mutation
+  const saveMutation = useMutation({
+    mutationFn: () => apiRequest('POST', `/api/jobs/${id}/save`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/jobs', id, 'is-saved'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/operator/saved-jobs'] });
+      toast({
+        title: "Vaga salva!",
+        description: "A vaga foi adicionada aos seus favoritos.",
+      });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Erro ao salvar vaga",
+        description: "Não foi possível salvar a vaga. Tente novamente.",
+      });
+    },
+  });
+
+  // Unsave job mutation
+  const unsaveMutation = useMutation({
+    mutationFn: () => apiRequest('DELETE', `/api/jobs/${id}/save`),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/jobs', id, 'is-saved'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/operator/saved-jobs'] });
+      toast({
+        title: "Vaga removida",
+        description: "A vaga foi removida dos seus favoritos.",
+      });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Erro ao remover vaga",
+        description: "Não foi possível remover a vaga. Tente novamente.",
+      });
+    },
+  });
 
   const workTypeColors = {
     Remote: "bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300",
@@ -72,11 +122,16 @@ export function JobCard({
               size="icon"
               onClick={(e) => {
                 e.stopPropagation();
-                setBookmarked(!bookmarked);
-                console.log("Bookmark toggled:", !bookmarked);
+                if (bookmarked) {
+                  unsaveMutation.mutate();
+                } else {
+                  saveMutation.mutate();
+                }
               }}
+              disabled={saveMutation.isPending || unsaveMutation.isPending}
               className={bookmarked ? "text-primary" : ""}
               data-testid="button-bookmark"
+              title={bookmarked ? "Remover dos favoritos" : "Salvar vaga"}
             >
               <Bookmark className={`h-5 w-5 ${bookmarked ? "fill-current" : ""}`} />
             </Button>

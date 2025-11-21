@@ -8,6 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Header } from "@/components/Header";
+import { SaveJobButton } from "@/components/SaveJobButton";
 import { 
   MapPin, 
   Briefcase, 
@@ -409,6 +410,7 @@ export default function PublicJobs() {
                             </p>
                           )}
                         </div>
+                        <SaveJobButton jobId={job.id} />
                       </div>
 
                       {/* Description */}
