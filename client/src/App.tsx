@@ -8,6 +8,7 @@ import { AdminShell } from "@/components/AdminShell";
 import { CompanyShell } from "@/components/CompanyShell";
 import Home from "@/pages/Home";
 import Login from "@/pages/Login";
+import ForgotPassword from "@/pages/ForgotPassword";
 import Signup from "@/pages/Signup";
 import SignupCompany from "@/pages/SignupCompany";
 import SignupOperator from "@/pages/SignupOperator";
@@ -42,6 +43,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/login" component={Login} />
+      <Route path="/recuperar-senha" component={ForgotPassword} />
       <Route path="/cadastro" component={Signup} />
       <Route path="/cadastro/company" component={SignupCompany} />
       <Route path="/cadastro/operator" component={SignupOperator} />
