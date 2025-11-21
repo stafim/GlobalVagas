@@ -57,6 +57,32 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform d
 
 ## Recent Changes
 
+### November 21, 2025 - Profile Completion Requirement for Job Applications
+- **Complete Profile Enforcement**: Operators must have 100% complete profiles before applying to jobs
+  - **Required Fields**: birthDate, experienceYears, preferredLocation, skills, bio
+  - **Backend Validation**:
+    - Created `isOperatorProfileComplete()` function in `storage.ts`
+    - Returns object with `isComplete` boolean and `missingFields` array
+    - New endpoint: `GET /api/operator/profile-complete`
+    - Enhanced `POST /api/applications` to check profile completion before allowing applications
+    - Returns specific error with `profileIncomplete: true` flag when profile is incomplete
+  - **Frontend Experience** (`JobView.tsx`):
+    - AlertDialog appears when operator tries to apply with incomplete profile
+    - Clear message explaining which fields are required
+    - "Completar Perfil" button redirects to `/perfil/operador`
+    - "Cancelar" option to dismiss dialog
+  - **User Flow**:
+    1. Operator clicks "Candidatar-me" on job listing
+    2. If profile incomplete, backend rejects application
+    3. AlertDialog shows explaining profile requirements
+    4. Operator can click "Completar Perfil" to navigate to profile page
+    5. After completing profile, operator can successfully apply
+- **Purpose**: 
+  - Ensures companies receive complete candidate information
+  - Improves data quality for hiring decisions
+  - Guides operators to maintain professional profiles
+  - Better matching between operators and opportunities
+
 ### November 21, 2025 - Mandatory Questionnaire Validation for Job Applications
 - **Smart Questionnaire System**: Implemented intelligent validation for job application questionnaires
   - **Required Questions Only**: System now validates only questions marked as required (`isRequired` field)
