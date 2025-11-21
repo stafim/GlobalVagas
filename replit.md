@@ -57,6 +57,44 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform d
 
 ## Recent Changes
 
+### November 21, 2025 - Company Configuration CRUDs: Work Types & Contract Types
+- **New Configuration Management**: Created two new CRUD systems for company settings
+  - **Tipos de Trabalho (Work Types)**: Manage work schedule types (Full-time, Part-time, etc.)
+    - Full CRUD: Create, Read, Update, Delete
+    - Fields: name, description, isActive
+    - Company-specific data (each company manages their own types)
+    - New page: `/empresa/tipos-trabalho`
+  - **Tipos de Contrato (Contract Types)**: Manage contract types (CLT, PJ, Temporary, etc.)
+    - Full CRUD: Create, Read, Update, Delete
+    - Fields: name, description, isActive
+    - Company-specific data (each company manages their own types)
+    - New page: `/empresa/tipos-contrato`
+- **Database Schema**: Added two new tables
+  - `work_types` table with company relationship
+  - `contract_types` table with company relationship
+  - Both tables track creation dates and active status
+- **Backend API**: New endpoints for both entities
+  - GET/POST `/api/company/work-types`
+  - PATCH/DELETE `/api/company/work-types/:id`
+  - GET/POST `/api/company/contract-types`
+  - PATCH/DELETE `/api/company/contract-types/:id`
+  - All endpoints protected with company authentication
+- **Navigation Update**: Added new menu items under "Configurações" submenu
+  - "Tipos de Trabalho" with Clock icon
+  - "Tipos de Contrato" with FileText icon
+  - Both accessible from collapsible Configurações menu
+- **UI/UX Features**:
+  - Card-based grid layout for listing items
+  - Dialog forms for create/edit operations
+  - Confirmation alerts for deletions
+  - Active/Inactive status badges
+  - Empty state with call-to-action
+  - Full Portuguese localization
+- **Purpose**: These configuration types will be used during job posting to categorize vacancies
+  - Allows companies to standardize their job classifications
+  - Provides flexibility for different business needs
+  - Simplifies job creation with predefined options
+
 ### November 21, 2025 - Standardized Navigation: Header Across All Pages
 - **Consistent Navigation**: Added Header and Footer components to all public pages
   - Updated Login page to include Header and Footer
