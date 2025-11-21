@@ -53,6 +53,16 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 
 ## Recent Changes
 
+### November 21, 2025 - WhatsApp Contact Button in Job Applications
+- **WhatsApp Integration**: Added WhatsApp button to contact candidates directly
+  - Green WhatsApp button displayed alongside "Ligar" (Call) button in candidate details modal
+  - Clicking WhatsApp button opens a new tab with WhatsApp Web chat to candidate's phone number
+  - Automatic phone number formatting (removes non-digit characters and adds country code +55)
+  - Uses official WhatsApp icon from react-icons/si
+  - Styled with green theme matching WhatsApp branding (bg-green-500/10, border-green-500/30)
+  - Opens in new tab using window.open() with '_blank' target
+  - Proper data-testid for automated testing
+
 ### November 21, 2025 - Enhanced Job Card Visualization
 - **Improved Visual Separation**: Redesigned job cards in CompanyJobs page for better distinction
   - Each vaga now has a visible border (`border-2`) creating clear rectangular boundaries

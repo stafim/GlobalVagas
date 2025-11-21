@@ -19,6 +19,7 @@ import {
   FileText,
   FileDown
 } from "lucide-react";
+import { SiWhatsapp } from "react-icons/si";
 import { useLocation, useRoute } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -583,15 +584,30 @@ export default function JobApplications() {
                   </div>
                 </div>
 
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => window.location.href = `tel:${selectedCandidate.operator.phone}`}
-                  data-testid="button-call-candidate"
-                >
-                  <Phone className="h-4 w-4 mr-2" />
-                  Ligar
-                </Button>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button 
+                    variant="outline" 
+                    className="w-full"
+                    onClick={() => window.location.href = `tel:${selectedCandidate.operator.phone}`}
+                    data-testid="button-call-candidate"
+                  >
+                    <Phone className="h-4 w-4 mr-2" />
+                    Ligar
+                  </Button>
+
+                  <Button 
+                    variant="outline" 
+                    className="w-full bg-green-500/10 hover:bg-green-500/20 border-green-500/30 text-green-700 dark:text-green-400"
+                    onClick={() => {
+                      const phoneNumber = selectedCandidate.operator.phone.replace(/\D/g, '');
+                      window.open(`https://wa.me/55${phoneNumber}`, '_blank');
+                    }}
+                    data-testid="button-whatsapp-candidate"
+                  >
+                    <SiWhatsapp className="h-4 w-4 mr-2" />
+                    WhatsApp
+                  </Button>
+                </div>
               </div>
             </div>
           )}
