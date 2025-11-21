@@ -1,4 +1,4 @@
-import { Globe, User, LogOut, Settings, LayoutDashboard, Briefcase, BookmarkIcon, FileText, Building2, Shield, Calendar } from "lucide-react";
+import { Globe, User, LogOut, Settings, LayoutDashboard, Briefcase, BookmarkIcon, FileText, Building2, Calendar } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "./ThemeToggle";
 import {
@@ -101,16 +101,6 @@ export function Header({ onLanguageToggle, language = "PT" }: HeaderProps) {
               <Globe className="h-5 w-5" />
             </Button>
             <ThemeToggle />
-            
-            <Button
-              variant="outline"
-              onClick={() => setLocation(userType === 'admin' ? '/admin' : '/admin/login')}
-              className="gap-2"
-              data-testid="button-admin-access"
-            >
-              <Shield className="h-4 w-4" />
-              Admin
-            </Button>
             
             {isAuthenticated ? (
               <DropdownMenu>
