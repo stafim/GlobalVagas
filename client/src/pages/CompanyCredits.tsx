@@ -17,7 +17,7 @@ import {
 import type { CreditTransaction } from "@shared/schema";
 
 export default function CompanyCredits() {
-  const creditsQuery = useQuery<{ balance: number }>({
+  const creditsQuery = useQuery<number>({
     queryKey: ['/api/company/credits'],
   });
 
@@ -25,7 +25,7 @@ export default function CompanyCredits() {
     queryKey: ['/api/company/credit-transactions'],
   });
 
-  const credits = creditsQuery.data?.balance || 0;
+  const credits = creditsQuery.data || 0;
   const transactions = transactionsQuery.data || [];
 
   const stats = [
