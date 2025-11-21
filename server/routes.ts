@@ -2694,7 +2694,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const balance = await storage.getCompanyCredits(req.session.userId);
-      return res.status(200).json({ balance });
+      return res.status(200).json(balance);
     } catch (error) {
       console.error("Error fetching company credits:", error);
       return res.status(500).json({ message: "Erro ao buscar créditos" });
