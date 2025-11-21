@@ -2178,7 +2178,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const operatorId = req.session.userId;
-      const applications = await storage.getApplicationsByOperator(operatorId);
+      const applications = await storage.getApplicationsWithJobByOperator(operatorId);
       return res.status(200).json(applications);
     } catch (error) {
       console.error("Error fetching operator applications:", error);

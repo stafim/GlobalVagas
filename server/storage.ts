@@ -827,6 +827,28 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(applications).where(eq(applications.operatorId, operatorId)).orderBy(desc(applications.appliedAt));
   }
 
+  async getApplicationsWithJobByOperator(operatorId: string): Promise<Array<Application & { job: Job & { company: Company } }>> {
+    const results = await db
+      .select({
+        application: applications,
+        job: jobs,
+        company: companies,
+      })
+      .from(applications)
+      .innerJoin(jobs, eq(applications.jobId, jobs.id))
+      .innerJoin(companies, eq(jobs.companyId, companies.id))
+      .where(eq(applications.operatorId, operatorId))
+      .orderBy(desc(applications.appliedAt));
+
+    return results.map((result) => ({
+      ...result.application,
+      job: {
+        ...result.job,
+        company: result.company,
+      },
+    }));
+  }
+
   async checkExistingApplication(jobId: string, operatorId: string): Promise<Application | undefined> {
     const [application] = await db.select().from(applications).where(
       and(

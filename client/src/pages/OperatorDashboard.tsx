@@ -13,13 +13,17 @@ import {
   Bell,
   TrendingUp,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  Clock,
+  Building2,
+  MapPin,
+  ExternalLink
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/hooks/use-auth";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useMemo } from "react";
-import type { Operator, Application, SavedJob, Job } from "@shared/schema";
+import type { Operator, Application, SavedJob, Job, Company } from "@shared/schema";
 
 export default function OperatorDashboard() {
   const [, setLocation] = useLocation();
@@ -31,8 +35,8 @@ export default function OperatorDashboard() {
     enabled: isAuthenticated && userType === 'operator',
   });
 
-  // Fetch applications
-  const { data: applications = [] } = useQuery<Application[]>({
+  // Fetch applications with job details
+  const { data: applications = [] } = useQuery<Array<Application & { job: Job & { company: Company } }>>({
     queryKey: ['/api/operator/applications'],
     enabled: isAuthenticated && userType === 'operator',
   });
@@ -178,19 +182,93 @@ export default function OperatorDashboard() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="flex flex-col items-center justify-center py-12 text-center">
-                  <Briefcase className="h-12 w-12 text-muted-foreground mb-4" />
-                  <h3 className="font-semibold text-lg mb-2">
-                    Nenhuma candidatura ainda
-                  </h3>
-                  <p className="text-muted-foreground mb-6 max-w-sm">
-                    Comece a explorar as vagas disponíveis e candidate-se às oportunidades que combinam com você
-                  </p>
-                  <Button data-testid="button-browse-jobs">
-                    <Briefcase className="mr-2 h-5 w-5" />
-                    Explorar Vagas
-                  </Button>
-                </div>
+                {applications.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 text-center">
+                    <Briefcase className="h-12 w-12 text-muted-foreground mb-4" />
+                    <h3 className="font-semibold text-lg mb-2">
+                      Nenhuma candidatura ainda
+                    </h3>
+                    <p className="text-muted-foreground mb-6 max-w-sm">
+                      Comece a explorar as vagas disponíveis e candidate-se às oportunidades que combinam com você
+                    </p>
+                    <Button onClick={() => setLocation("/vagas")} data-testid="button-browse-jobs">
+                      <Briefcase className="mr-2 h-5 w-5" />
+                      Explorar Vagas
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {applications.filter(app => app.job).slice(0, 5).map((application) => (
+                      <div 
+                        key={application.id}
+                        className="border rounded-lg p-4 hover-elevate transition-all cursor-pointer"
+                        onClick={() => setLocation(`/vaga/${application.jobId}`)}
+                        data-testid={`application-${application.id}`}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 mb-2">
+                              <h3 className="font-semibold text-lg truncate">
+                                {application.job.title}
+                              </h3>
+                              <Badge 
+                                variant={
+                                  application.status === 'pending' ? 'secondary' :
+                                  application.status === 'accepted' ? 'default' :
+                                  application.status === 'rejected' ? 'destructive' :
+                                  'outline'
+                                }
+                                data-testid={`status-${application.id}`}
+                              >
+                                {application.status === 'pending' ? 'Pendente' :
+                                 application.status === 'accepted' ? 'Aceita' :
+                                 application.status === 'rejected' ? 'Rejeitada' :
+                                 application.status}
+                              </Badge>
+                            </div>
+                            
+                            <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
+                              <div className="flex items-center gap-1">
+                                <Building2 className="h-4 w-4" />
+                                <span className="truncate">{application.job.company.companyName}</span>
+                              </div>
+                              {application.job.location && (
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="h-4 w-4" />
+                                  <span className="truncate">{application.job.location}</span>
+                                </div>
+                              )}
+                            </div>
+                            
+                            <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                              <Clock className="h-3 w-3" />
+                              <span>
+                                Candidatura enviada em {new Date(application.appliedAt).toLocaleDateString('pt-BR', {
+                                  day: '2-digit',
+                                  month: 'short',
+                                  year: 'numeric'
+                                })}
+                              </span>
+                            </div>
+                          </div>
+                          
+                          <ExternalLink className="h-5 w-5 text-muted-foreground flex-shrink-0" />
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {applications.filter(app => app.job).length > 5 && (
+                      <Button 
+                        variant="outline" 
+                        className="w-full"
+                        onClick={() => setLocation("/minhas-candidaturas")}
+                        data-testid="button-view-all-applications"
+                      >
+                        Ver Todas as Candidaturas ({applications.filter(app => app.job).length})
+                      </Button>
+                    )}
+                  </div>
+                )}
               </CardContent>
             </Card>
 
