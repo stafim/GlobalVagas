@@ -57,6 +57,26 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform d
 
 ## Recent Changes
 
+### November 21, 2025 - Reorganized Navigation: Banco de Perguntas as Submenu
+- **Navigation Restructure**: Moved "Banco de Perguntas" to be a submenu item under "Configurações"
+  - Updated CompanySidebar to support collapsible menu items with submenus
+  - Implemented using Shadcn Collapsible component for smooth expand/collapse
+  - Changed route from `/empresa/configuracoes` to `/empresa/banco-perguntas`
+  - Menu automatically expands when submenu item is active
+  - Updated all internal links to use new route
+  - Improved menu organization for better UX
+
+### November 21, 2025 - Bug Fixes: Job Creation & Question Options UI
+- **Fixed 400 Error**: Corrected `displayOrder` field type issue when adding questions to jobs
+  - Problem: Field expected string but received number
+  - Solution: Convert displayOrder to string: `String(i + 1)`
+  - Job creation with questions now works correctly
+- **Improved Multiple Choice UI**: Enhanced question creation form for better clarity
+  - Added explicit instruction: "Digite cada opção em uma linha separada"
+  - Added visual warning icon to emphasize one-option-per-line requirement
+  - Improved placeholder text with clearer examples
+  - Increased textarea rows from 5 to 6 for better visibility
+
 ### November 21, 2025 - Fix: Questions Not Appearing in Job Creation Wizard
 - **Bug Fix**: Corrected endpoint in job creation wizard (step 4 - Questionnaire)
   - Changed from non-existent `/api/questions` to correct `/api/company/questions`

@@ -644,11 +644,11 @@ export default function CompanyJobs() {
                     {questions.filter(q => q.isActive === 'true').length === 0 ? (
                       <Card className="p-6 text-center">
                         <p className="text-muted-foreground mb-4">
-                          Você ainda não criou nenhuma pergunta. Crie perguntas em Configurações para poder adicioná-las às suas vagas.
+                          Você ainda não criou nenhuma pergunta. Crie perguntas no Banco de Perguntas para poder adicioná-las às suas vagas.
                         </p>
-                        <Link href="/empresa/configuracoes">
+                        <Link href="/empresa/banco-perguntas">
                           <Button variant="outline" data-testid="link-create-questions">
-                            Ir para Configurações
+                            Ir para Banco de Perguntas
                           </Button>
                         </Link>
                       </Card>

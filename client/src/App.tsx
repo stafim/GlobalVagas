@@ -54,7 +54,7 @@ function Router() {
       <Route path="/empresa/plano" component={CompanyPlan} />
       <Route path="/empresa/perfil" component={CompanyProfile} />
       <Route path="/empresa/creditos" component={CompanyCredits} />
-      <Route path="/empresa/configuracoes" component={CompanyQuestions} />
+      <Route path="/empresa/banco-perguntas" component={CompanyQuestions} />
       <Route path="/dashboard/operador" component={OperatorDashboard} />
       <Route path="/perfil/operador" component={OperatorProfile} />
       <Route path="/vagas-salvas" component={SavedJobs} />
