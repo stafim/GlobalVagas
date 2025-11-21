@@ -63,12 +63,20 @@ export default function CompanyJobs() {
   const createJobMutation = useMutation({
     mutationFn: async (data: JobFormValues) => {
       const response = await apiRequest('POST', '/api/jobs', data);
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Erro ao criar vaga");
+      }
       const job = await response.json();
       
       if (selectedQuestions.length > 0) {
-        await apiRequest('POST', `/api/jobs/${job.id}/questions`, {
+        const questionsResponse = await apiRequest('POST', `/api/jobs/${job.id}/questions`, {
           questionIds: selectedQuestions
         });
+        if (!questionsResponse.ok) {
+          const error = await questionsResponse.json();
+          throw new Error(error.message || "Erro ao adicionar perguntas");
+        }
       }
       
       return job;
@@ -84,11 +92,11 @@ export default function CompanyJobs() {
         description: "Sua vaga foi publicada e está visível para candidatos.",
       });
     },
-    onError: () => {
+    onError: (error: Error) => {
       toast({
         variant: "destructive",
         title: "Erro ao criar vaga",
-        description: "Tente novamente mais tarde.",
+        description: error.message || "Tente novamente mais tarde.",
       });
     },
   });

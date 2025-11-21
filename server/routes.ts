@@ -2574,10 +2574,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const { questionIds } = req.body;
+      
+      console.log("Received questionIds:", questionIds, "Type:", typeof questionIds, "Is Array:", Array.isArray(questionIds));
 
-      if (!Array.isArray(questionIds) || questionIds.length === 0) {
-        return res.status(400).json({ message: "questionIds deve ser um array não vazio" });
+      if (!Array.isArray(questionIds)) {
+        console.error("questionIds is not an array:", questionIds);
+        return res.status(400).json({ message: "questionIds deve ser um array" });
       }
+
+      // Se não houver perguntas, retorna array vazio sem erro
+      if (questionIds.length === 0) {
+        console.log("No questions to add, returning empty array");
+        return res.status(201).json([]);
+      }
+      
+      console.log("Processing", questionIds.length, "questions");
 
       const createdJobQuestions = [];
       for (let i = 0; i < questionIds.length; i++) {
@@ -2589,6 +2600,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
         
         if (!result.success) {
+          console.error("Validation error for question:", result.error);
           return res.status(400).json({ 
             message: fromZodError(result.error).message 
           });
