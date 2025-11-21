@@ -8,7 +8,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { 
   ArrowLeft, 
   Users, 
-  Mail, 
+  Mail,
   Phone, 
   MapPin, 
   Calendar, 
@@ -412,25 +412,15 @@ export default function JobApplications() {
                   </div>
                 </div>
 
-                <div className="flex gap-3">
-                  <Button 
-                    className="flex-1" 
-                    onClick={() => window.location.href = `mailto:${selectedCandidate.operator.email}`}
-                    data-testid="button-email-candidate"
-                  >
-                    <Mail className="h-4 w-4 mr-2" />
-                    Enviar E-mail
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    className="flex-1"
-                    onClick={() => window.location.href = `tel:${selectedCandidate.operator.phone}`}
-                    data-testid="button-call-candidate"
-                  >
-                    <Phone className="h-4 w-4 mr-2" />
-                    Ligar
-                  </Button>
-                </div>
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => window.location.href = `tel:${selectedCandidate.operator.phone}`}
+                  data-testid="button-call-candidate"
+                >
+                  <Phone className="h-4 w-4 mr-2" />
+                  Ligar
+                </Button>
               </div>
             </div>
           )}
