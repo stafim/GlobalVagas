@@ -20,6 +20,7 @@ export interface IStorage {
   createOperator(operator: InsertOperator): Promise<Operator>;
   updateOperator(id: string, operator: Partial<InsertOperator>): Promise<Operator>;
   getAllOperators(): Promise<Operator[]>;
+  isOperatorProfileComplete(operatorId: string): Promise<{ complete: boolean; missingFields: string[] }>;
   
   getExperience(id: string): Promise<Experience | undefined>;
   getExperiencesByOperator(operatorId: string): Promise<Experience[]>;
@@ -270,6 +271,27 @@ export class DatabaseStorage implements IStorage {
 
   async getAllOperators(): Promise<Operator[]> {
     return await db.select().from(operators);
+  }
+
+  async isOperatorProfileComplete(operatorId: string): Promise<{ complete: boolean; missingFields: string[] }> {
+    const operator = await this.getOperator(operatorId);
+    if (!operator) {
+      return { complete: false, missingFields: ['operator_not_found'] };
+    }
+
+    const missingFields: string[] = [];
+    
+    // Required fields for complete profile
+    if (!operator.birthDate) missingFields.push('birthDate');
+    if (!operator.experienceYears) missingFields.push('experienceYears');
+    if (!operator.preferredLocation) missingFields.push('preferredLocation');
+    if (!operator.skills) missingFields.push('skills');
+    if (!operator.bio) missingFields.push('bio');
+
+    return {
+      complete: missingFields.length === 0,
+      missingFields
+    };
   }
 
   async getExperience(id: string): Promise<Experience | undefined> {
