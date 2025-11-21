@@ -73,9 +73,11 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center px-8 lg:px-16 bg-background">
-      <div className="w-full max-w-md mx-auto">
-        <div className="mb-10">
+    <div className="min-h-screen flex flex-col bg-background">
+      <Header />
+      <div className="flex-1 flex flex-col justify-center px-8 lg:px-16">
+        <div className="w-full max-w-md mx-auto">
+          <div className="mb-10">
           <img 
             src={operlistLogo} 
             alt="Operlist" 
@@ -162,7 +164,9 @@ export default function Login() {
               </Link>
             </p>
           </div>
+          </div>
         </div>
+      <Footer />
     </div>
   );
 }

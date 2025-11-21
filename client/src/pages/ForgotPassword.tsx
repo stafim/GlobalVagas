@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import operlistLogo from "@assets/operlist2025_1763133653351.png";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 type Step = 'email' | 'code' | 'password';
 
@@ -133,9 +135,11 @@ export default function ForgotPassword() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center px-8 lg:px-16 bg-background">
-      <div className="w-full max-w-md mx-auto">
-        <div className="mb-10">
+    <div className="min-h-screen flex flex-col bg-background">
+      <Header />
+      <div className="flex-1 flex flex-col justify-center px-8 lg:px-16">
+        <div className="w-full max-w-md mx-auto">
+          <div className="mb-10">
           <Link href="/login">
             <img 
               src={operlistLogo} 
@@ -317,7 +321,9 @@ export default function ForgotPassword() {
             Voltar para o login
           </Link>
         </div>
+        </div>
       </div>
+      <Footer />
     </div>
   );
 }

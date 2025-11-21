@@ -57,6 +57,15 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform d
 
 ## Recent Changes
 
+### November 21, 2025 - Standardized Navigation: Header Across All Pages
+- **Consistent Navigation**: Added Header and Footer components to all public pages
+  - Updated Login page to include Header and Footer
+  - Updated ForgotPassword page to include Header and Footer
+  - Ensured consistent user experience across authentication flows
+  - All public pages now have standard top navigation and footer
+  - Users can navigate to other sections (Vagas, Eventos) even from login/signup pages
+  - Improved accessibility with consistent layout structure
+
 ### November 21, 2025 - Reorganized Navigation: Banco de Perguntas as Submenu
 - **Navigation Restructure**: Moved "Banco de Perguntas" to be a submenu item under "Configurações"
   - Updated CompanySidebar to support collapsible menu items with submenus
