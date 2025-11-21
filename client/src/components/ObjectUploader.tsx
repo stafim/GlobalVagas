@@ -51,24 +51,18 @@ export function ObjectUploader({
         method: 'POST',
         formData: true,
         fieldName: 'file',
-        getResponseData(responseText: string, response: any) {
-          try {
-            console.log('XHR Response Text:', responseText);
-            console.log('XHR Response Object:', response);
-            const data = JSON.parse(responseText);
-            console.log('Parsed data:', data);
-            const url = data.filePath || data.uploadURL;
-            console.log('Upload URL:', url);
-            return {
-              uploadURL: url,
-            };
-          } catch (error) {
-            console.error('Error parsing response:', error);
-            console.error('Response text was:', responseText);
-            console.error('Response object was:', response);
-            return {};
+      })
+      .on('upload-success', (file, response) => {
+        // Intercepta a resposta do servidor e injeta o uploadURL
+        if (response && response.body) {
+          const filePath = response.body.filePath || response.body.uploadURL;
+          if (filePath && file) {
+            // Injeta o uploadURL diretamente no arquivo do Uppy
+            uppyInstance.setFileState(file.id, {
+              uploadURL: filePath,
+            });
           }
-        },
+        }
       })
       .on("complete", (result) => {
         if (onComplete) {
