@@ -139,26 +139,9 @@ export default function JobApplications() {
           <CardHeader>
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
-                <CardTitle className="text-2xl mb-2" data-testid="text-job-title">
+                <CardTitle className="text-2xl" data-testid="text-job-title">
                   {job.title}
                 </CardTitle>
-                <CardDescription className="text-base">
-                  <div className="flex flex-wrap items-center gap-3 mt-2">
-                    <span className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
-                      {job.location}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Briefcase className="h-4 w-4" />
-                      {job.contractType}
-                    </span>
-                    {job.status === 'active' ? (
-                      <Badge className="bg-green-500 hover:bg-green-600">Ativa</Badge>
-                    ) : (
-                      <Badge variant="secondary">Suspensa</Badge>
-                    )}
-                  </div>
-                </CardDescription>
               </div>
               <div className="text-right">
                 <div className="flex items-center gap-2 text-primary mb-1">
