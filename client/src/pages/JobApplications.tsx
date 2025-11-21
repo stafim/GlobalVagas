@@ -23,9 +23,10 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
-import type { Job, Operator, Application } from "@shared/schema";
+import type { Job, Operator, Application, Question, ApplicationAnswer } from "@shared/schema";
 
 type ApplicationWithOperator = Application & { operator: Operator };
+type AnswerWithQuestion = ApplicationAnswer & { question: Question };
 
 export default function JobApplications() {
   const [, setLocation] = useLocation();
@@ -43,6 +44,11 @@ export default function JobApplications() {
   const { data: applications = [], isLoading: isLoadingApplications } = useQuery<ApplicationWithOperator[]>({
     queryKey: ['/api/jobs', jobId, 'applications'],
     enabled: !!jobId,
+  });
+
+  const { data: answers = [] } = useQuery<AnswerWithQuestion[]>({
+    queryKey: ['/api/applications', selectedCandidate?.id, 'answers'],
+    enabled: !!selectedCandidate?.id,
   });
 
   const getInitials = (name: string) => {
@@ -399,6 +405,30 @@ export default function JobApplications() {
                       <p className="text-sm text-muted-foreground whitespace-pre-wrap">
                         {selectedCandidate.operator.bio}
                       </p>
+                    </div>
+                  </>
+                )}
+
+                {answers.length > 0 && (
+                  <>
+                    <Separator />
+                    <div>
+                      <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+                        <FileText className="h-5 w-5" />
+                        Respostas do Questionário
+                      </h3>
+                      <div className="space-y-4">
+                        {answers.map((answer, index) => (
+                          <div key={answer.id} className="bg-muted/30 p-4 rounded-md space-y-2">
+                            <p className="font-medium text-sm">
+                              {index + 1}. {answer.question.questionText}
+                            </p>
+                            <p className="text-sm text-muted-foreground whitespace-pre-wrap pl-4">
+                              {answer.answerText}
+                            </p>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </>
                 )}

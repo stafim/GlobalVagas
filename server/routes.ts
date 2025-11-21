@@ -1720,7 +1720,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Apenas operadores podem se candidatar a vagas" });
       }
 
-      const { jobId } = req.body;
+      const { jobId, answers } = req.body;
 
       if (!jobId) {
         return res.status(400).json({ message: "jobId é obrigatório" });
@@ -1743,6 +1743,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         operatorId: req.session.userId,
         status: 'pending',
       });
+
+      // Save answers if provided
+      if (answers && typeof answers === 'object') {
+        for (const [questionId, answerText] of Object.entries(answers)) {
+          if (typeof answerText === 'string' && answerText.trim()) {
+            await storage.createApplicationAnswer({
+              applicationId: application.id,
+              questionId,
+              answerText: answerText.trim(),
+            });
+          }
+        }
+      }
 
       return res.status(201).json(application);
     } catch (error) {
@@ -1990,7 +2003,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/jobs/:jobId/questions", async (req, res) => {
     try {
       const jobQuestions = await storage.getJobQuestionsByJob(req.params.jobId);
-      return res.status(200).json(jobQuestions);
+      // Extract only the questions from the results
+      const questions = jobQuestions.map(jq => jq.question);
+      return res.status(200).json(questions);
     } catch (error) {
       console.error("Error fetching job questions:", error);
       return res.status(500).json({ message: "Erro ao buscar perguntas da vaga" });
@@ -2016,19 +2031,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Você não tem permissão para adicionar perguntas a esta vaga" });
       }
 
-      const result = insertJobQuestionSchema.safeParse({
-        ...req.body,
-        jobId: req.params.jobId,
-      });
-      
-      if (!result.success) {
-        return res.status(400).json({ 
-          message: fromZodError(result.error).message 
-        });
+      const { questionIds } = req.body;
+
+      if (!Array.isArray(questionIds) || questionIds.length === 0) {
+        return res.status(400).json({ message: "questionIds deve ser um array não vazio" });
       }
 
-      const jobQuestion = await storage.createJobQuestion(result.data);
-      return res.status(201).json(jobQuestion);
+      const createdJobQuestions = [];
+      for (let i = 0; i < questionIds.length; i++) {
+        const questionId = questionIds[i];
+        const result = insertJobQuestionSchema.safeParse({
+          jobId: req.params.jobId,
+          questionId,
+          displayOrder: i + 1,
+        });
+        
+        if (!result.success) {
+          return res.status(400).json({ 
+            message: fromZodError(result.error).message 
+          });
+        }
+
+        const jobQuestion = await storage.createJobQuestion(result.data);
+        createdJobQuestions.push(jobQuestion);
+      }
+
+      return res.status(201).json(createdJobQuestions);
     } catch (error) {
       console.error("Error creating job question:", error);
       return res.status(500).json({ message: "Erro ao adicionar pergunta à vaga" });

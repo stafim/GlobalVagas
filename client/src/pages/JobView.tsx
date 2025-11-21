@@ -5,6 +5,11 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { 
   Building2, 
   MapPin, 
@@ -23,7 +28,7 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { Job, Company } from "@shared/schema";
+import type { Job, Company, Question } from "@shared/schema";
 import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 
@@ -31,6 +36,8 @@ export default function JobView() {
   const [, params] = useRoute("/vaga/:id");
   const { toast } = useToast();
   const [hasApplied, setHasApplied] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [answers, setAnswers] = useState<Record<string, string>>({});
 
   const jobQuery = useQuery<{ job: Job; company: Company }>({
     queryKey: ['/api/jobs', params?.id],
@@ -42,6 +49,11 @@ export default function JobView() {
     enabled: !!params?.id,
   });
 
+  const questionsQuery = useQuery<Question[]>({
+    queryKey: ['/api/jobs', params?.id, 'questions'],
+    enabled: !!params?.id,
+  });
+
   useEffect(() => {
     if (checkApplicationQuery.data) {
       setHasApplied(checkApplicationQuery.data.hasApplied);
@@ -49,9 +61,10 @@ export default function JobView() {
   }, [checkApplicationQuery.data]);
 
   const applyMutation = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (answers?: Record<string, string>) => {
       const response = await apiRequest("POST", "/api/applications", {
         jobId: params?.id,
+        answers: answers || {},
       });
       if (!response.ok) {
         const error = await response.json();
@@ -61,6 +74,8 @@ export default function JobView() {
     },
     onSuccess: () => {
       setHasApplied(true);
+      setDialogOpen(false);
+      setAnswers({});
       queryClient.invalidateQueries({ queryKey: ['/api/applications/check', params?.id] });
       toast({
         title: "Candidatura enviada!",
@@ -75,6 +90,31 @@ export default function JobView() {
       });
     },
   });
+
+  const handleApplyClick = () => {
+    const questions = questionsQuery.data || [];
+    if (questions.length > 0) {
+      setDialogOpen(true);
+    } else {
+      applyMutation.mutate({});
+    }
+  };
+
+  const handleSubmitApplication = () => {
+    const questions = questionsQuery.data || [];
+    const allAnswered = questions.every(q => answers[q.id] && answers[q.id].trim() !== '');
+    
+    if (!allAnswered) {
+      toast({
+        variant: "destructive",
+        title: "Respostas incompletas",
+        description: "Por favor, responda todas as perguntas antes de enviar.",
+      });
+      return;
+    }
+    
+    applyMutation.mutate(answers);
+  };
 
   if (jobQuery.isLoading) {
     return (
@@ -288,7 +328,7 @@ export default function JobView() {
           ) : (
             <Button 
               size="default" 
-              onClick={() => applyMutation.mutate()}
+              onClick={handleApplyClick}
               disabled={applyMutation.isPending}
               data-testid="button-apply"
             >
@@ -366,6 +406,86 @@ export default function JobView() {
       </Card>
       </div>
     </div>
+
+    {/* Diálogo de Questionário */}
+    <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Questionário da Vaga</DialogTitle>
+          <DialogDescription>
+            Por favor, responda as seguintes perguntas para completar sua candidatura.
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4 mt-4">
+          {questionsQuery.data?.map((question, index) => (
+            <div key={question.id} className="space-y-2">
+              <Label className="text-base font-medium">
+                {index + 1}. {question.questionText}
+              </Label>
+              
+              {question.questionType === 'text' && (
+                <Input
+                  value={answers[question.id] || ''}
+                  onChange={(e) => setAnswers({ ...answers, [question.id]: e.target.value })}
+                  placeholder="Sua resposta..."
+                  data-testid={`input-answer-${question.id}`}
+                />
+              )}
+              
+              {question.questionType === 'textarea' && (
+                <Textarea
+                  value={answers[question.id] || ''}
+                  onChange={(e) => setAnswers({ ...answers, [question.id]: e.target.value })}
+                  placeholder="Sua resposta..."
+                  className="min-h-[100px]"
+                  data-testid={`textarea-answer-${question.id}`}
+                />
+              )}
+              
+              {question.questionType === 'multiple_choice' && question.options && (
+                <RadioGroup
+                  value={answers[question.id] || ''}
+                  onValueChange={(value) => setAnswers({ ...answers, [question.id]: value })}
+                >
+                  {question.options.split(',').map((option, optionIndex) => (
+                    <div key={optionIndex} className="flex items-center space-x-2">
+                      <RadioGroupItem 
+                        value={option.trim()} 
+                        id={`${question.id}-${optionIndex}`}
+                        data-testid={`radio-answer-${question.id}-${optionIndex}`}
+                      />
+                      <Label htmlFor={`${question.id}-${optionIndex}`} className="font-normal cursor-pointer">
+                        {option.trim()}
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              )}
+            </div>
+          ))}
+        </div>
+
+        <Separator className="my-4" />
+
+        <div className="flex justify-end gap-2">
+          <Button
+            variant="outline"
+            onClick={() => setDialogOpen(false)}
+            data-testid="button-cancel-application"
+          >
+            Cancelar
+          </Button>
+          <Button
+            onClick={handleSubmitApplication}
+            disabled={applyMutation.isPending}
+            data-testid="button-submit-application"
+          >
+            {applyMutation.isPending ? "Enviando..." : "Enviar Candidatura"}
+          </Button>
+        </div>
+      </DialogContent>
+    </Dialog>
     </>
   );
 }

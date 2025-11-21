@@ -17,9 +17,10 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { insertJobSchema, type Job } from "@shared/schema";
+import { insertJobSchema, type Job, type Question } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Separator } from "@/components/ui/separator";
+import { Checkbox } from "@/components/ui/checkbox";
 import { brazilianCities } from "@/lib/brazilian-cities";
 import { cn } from "@/lib/utils";
 
@@ -48,20 +49,34 @@ export default function CompanyJobs() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
+  const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
 
   const { data: jobs = [], isLoading } = useQuery<Job[]>({
     queryKey: ['/api/jobs'],
   });
 
+  const { data: questions = [] } = useQuery<Question[]>({
+    queryKey: ['/api/questions'],
+  });
+
   const createJobMutation = useMutation({
     mutationFn: async (data: JobFormValues) => {
       const response = await apiRequest('POST', '/api/jobs', data);
-      return response.json();
+      const job = await response.json();
+      
+      if (selectedQuestions.length > 0) {
+        await apiRequest('POST', `/api/jobs/${job.id}/questions`, {
+          questionIds: selectedQuestions
+        });
+      }
+      
+      return job;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/jobs'] });
       setDialogOpen(false);
       setCurrentStep(1);
+      setSelectedQuestions([]);
       form.reset();
       toast({
         title: "Vaga criada com sucesso!",
@@ -168,7 +183,7 @@ export default function CompanyJobs() {
     const isValid = await form.trigger(fieldsToValidate);
     
     if (isValid) {
-      setCurrentStep((prev) => Math.min(prev + 1, 3));
+      setCurrentStep((prev) => Math.min(prev + 1, 4));
     }
   };
 
@@ -270,12 +285,12 @@ export default function CompanyJobs() {
                 <DialogHeader>
                   <DialogTitle>Criar Nova Vaga</DialogTitle>
                   <DialogDescription>
-                    Preencha as informações da vaga em {currentStep} de 3 etapas
+                    Preencha as informações da vaga em {currentStep} de 4 etapas
                   </DialogDescription>
                 </DialogHeader>
 
             <div className="flex items-center justify-between mb-6">
-              {[1, 2, 3].map((step) => (
+              {[1, 2, 3, 4].map((step) => (
                 <div key={step} className="flex items-center flex-1">
                   <div
                     className={`flex items-center justify-center w-8 h-8 rounded-full border-2 ${
@@ -286,7 +301,7 @@ export default function CompanyJobs() {
                   >
                     {step}
                   </div>
-                  {step < 3 && (
+                  {step < 4 && (
                     <div
                       className={`flex-1 h-0.5 mx-2 ${
                         currentStep > step ? 'bg-primary' : 'bg-muted'
@@ -610,6 +625,71 @@ export default function CompanyJobs() {
                   </div>
                 )}
 
+                {currentStep === 4 && (
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-lg">Questionário (Opcional)</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Selecione as perguntas que os candidatos devem responder ao se candidatar a esta vaga.
+                    </p>
+                    
+                    {questions.filter(q => q.isActive === 'true').length === 0 ? (
+                      <Card className="p-6 text-center">
+                        <p className="text-muted-foreground mb-4">
+                          Você ainda não criou nenhuma pergunta. Crie perguntas em Configurações para poder adicioná-las às suas vagas.
+                        </p>
+                        <Link href="/empresa/configuracoes">
+                          <Button variant="outline" data-testid="link-create-questions">
+                            Ir para Configurações
+                          </Button>
+                        </Link>
+                      </Card>
+                    ) : (
+                      <div className="space-y-3">
+                        {questions
+                          .filter(q => q.isActive === 'true')
+                          .map((question) => (
+                            <Card key={question.id} className="p-4">
+                              <div className="flex items-start gap-3">
+                                <Checkbox
+                                  checked={selectedQuestions.includes(question.id)}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      setSelectedQuestions([...selectedQuestions, question.id]);
+                                    } else {
+                                      setSelectedQuestions(selectedQuestions.filter(id => id !== question.id));
+                                    }
+                                  }}
+                                  data-testid={`checkbox-question-${question.id}`}
+                                />
+                                <div className="flex-1">
+                                  <p className="font-medium">{question.questionText}</p>
+                                  <div className="flex items-center gap-2 mt-1">
+                                    <Badge variant="outline" className="text-xs">
+                                      {question.questionType === 'text' && 'Texto Livre'}
+                                      {question.questionType === 'multiple_choice' && 'Múltipla Escolha'}
+                                      {question.questionType === 'textarea' && 'Texto Longo'}
+                                    </Badge>
+                                  </div>
+                                  {question.questionType === 'multiple_choice' && question.options && (
+                                    <p className="text-xs text-muted-foreground mt-1">
+                                      Opções: {question.options.split(',').join(', ')}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            </Card>
+                          ))}
+                      </div>
+                    )}
+                    
+                    {selectedQuestions.length > 0 && (
+                      <p className="text-sm text-muted-foreground">
+                        {selectedQuestions.length} {selectedQuestions.length === 1 ? 'pergunta selecionada' : 'perguntas selecionadas'}
+                      </p>
+                    )}
+                  </div>
+                )}
+
                 <Separator className="my-4" />
 
                 <div className="flex justify-between">
@@ -620,7 +700,7 @@ export default function CompanyJobs() {
                     </Button>
                   )}
                   
-                  {currentStep < 3 ? (
+                  {currentStep < 4 ? (
                     <Button type="button" onClick={nextStep} className="ml-auto" data-testid="button-next-step">
                       Próximo
                       <ChevronRight className="h-4 w-4 ml-2" />
