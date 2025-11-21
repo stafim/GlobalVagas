@@ -59,6 +59,14 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 
 ## Recent Changes
 
+### November 21, 2025 - Added "Create Free Account" Button to Header
+- **New Signup Button**: Added "Criar conta grátis" button to header for unauthenticated users
+  - **Location**: Header component, visible when user is not logged in
+  - **Design**: Ghost variant button for a subtle, non-intrusive appearance
+  - **Functionality**: Redirects to `/cadastro` (signup page)
+  - **User Experience**: Makes account creation more discoverable and accessible
+  - **Layout**: Appears before "Entrar" (Login) button, encouraging new user signups
+
 ### November 21, 2025 - Simplified Password Recovery (No User Type Selection)
 - **Simplified Password Recovery**: Removed user type selection from forgot password flow
   - **Auto-Detection**: Backend automatically detects user type by searching both Company and Operator tables

@@ -172,14 +172,24 @@ export function Header({ onLanguageToggle, language = "PT" }: HeaderProps) {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <Button 
-                variant="outline" 
-                className="hidden sm:flex" 
-                onClick={handleLoginClick}
-                data-testid="button-login"
-              >
-                Entrar
-              </Button>
+              <>
+                <Button 
+                  variant="ghost" 
+                  className="hidden sm:flex" 
+                  onClick={() => setLocation('/cadastro')}
+                  data-testid="button-signup"
+                >
+                  Criar conta grátis
+                </Button>
+                <Button 
+                  variant="outline" 
+                  className="hidden sm:flex" 
+                  onClick={handleLoginClick}
+                  data-testid="button-login"
+                >
+                  Entrar
+                </Button>
+              </>
             )}
             
             {(!isAuthenticated || userType === 'company') && (
