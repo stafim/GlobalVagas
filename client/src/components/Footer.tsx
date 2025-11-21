@@ -13,26 +13,18 @@ export function Footer() {
     setEmail("");
   };
 
-  const quickLinks = [
-    "Buscar Vagas",
-    "Publicar Vaga",
-    "Empresas",
-    "Sobre Nós",
-    "Contato",
-  ];
-
   return (
     <footer className="bg-card border-t mt-16">
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-          <div>
+        <div className="mb-8">
+          <div className="flex flex-col items-center text-center">
             <div className="flex items-center gap-2 mb-4">
               <img src={operlistLogo} alt="Operlist" className="h-14" />
             </div>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className="text-sm text-muted-foreground mb-4 max-w-md">
               Conectando talentos a oportunidades em todo o mundo desde 2024.
             </p>
-            <form onSubmit={handleSubscribe} className="flex gap-2">
+            <form onSubmit={handleSubscribe} className="flex gap-2 max-w-md w-full">
               <Input
                 type="email"
                 placeholder="Seu e-mail"
@@ -45,23 +37,6 @@ export function Footer() {
                 <Mail className="h-4 w-4" />
               </Button>
             </form>
-          </div>
-
-          <div>
-            <h3 className="font-semibold mb-4">Links Rápidos</h3>
-            <ul className="space-y-2">
-              {quickLinks.map((link, index) => (
-                <li key={index}>
-                  <a
-                    href="#"
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                    data-testid={`link-${link}`}
-                  >
-                    {link}
-                  </a>
-                </li>
-              ))}
-            </ul>
           </div>
         </div>
 
