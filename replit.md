@@ -53,6 +53,15 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 
 ## Recent Changes
 
+### November 21, 2025 - Login Redirect for Unauthenticated Job Applications
+- **Authentication Check**: Added authentication verification when users try to apply to jobs
+  - When unauthenticated users click "Aplicar a esta vaga", they are redirected to login page
+  - Toast notification informs user: "Login necessário - Você precisa estar logado para se candidatar a uma vaga"
+  - Uses `useAuth` hook to check `isAuthenticated` status
+  - Automatic redirect to `/login` using `setLocation`
+  - Prevents application submission without authentication
+  - Improves user experience by guiding non-logged users to create/access their accounts
+
 ### November 21, 2025 - Password Recovery System Implementation
 - **Complete Password Recovery Flow**: Implemented full password reset functionality with email verification
   - Created `password_reset_codes` database table to store 4-character verification codes

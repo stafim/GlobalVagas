@@ -1,5 +1,5 @@
 import { useQuery, useMutation } from "@tanstack/react-query";
-import { useRoute } from "wouter";
+import { useRoute, useLocation } from "wouter";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -27,6 +27,7 @@ import {
   CheckCircle2
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Job, Company, Question } from "@shared/schema";
 import { useState, useEffect } from "react";
@@ -34,7 +35,9 @@ import { Header } from "@/components/Header";
 
 export default function JobView() {
   const [, params] = useRoute("/vaga/:id");
+  const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
   const [hasApplied, setHasApplied] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -92,6 +95,16 @@ export default function JobView() {
   });
 
   const handleApplyClick = () => {
+    if (!isAuthenticated) {
+      toast({
+        title: "Login necessário",
+        description: "Você precisa estar logado para se candidatar a uma vaga.",
+        variant: "destructive",
+      });
+      setLocation('/login');
+      return;
+    }
+
     const questions = questionsQuery.data || [];
     if (questions.length > 0) {
       setDialogOpen(true);
