@@ -454,3 +454,21 @@ export const insertSiteVisitSchema = createInsertSchema(siteVisits).omit({
 
 export type InsertSiteVisit = z.infer<typeof insertSiteVisitSchema>;
 export type SiteVisit = typeof siteVisits.$inferSelect;
+
+export const newsletterSubscriptions = pgTable("newsletter_subscriptions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull().unique(),
+  subscribedAt: text("subscribed_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  isActive: text("is_active").notNull().default('true'),
+}, (table) => ({
+  emailIdx: index("newsletter_subscriptions_email_idx").on(table.email),
+  subscribedAtIdx: index("newsletter_subscriptions_subscribed_at_idx").on(table.subscribedAt),
+}));
+
+export const insertNewsletterSubscriptionSchema = createInsertSchema(newsletterSubscriptions).omit({
+  id: true,
+  subscribedAt: true,
+});
+
+export type InsertNewsletterSubscription = z.infer<typeof insertNewsletterSubscriptionSchema>;
+export type NewsletterSubscription = typeof newsletterSubscriptions.$inferSelect;

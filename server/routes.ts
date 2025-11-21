@@ -6,7 +6,7 @@ import multer from "multer";
 import { randomUUID } from "crypto";
 import fs from "fs";
 import { storage } from "./storage";
-import { insertCompanySchema, insertOperatorSchema, insertAdminSchema, insertPlanSchema, insertClientSchema, insertSectorSchema, insertSubsectorSchema, insertEventSchema, insertBannerSchema, insertJobSchema, insertQuestionSchema, insertJobQuestionSchema, insertApplicationAnswerSchema } from "@shared/schema";
+import { insertCompanySchema, insertOperatorSchema, insertAdminSchema, insertPlanSchema, insertClientSchema, insertSectorSchema, insertSubsectorSchema, insertEventSchema, insertBannerSchema, insertJobSchema, insertQuestionSchema, insertJobQuestionSchema, insertApplicationAnswerSchema, insertNewsletterSubscriptionSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { EmailService } from "./emailService";
@@ -2374,6 +2374,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error creating application answers:", error);
       return res.status(500).json({ message: "Erro ao salvar respostas" });
+    }
+  });
+
+  // Newsletter subscription endpoint (public)
+  app.post("/api/newsletter/subscribe", async (req, res) => {
+    try {
+      const result = insertNewsletterSubscriptionSchema.safeParse(req.body);
+      
+      if (!result.success) {
+        return res.status(400).json({ 
+          message: fromZodError(result.error).message 
+        });
+      }
+
+      const subscription = await storage.subscribeToNewsletter(result.data.email);
+      return res.status(201).json({ 
+        message: "Inscrição realizada com sucesso!",
+        subscription 
+      });
+    } catch (error) {
+      console.error("Error subscribing to newsletter:", error);
+      return res.status(500).json({ message: "Erro ao realizar inscrição" });
+    }
+  });
+
+  // Get all newsletter subscriptions (admin only)
+  app.get("/api/admin/newsletter-subscriptions", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const subscriptions = await storage.getAllNewsletterSubscriptions();
+      return res.status(200).json(subscriptions);
+    } catch (error) {
+      console.error("Error fetching newsletter subscriptions:", error);
+      return res.status(500).json({ message: "Erro ao buscar inscrições" });
     }
   });
 

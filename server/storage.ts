@@ -1,4 +1,4 @@
-import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, savedJobs, questions, jobQuestions, applicationAnswers, siteVisits, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type SavedJob, type InsertSavedJob, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit } from "@shared/schema";
+import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, savedJobs, questions, jobQuestions, applicationAnswers, siteVisits, newsletterSubscriptions, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type SavedJob, type InsertSavedJob, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit, type NewsletterSubscription, type InsertNewsletterSubscription } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, not, like, sql } from "drizzle-orm";
 
@@ -122,6 +122,11 @@ export interface IStorage {
   unsaveJob(operatorId: string, jobId: string): Promise<void>;
   getSavedJobsByOperator(operatorId: string): Promise<Array<SavedJob & { job: Job }>>;
   checkIfJobIsSaved(operatorId: string, jobId: string): Promise<boolean>;
+  
+  subscribeToNewsletter(email: string): Promise<NewsletterSubscription>;
+  getNewsletterSubscription(email: string): Promise<NewsletterSubscription | undefined>;
+  getAllNewsletterSubscriptions(): Promise<NewsletterSubscription[]>;
+  getActiveNewsletterSubscriptions(): Promise<NewsletterSubscription[]>;
   
   getQuestion(id: string): Promise<Question | undefined>;
   getQuestionsByCompany(companyId: string): Promise<Question[]>;
@@ -1002,6 +1007,51 @@ export class DatabaseStorage implements IStorage {
       .values(insertAnswer)
       .returning();
     return answer;
+  }
+
+  async subscribeToNewsletter(email: string): Promise<NewsletterSubscription> {
+    const existing = await this.getNewsletterSubscription(email);
+    
+    if (existing) {
+      if (existing.isActive === 'false') {
+        const [updated] = await db
+          .update(newsletterSubscriptions)
+          .set({ isActive: 'true' })
+          .where(eq(newsletterSubscriptions.email, email))
+          .returning();
+        return updated;
+      }
+      return existing;
+    }
+
+    const [subscription] = await db
+      .insert(newsletterSubscriptions)
+      .values({ email })
+      .returning();
+    return subscription;
+  }
+
+  async getNewsletterSubscription(email: string): Promise<NewsletterSubscription | undefined> {
+    const [subscription] = await db
+      .select()
+      .from(newsletterSubscriptions)
+      .where(eq(newsletterSubscriptions.email, email));
+    return subscription || undefined;
+  }
+
+  async getAllNewsletterSubscriptions(): Promise<NewsletterSubscription[]> {
+    return await db
+      .select()
+      .from(newsletterSubscriptions)
+      .orderBy(desc(newsletterSubscriptions.subscribedAt));
+  }
+
+  async getActiveNewsletterSubscriptions(): Promise<NewsletterSubscription[]> {
+    return await db
+      .select()
+      .from(newsletterSubscriptions)
+      .where(eq(newsletterSubscriptions.isActive, 'true'))
+      .orderBy(desc(newsletterSubscriptions.subscribedAt));
   }
 }
 

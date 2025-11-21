@@ -2,15 +2,46 @@ import { Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
+import { useToast } from "@/hooks/use-toast";
+import { useMutation } from "@tanstack/react-query";
+import { apiRequest } from "@/lib/queryClient";
 import operlistLogo from "@assets/operlist2025_1763133653351.png";
 
 export function Footer() {
   const [email, setEmail] = useState("");
+  const { toast } = useToast();
+
+  const subscribeMutation = useMutation({
+    mutationFn: async (email: string) => {
+      return await apiRequest("POST", "/api/newsletter/subscribe", { email });
+    },
+    onSuccess: () => {
+      toast({
+        title: "Inscrição realizada!",
+        description: "Você receberá nossas novidades por e-mail.",
+      });
+      setEmail("");
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao realizar inscrição",
+        description: error.message || "Tente novamente mais tarde.",
+        variant: "destructive",
+      });
+    },
+  });
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Newsletter subscription:", email);
-    setEmail("");
+    if (!email) {
+      toast({
+        title: "Email obrigatório",
+        description: "Por favor, insira um e-mail válido.",
+        variant: "destructive",
+      });
+      return;
+    }
+    subscribeMutation.mutate(email);
   };
 
   return (
@@ -33,7 +64,12 @@ export function Footer() {
                 className="text-sm"
                 data-testid="input-newsletter"
               />
-              <Button type="submit" size="sm" data-testid="button-subscribe">
+              <Button 
+                type="submit" 
+                size="sm" 
+                disabled={subscribeMutation.isPending}
+                data-testid="button-subscribe"
+              >
                 <Mail className="h-4 w-4" />
               </Button>
             </form>
