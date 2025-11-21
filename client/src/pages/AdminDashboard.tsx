@@ -163,7 +163,6 @@ export default function AdminDashboard() {
                       <TableHead>IP Address</TableHead>
                       <TableHead>País</TableHead>
                       <TableHead>Região</TableHead>
-                      <TableHead>User Agent</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -197,9 +196,6 @@ export default function AdminDashboard() {
                         </TableCell>
                         <TableCell>
                           {visit.region || <span className="text-muted-foreground text-sm">-</span>}
-                        </TableCell>
-                        <TableCell className="max-w-xs truncate text-xs text-muted-foreground">
-                          {visit.userAgent || <span className="text-muted-foreground text-sm">-</span>}
                         </TableCell>
                       </TableRow>
                     ))}
