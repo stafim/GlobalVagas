@@ -2596,7 +2596,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         const result = insertJobQuestionSchema.safeParse({
           jobId: req.params.jobId,
           questionId,
-          displayOrder: i + 1,
+          displayOrder: String(i + 1), // Converter para string
         });
         
         if (!result.success) {

@@ -271,15 +271,18 @@ export default function CompanyQuestions() {
                     name="options"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Opções (uma por linha)</FormLabel>
+                        <FormLabel>Opções de Resposta</FormLabel>
                         <FormControl>
                           <Textarea
                             {...field}
-                            placeholder="Ex:&#10;Menos de 1 ano&#10;1 a 3 anos&#10;3 a 5 anos&#10;Mais de 5 anos"
-                            rows={5}
+                            placeholder="Digite cada opção em uma linha separada:&#10;Menos de 1 ano&#10;1 a 3 anos&#10;3 a 5 anos&#10;Mais de 5 anos"
+                            rows={6}
                             data-testid="input-question-options"
                           />
                         </FormControl>
+                        <p className="text-sm text-muted-foreground">
+                          ⚠️ Importante: Digite cada opção em uma linha separada
+                        </p>
                         <FormMessage />
                       </FormItem>
                     )}
