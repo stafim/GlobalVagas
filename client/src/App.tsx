@@ -18,6 +18,8 @@ import CompanyJobs from "@/pages/CompanyJobs";
 import JobApplications from "@/pages/JobApplications";
 import CompanyPlan from "@/pages/CompanyPlan";
 import CompanyQuestions from "@/pages/CompanyQuestions";
+import CompanyWorkTypes from "@/pages/CompanyWorkTypes";
+import CompanyContractTypes from "@/pages/CompanyContractTypes";
 import CompanyCredits from "@/pages/CompanyCredits";
 import OperatorDashboard from "@/pages/OperatorDashboard";
 import OperatorProfile from "@/pages/OperatorProfile";
@@ -55,6 +57,8 @@ function Router() {
       <Route path="/empresa/perfil" component={CompanyProfile} />
       <Route path="/empresa/creditos" component={CompanyCredits} />
       <Route path="/empresa/banco-perguntas" component={CompanyQuestions} />
+      <Route path="/empresa/tipos-trabalho" component={CompanyWorkTypes} />
+      <Route path="/empresa/tipos-contrato" component={CompanyContractTypes} />
       <Route path="/dashboard/operador" component={OperatorDashboard} />
       <Route path="/perfil/operador" component={OperatorProfile} />
       <Route path="/vagas-salvas" component={SavedJobs} />

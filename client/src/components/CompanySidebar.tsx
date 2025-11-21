@@ -1,4 +1,4 @@
-import { Building2, LayoutDashboard, Briefcase, CreditCard, Settings, Coins, ChevronDown, FileQuestion } from "lucide-react";
+import { Building2, LayoutDashboard, Briefcase, CreditCard, Settings, Coins, ChevronDown, FileQuestion, Clock, FileText } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -55,6 +55,16 @@ const menuItems = [
         title: "Banco de Perguntas",
         url: "/empresa/banco-perguntas",
         icon: FileQuestion,
+      },
+      {
+        title: "Tipos de Trabalho",
+        url: "/empresa/tipos-trabalho",
+        icon: Clock,
+      },
+      {
+        title: "Tipos de Contrato",
+        url: "/empresa/tipos-contrato",
+        icon: FileText,
       },
     ],
   },
