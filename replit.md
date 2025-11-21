@@ -55,3 +55,37 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 - **Recharts**: For data visualization.
 - **cookie-parser**: Express middleware for cookie handling.
 - **jsPDF**: Client-side PDF generation.
+
+## Recent Changes
+
+### November 21, 2025 - Profile Completion Requirement with Friendly Toast Notification
+- **Complete Profile Enforcement**: Operators must have 100% complete profiles before applying to jobs
+  - **Required Fields**: birthDate, experienceYears, preferredLocation, skills, bio
+  - **Backend Validation**:
+    - Created `isOperatorProfileComplete()` function in `storage.ts`
+    - Returns object with `complete` boolean and `missingFields` array
+    - New endpoint: `GET /api/operator/profile-complete`
+    - Enhanced `POST /api/applications` to check profile completion before allowing applications
+    - Returns 400 error with `profileIncomplete: true` flag when profile is incomplete
+  - **Frontend Experience** (`JobView.tsx`):
+    - **Friendly toast notification** with soft colors (no destructive red)
+    - Uses default toast styling for a welcoming, non-alarming experience
+    - Clear title: "Complete seu perfil para se candidatar"
+    - Helpful description: "Para se candidatar a vagas, você precisa completar 100% do seu perfil com todos os dados obrigatórios"
+    - **Action button integrated in toast**: "Completar Perfil" button redirects to `/perfil/operador`
+    - Toast auto-dismisses or can be manually closed
+  - **User Flow**:
+    1. Operator clicks "Candidatar-me" on job listing
+    2. If profile incomplete, backend returns 400 error with `profileIncomplete: true`
+    3. Frontend displays friendly toast notification with action button
+    4. Toast uses soft colors (not red/destructive) for better UX
+    5. Operator clicks "Completar Perfil" button in toast
+    6. Redirects to profile page to fill missing fields
+    7. After completing profile, operator can successfully apply
+- **Purpose**: 
+  - Ensures companies receive complete candidate information
+  - Improves data quality for hiring decisions
+  - Guides operators with friendly, actionable notifications
+  - Better user experience with soft colors and integrated action button
+  - Non-alarming approach encourages profile completion
+  - Better matching between operators and opportunities

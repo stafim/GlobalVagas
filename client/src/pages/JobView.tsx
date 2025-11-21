@@ -6,16 +6,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { 
-  AlertDialog, 
-  AlertDialogAction, 
-  AlertDialogCancel, 
-  AlertDialogContent, 
-  AlertDialogDescription, 
-  AlertDialogFooter, 
-  AlertDialogHeader, 
-  AlertDialogTitle 
-} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
@@ -50,7 +40,6 @@ export default function JobView() {
   const { isAuthenticated } = useAuth();
   const [hasApplied, setHasApplied] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [profileIncompleteDialog, setProfileIncompleteDialog] = useState(false);
   const [answers, setAnswers] = useState<Record<string, string>>({});
 
   const jobQuery = useQuery<{ job: Job; company: Company }>({
@@ -104,7 +93,19 @@ export default function JobView() {
     onError: (error: any) => {
       if (error?.profileIncomplete === true) {
         setDialogOpen(false);
-        setProfileIncompleteDialog(true);
+        toast({
+          title: "Complete seu perfil para se candidatar",
+          description: "Para se candidatar a vagas, você precisa completar 100% do seu perfil com todos os dados obrigatórios.",
+          action: (
+            <Button
+              size="sm"
+              onClick={() => setLocation('/perfil/operador')}
+              data-testid="button-complete-profile-toast"
+            >
+              Completar Perfil
+            </Button>
+          ),
+        });
       } else {
         toast({
           variant: "destructive",
@@ -539,31 +540,6 @@ export default function JobView() {
         </div>
       </DialogContent>
     </Dialog>
-
-    {/* AlertDialog de Perfil Incompleto */}
-    <AlertDialog open={profileIncompleteDialog} onOpenChange={setProfileIncompleteDialog}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>Perfil Incompleto</AlertDialogTitle>
-          <AlertDialogDescription>
-            Para se candidatar a vagas, você precisa completar 100% do seu perfil. 
-            Preencha todos os campos obrigatórios: data de nascimento, anos de experiência, 
-            localização preferida, habilidades e descrição pessoal.
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <AlertDialogFooter>
-          <AlertDialogCancel data-testid="button-cancel-profile">
-            Cancelar
-          </AlertDialogCancel>
-          <AlertDialogAction
-            onClick={() => setLocation('/perfil/operador')}
-            data-testid="button-complete-profile"
-          >
-            Completar Perfil
-          </AlertDialogAction>
-        </AlertDialogFooter>
-      </AlertDialogContent>
-    </AlertDialog>
     </>
   );
 }
