@@ -460,13 +460,19 @@ export default function JobView() {
               )}
               
               {question.questionType === 'textarea' && (
-                <Textarea
-                  value={answers[question.id] || ''}
-                  onChange={(e) => setAnswers({ ...answers, [question.id]: e.target.value })}
-                  placeholder="Sua resposta..."
-                  className="min-h-[100px]"
-                  data-testid={`textarea-answer-${question.id}`}
-                />
+                <div className="space-y-1">
+                  <Textarea
+                    value={answers[question.id] || ''}
+                    onChange={(e) => setAnswers({ ...answers, [question.id]: e.target.value })}
+                    placeholder="Sua resposta..."
+                    className="min-h-[200px]"
+                    maxLength={1000}
+                    data-testid={`textarea-answer-${question.id}`}
+                  />
+                  <p className="text-xs text-muted-foreground text-right">
+                    {(answers[question.id] || '').length}/1000 caracteres
+                  </p>
+                </div>
               )}
               
               {question.questionType === 'multiple_choice' && question.options && (
