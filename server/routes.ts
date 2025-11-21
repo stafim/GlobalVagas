@@ -2,11 +2,45 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import express from "express";
 import path from "path";
+import multer from "multer";
+import { randomUUID } from "crypto";
+import fs from "fs";
 import { storage } from "./storage";
 import { insertCompanySchema, insertOperatorSchema, insertAdminSchema, insertPlanSchema, insertClientSchema, insertSectorSchema, insertSubsectorSchema, insertEventSchema, insertBannerSchema, insertJobSchema, insertQuestionSchema, insertJobQuestionSchema, insertApplicationAnswerSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { EmailService } from "./emailService";
+
+// Configure multer for local file uploads
+const uploadsDir = path.join(process.cwd(), 'attached_assets', 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
+
+const multerStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadsDir);
+  },
+  filename: (req, file, cb) => {
+    const uniqueName = `${randomUUID()}${path.extname(file.originalname)}`;
+    cb(null, uniqueName);
+  }
+});
+
+const upload = multer({
+  storage: multerStorage,
+  limits: {
+    fileSize: 10 * 1024 * 1024, // 10MB limit
+  },
+  fileFilter: (req, file, cb) => {
+    const allowedMimes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+    if (allowedMimes.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(new Error('Tipo de arquivo não permitido. Use apenas imagens (JPEG, PNG, GIF, WebP).'));
+    }
+  }
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/companies/register", async (req, res) => {
@@ -812,15 +846,47 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Local file upload endpoint (fallback when Object Storage fails)
+  app.post("/api/upload/local", upload.single('file'), async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Não autenticado" });
+      }
+
+      if (!req.file) {
+        return res.status(400).json({ message: "Nenhum arquivo enviado" });
+      }
+
+      const filePath = `/attached_assets/uploads/${req.file.filename}`;
+      res.json({ 
+        success: true,
+        filePath,
+        uploadURL: filePath 
+      });
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      return res.status(500).json({ message: "Erro ao fazer upload" });
+    }
+  });
+
   app.post("/api/objects/upload", async (req, res) => {
     try {
       if (!req.session.userId) {
         return res.status(401).json({ message: "Não autenticado" });
       }
 
-      const objectStorageService = new ObjectStorageService();
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-      res.json({ uploadURL });
+      try {
+        const objectStorageService = new ObjectStorageService();
+        const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+        res.json({ uploadURL });
+      } catch (storageError) {
+        console.error("Object Storage not available, using local upload:", storageError);
+        // Fallback: return local upload endpoint
+        res.json({ 
+          uploadURL: "/api/upload/local",
+          useLocal: true 
+        });
+      }
     } catch (error) {
       console.error("Error getting upload URL:", error);
       return res.status(500).json({ message: "Erro ao obter URL de upload" });
@@ -865,8 +931,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "logoURL é obrigatório" });
       }
 
+      let objectPath = req.body.logoURL;
+      
+      // Check if it's a local upload (starts with /attached_assets)
+      if (objectPath.startsWith('/attached_assets/')) {
+        // Local upload - just save the path
+        await storage.updateCompany(req.session.userId, { logoUrl: objectPath });
+        res.status(200).json({ objectPath });
+        return;
+      }
+
+      // Object Storage upload - set ACL
       const objectStorageService = new ObjectStorageService();
-      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+      objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
         req.body.logoURL,
         {
           owner: req.session.userId,
@@ -893,8 +970,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "bannerURL é obrigatório" });
       }
 
+      let objectPath = req.body.bannerURL;
+      
+      // Check if it's a local upload (starts with /attached_assets)
+      if (objectPath.startsWith('/attached_assets/')) {
+        // Local upload - just save the path
+        await storage.updateCompany(req.session.userId, { bannerUrl: objectPath });
+        res.status(200).json({ objectPath });
+        return;
+      }
+
+      // Object Storage upload - set ACL
       const objectStorageService = new ObjectStorageService();
-      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+      objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
         req.body.bannerURL,
         {
           owner: req.session.userId,
