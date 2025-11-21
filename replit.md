@@ -58,7 +58,7 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 
 ## Recent Changes
 
-### November 21, 2025 - Profile Completion Requirement with Friendly Toast Notification
+### November 21, 2025 - Profile Completion Requirement with Light, Friendly Toast
 - **Complete Profile Enforcement**: Operators must have 100% complete profiles before applying to jobs
   - **Required Fields**: birthDate, experienceYears, preferredLocation, skills, bio
   - **Backend Validation**:
@@ -68,24 +68,27 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
     - Enhanced `POST /api/applications` to check profile completion before allowing applications
     - Returns 400 error with `profileIncomplete: true` flag when profile is incomplete
   - **Frontend Experience** (`JobView.tsx`):
-    - **Friendly toast notification** with soft colors (no destructive red)
-    - Uses default toast styling for a welcoming, non-alarming experience
-    - Clear title: "Complete seu perfil para se candidatar"
-    - Helpful description: "Para se candidatar a vagas, você precisa completar 100% do seu perfil com todos os dados obrigatórios"
-    - **Action button integrated in toast**: "Completar Perfil" button redirects to `/perfil/operador`
+    - **Ultra-friendly light toast notification** - non-aggressive, welcoming design
+    - **Blue info icon** (Info from lucide-react) for soft, informative appearance
+    - Clean, modern title: "Complete seu perfil" with icon
+    - Encouraging description: "Para se candidatar a esta vaga, precisamos que você complete seu perfil com todas as informações obrigatórias. É rápido e simples!"
+    - **Blue action button**: "Completar Agora" with blue-500 background (no red/destructive colors)
+    - Button redirects to `/perfil/operador` for easy profile completion
     - Toast auto-dismisses or can be manually closed
+    - Light box appearance - bright, airy, and non-threatening
   - **User Flow**:
     1. Operator clicks "Candidatar-me" on job listing
     2. If profile incomplete, backend returns 400 error with `profileIncomplete: true`
-    3. Frontend displays friendly toast notification with action button
-    4. Toast uses soft colors (not red/destructive) for better UX
-    5. Operator clicks "Completar Perfil" button in toast
+    3. Frontend displays ultra-friendly light toast with blue info icon
+    4. Toast uses soft blue colors and encouraging language
+    5. Operator clicks "Completar Agora" button in toast
     6. Redirects to profile page to fill missing fields
     7. After completing profile, operator can successfully apply
 - **Purpose**: 
   - Ensures companies receive complete candidate information
   - Improves data quality for hiring decisions
-  - Guides operators with friendly, actionable notifications
-  - Better user experience with soft colors and integrated action button
-  - Non-alarming approach encourages profile completion
+  - Guides operators with extremely friendly, non-aggressive notifications
+  - Light, airy design encourages action without alarming users
+  - Blue theme (not red) creates calm, positive experience
+  - Clear call-to-action with encouraging messaging
   - Better matching between operators and opportunities

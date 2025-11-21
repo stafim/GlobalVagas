@@ -24,7 +24,8 @@ import {
   Sparkles,
   Target,
   Heart,
-  CheckCircle2
+  CheckCircle2,
+  Info
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
@@ -94,15 +95,16 @@ export default function JobView() {
       if (error?.profileIncomplete === true) {
         setDialogOpen(false);
         toast({
-          title: "Complete seu perfil para se candidatar",
-          description: "Para se candidatar a vagas, você precisa completar 100% do seu perfil com todos os dados obrigatórios.",
+          title: "Complete seu perfil",
+          description: "Para se candidatar a esta vaga, precisamos que você complete seu perfil com todas as informações obrigatórias. É rápido e simples!",
           action: (
             <Button
               size="sm"
               onClick={() => setLocation('/perfil/operador')}
               data-testid="button-complete-profile-toast"
+              className="bg-blue-500 hover:bg-blue-600 text-white"
             >
-              Completar Perfil
+              Completar Agora
             </Button>
           ),
         });
