@@ -1,6 +1,6 @@
 import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, questions, jobQuestions, applicationAnswers, siteVisits, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit } from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, and, gte, lte } from "drizzle-orm";
+import { eq, desc, and, gte, lte, not, like, sql } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -675,7 +675,18 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getAllSiteVisits(): Promise<SiteVisit[]> {
-    return await db.select().from(siteVisits).orderBy(desc(siteVisits.visitedAt));
+    // Filter out localhost IPs (127.0.0.1, ::1, etc)
+    return await db
+      .select()
+      .from(siteVisits)
+      .where(
+        and(
+          not(like(siteVisits.ipAddress, '127.%')),
+          not(eq(siteVisits.ipAddress, '::1')),
+          not(eq(siteVisits.ipAddress, 'unknown'))
+        )
+      )
+      .orderBy(desc(siteVisits.visitedAt));
   }
 
   async getSiteVisitsByDateRange(startDate: string, endDate: string): Promise<SiteVisit[]> {

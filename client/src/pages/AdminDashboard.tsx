@@ -177,10 +177,20 @@ export default function AdminDashboard() {
                         </TableCell>
                         <TableCell>
                           {visit.country ? (
-                            <Badge variant="secondary" className="gap-1">
-                              <MapPin className="h-3 w-3" />
-                              {visit.country}
-                            </Badge>
+                            <div className="flex items-center gap-2">
+                              <img 
+                                src={`https://flagcdn.com/w20/${visit.country.toLowerCase()}.png`}
+                                alt={`Bandeira ${visit.country}`}
+                                className="w-5 h-auto rounded-sm shadow-sm"
+                                onError={(e) => {
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                              />
+                              <Badge variant="secondary" className="gap-1">
+                                <MapPin className="h-3 w-3" />
+                                {visit.country}
+                              </Badge>
+                            </div>
                           ) : (
                             <span className="text-muted-foreground text-sm">-</span>
                           )}
