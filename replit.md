@@ -58,6 +58,28 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 
 ## Recent Changes
 
+### November 21, 2025 - Unified Login System for All User Types
+- **Single Login Page**: All user types (Company, Operator, Admin) now use the same login page at `/login`
+  - **Backend Unification**: Enhanced `/api/auth/login` endpoint to automatically detect user type
+    - Checks Company users first
+    - Then Operator users
+    - Then Admin users
+    - Returns appropriate `userType` flag for routing
+  - **Frontend Intelligence**: Login page redirects based on user type:
+    - Company → `/dashboard/empresa`
+    - Operator → `/dashboard/operador`
+    - Admin → `/admin`
+  - **Route Consolidation**: `/admin/login` now redirects to unified `/login` page
+  - **User Experience**: Simplified login process - users just enter credentials without selecting user type
+  - **Security**: Session management properly configured for all user types including admin
+
+### November 21, 2025 - Simplified Question Types
+- **Question Types Reduced**: Only 2 question types available for company questionnaires
+  - **Resposta Curta (20 caracteres)**: For brief, concise answers
+  - **Resposta Longa (1000 caracteres)**: For detailed, open-ended responses
+  - **Removed**: Multiple choice questions to simplify the system
+  - **Cleaner UI**: Removed options field and conditional logic from question creation form
+
 ### November 21, 2025 - Credit System for Job Publishing & Fixed Application Dashboard
 - **Credit Verification Popup**: Companies must have credits before publishing jobs
   - **Popup Dialog**: When clicking "Nova Vaga", an AlertDialog shows:

@@ -25,7 +25,6 @@ import OperatorDashboard from "@/pages/OperatorDashboard";
 import OperatorProfile from "@/pages/OperatorProfile";
 import SavedJobs from "@/pages/SavedJobs";
 import UsersList from "@/pages/UsersList";
-import AdminLogin from "@/pages/AdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AdminClients from "@/pages/AdminClients";
 import AdminOperators from "@/pages/AdminOperators";
@@ -66,7 +65,7 @@ function Router() {
       <Route path="/vaga/:id" component={JobView} />
       <Route path="/eventos" component={Events} />
       <Route path="/usuarios" component={UsersList} />
-      <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/admin/login" component={Login} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/clientes" component={AdminClients} />
       <Route path="/admin/operadores" component={AdminOperators} />

@@ -43,8 +43,10 @@ export default function Login() {
       setTimeout(() => {
         if (data.userType === "company") {
           setLocation("/dashboard/empresa");
-        } else {
+        } else if (data.userType === "operator") {
           setLocation("/dashboard/operador");
+        } else if (data.userType === "admin") {
+          setLocation("/admin");
         }
       }, 1000);
     },

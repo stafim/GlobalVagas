@@ -314,6 +314,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      const admin = await storage.getAdminByEmail(email);
+      if (admin && admin.password === password) {
+        req.session.userId = admin.id;
+        req.session.userType = 'admin';
+        
+        await new Promise<void>((resolve, reject) => {
+          req.session.save((err) => {
+            if (err) {
+              console.error("❌ Error saving admin session:", err);
+              reject(err);
+            } else {
+              console.log("✅ Admin session saved:", {
+                userId: req.session.userId,
+                userType: req.session.userType,
+                sessionID: req.sessionID
+              });
+              resolve();
+            }
+          });
+        });
+        
+        const { password: _, ...adminWithoutPassword } = admin;
+        return res.status(200).json({ 
+          user: adminWithoutPassword, 
+          userType: 'admin' 
+        });
+      }
+
       return res.status(401).json({ 
         message: "E-mail ou senha inválidos" 
       });
