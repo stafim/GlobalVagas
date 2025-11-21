@@ -46,9 +46,6 @@ export default function CompanyDashboard() {
       icon: Briefcase,
       description: statsData && statsData.activeJobs > 0 ? `${statsData.totalJobs - statsData.activeJobs} suspensas` : "Nenhuma vaga publicada ainda",
       trend: null,
-      gradient: "from-blue-500/10 to-blue-600/10",
-      iconColor: "text-blue-600 dark:text-blue-400",
-      bgIcon: "bg-blue-500/10",
     },
     {
       title: "Candidaturas",
@@ -56,9 +53,6 @@ export default function CompanyDashboard() {
       icon: Users,
       description: statsData && statsData.recentApplications > 0 ? `+${statsData.recentApplications} nos últimos 7 dias` : "Total de candidaturas recebidas",
       trend: statsData && statsData.recentApplications > 0 ? `+${statsData.recentApplications}` : null,
-      gradient: "from-green-500/10 to-green-600/10",
-      iconColor: "text-green-600 dark:text-green-400",
-      bgIcon: "bg-green-500/10",
     },
     {
       title: "Total de Vagas",
@@ -66,9 +60,6 @@ export default function CompanyDashboard() {
       icon: FileText,
       description: "Vagas publicadas (ativas e suspensas)",
       trend: null,
-      gradient: "from-purple-500/10 to-purple-600/10",
-      iconColor: "text-purple-600 dark:text-purple-400",
-      bgIcon: "bg-purple-500/10",
     },
     {
       title: "Média por Vaga",
@@ -76,9 +67,6 @@ export default function CompanyDashboard() {
       icon: TrendingUp,
       description: "Candidaturas por vaga em média",
       trend: null,
-      gradient: "from-orange-500/10 to-orange-600/10",
-      iconColor: "text-orange-600 dark:text-orange-400",
-      bgIcon: "bg-orange-500/10",
     },
   ];
 
@@ -116,13 +104,13 @@ export default function CompanyDashboard() {
         {stats.map((stat) => (
           <Card 
             key={stat.title} 
-            className={`hover-elevate bg-gradient-to-br ${stat.gradient} border-none`}
+            className="hover-elevate"
             data-testid={`stat-${stat.title.toLowerCase().replace(/\s/g, '-')}`}
           >
             <CardContent className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <div className={`h-12 w-12 rounded-xl ${stat.bgIcon} flex items-center justify-center`}>
-                  <stat.icon className={`h-6 w-6 ${stat.iconColor}`} />
+                <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
+                  <stat.icon className="h-6 w-6 text-muted-foreground" />
                 </div>
                 {stat.trend && (
                   <Badge variant="secondary" className="font-semibold">

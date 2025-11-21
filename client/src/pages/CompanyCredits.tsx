@@ -34,9 +34,6 @@ export default function CompanyCredits() {
       value: credits.toString(),
       description: "Créditos disponíveis",
       icon: Coins,
-      iconColor: "text-yellow-500",
-      bgIcon: "bg-yellow-500/10",
-      gradient: "from-yellow-500/10 to-yellow-600/10",
     },
     {
       title: "Total Adquirido",
@@ -46,9 +43,6 @@ export default function CompanyCredits() {
         .toString(),
       description: "Créditos comprados",
       icon: TrendingUp,
-      iconColor: "text-green-500",
-      bgIcon: "bg-green-500/10",
-      gradient: "from-green-500/10 to-green-600/10",
     },
     {
       title: "Total Utilizado",
@@ -58,18 +52,12 @@ export default function CompanyCredits() {
         .toString(),
       description: "Créditos gastos",
       icon: TrendingDown,
-      iconColor: "text-blue-500",
-      bgIcon: "bg-blue-500/10",
-      gradient: "from-blue-500/10 to-blue-600/10",
     },
     {
       title: "Transações",
       value: transactions.length.toString(),
       description: "Total de movimentações",
       icon: Calendar,
-      iconColor: "text-purple-500",
-      bgIcon: "bg-purple-500/10",
-      gradient: "from-purple-500/10 to-purple-600/10",
     },
   ];
 
@@ -99,13 +87,13 @@ export default function CompanyCredits() {
             stats.map((stat) => (
               <Card 
                 key={stat.title} 
-                className={`hover-elevate bg-gradient-to-br ${stat.gradient} border-none`}
+                className="hover-elevate"
                 data-testid={`stat-${stat.title.toLowerCase().replace(/\s/g, '-')}`}
               >
                 <CardContent className="p-6">
                   <div className="flex items-center justify-between mb-4">
-                    <div className={`h-12 w-12 rounded-xl ${stat.bgIcon} flex items-center justify-center`}>
-                      <stat.icon className={`h-6 w-6 ${stat.iconColor}`} />
+                    <div className="h-12 w-12 rounded-lg bg-muted flex items-center justify-center">
+                      <stat.icon className="h-6 w-6 text-muted-foreground" />
                     </div>
                   </div>
                   <div className="text-3xl font-bold mb-1">{stat.value}</div>
@@ -135,7 +123,7 @@ export default function CompanyCredits() {
           <CardContent className="space-y-4">
             <div className="grid gap-4 md:grid-cols-2">
               <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
-                <Package className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                <Package className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                 <div>
                   <h4 className="font-semibold mb-1">Compra de Planos</h4>
                   <p className="text-sm text-muted-foreground">
@@ -144,7 +132,7 @@ export default function CompanyCredits() {
                 </div>
               </div>
               <div className="flex items-start gap-3 p-4 rounded-lg bg-muted/50">
-                <Briefcase className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                <Briefcase className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
                 <div>
                   <h4 className="font-semibold mb-1">Publicação de Vagas</h4>
                   <p className="text-sm text-muted-foreground">
@@ -193,9 +181,6 @@ export default function CompanyCredits() {
                 {transactions.map((transaction) => {
                   const isCredit = transaction.type === 'credit';
                   const Icon = isCredit ? ArrowUpCircle : ArrowDownCircle;
-                  const amountColor = isCredit ? 'text-green-600' : 'text-blue-600';
-                  const bgColor = isCredit ? 'bg-green-500/10' : 'bg-blue-500/10';
-                  const iconColor = isCredit ? 'text-green-500' : 'text-blue-500';
 
                   return (
                     <div 
@@ -203,8 +188,8 @@ export default function CompanyCredits() {
                       className="flex items-center gap-4 p-4 border rounded-lg hover-elevate"
                       data-testid={`transaction-${transaction.id}`}
                     >
-                      <div className={`h-10 w-10 rounded-full ${bgColor} flex items-center justify-center flex-shrink-0`}>
-                        <Icon className={`h-5 w-5 ${iconColor}`} />
+                      <div className="h-10 w-10 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                        <Icon className="h-5 w-5 text-muted-foreground" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="font-medium text-sm truncate">
@@ -222,10 +207,7 @@ export default function CompanyCredits() {
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1">
-                        <Badge 
-                          variant={isCredit ? "default" : "secondary"}
-                          className={amountColor}
-                        >
+                        <Badge variant="secondary">
                           {isCredit ? '+' : '-'}{transaction.amount}
                         </Badge>
                         <span className="text-xs text-muted-foreground">

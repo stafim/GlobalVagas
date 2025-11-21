@@ -7,6 +7,7 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 - Focus on production-ready code
 - Bilingual support (Portuguese/English)
 - Clean, modern UI using Shadcn components
+- **Flat, minimalist design**: Neutral colors, simple icons, reduced visual noise
 - Database-backed configuration (no hardcoded values)
 
 ## System Architecture
@@ -57,6 +58,21 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 - **jsPDF**: Client-side PDF generation.
 
 ## Recent Changes
+
+### November 21, 2025 - Simplified Flat UI Design
+- **Flat Icon Design**: Removed colorful icons across the entire platform for a cleaner, more professional look
+  - **Removed Color Gradients**: Eliminated all colored gradients (`from-blue-500/10 to-blue-600/10`) from stat cards
+  - **Neutral Icons**: Changed all icons to use `text-muted-foreground` instead of specific colors (blue, green, yellow, purple, orange)
+  - **Simplified Backgrounds**: Icon containers now use `bg-muted` instead of colored backgrounds (`bg-blue-500/10`, etc.)
+  - **Cleaner Cards**: All cards use standard borders without colored accents
+  - **Neutral Badges**: Status badges use `variant="secondary"` or `variant="outline"` for consistency
+  - **Affected Pages**: 
+    - CompanyCredits: Stats cards and transaction history
+    - CompanyDashboard: Stats overview cards
+    - CompanyPlan: Plan stats, active/expired purchase cards
+    - Credit transaction icons (ArrowUpCircle/ArrowDownCircle) now neutral
+  - **Design Philosophy**: Minimalist, professional, flat design that reduces visual noise and improves focus on content
+  - **Dark Mode Compatible**: All neutral colors adapt perfectly to both light and dark themes
 
 ### November 21, 2025 - Unified Login System for All User Types
 - **Single Login Page**: All user types (Company, Operator, Admin) now use the same login page at `/login`
