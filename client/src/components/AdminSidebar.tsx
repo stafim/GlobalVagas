@@ -1,4 +1,4 @@
-import { LayoutDashboard, Building2, HardHat, CreditCard, DollarSign, Settings, Calendar, Image, Layers } from "lucide-react";
+import { LayoutDashboard, Building2, HardHat, CreditCard, DollarSign, Settings, Calendar, Image, Layers, Mail } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -60,6 +60,11 @@ const menuItems = [
     url: "/admin/banners",
     icon: Image,
   },
+  {
+    title: "Newsletter",
+    url: "/admin/newsletter",
+    icon: Mail,
+  },
 ];
 
 export function AdminSidebar() {
@@ -93,6 +98,11 @@ export function AdminSidebar() {
       });
       queryClient.prefetchQuery({
         queryKey: ['/api/purchases'],
+        staleTime: 1000 * 60 * 5,
+      });
+    } else if (url === '/admin/newsletter') {
+      queryClient.prefetchQuery({
+        queryKey: ['/api/admin/newsletter-subscriptions'],
         staleTime: 1000 * 60 * 5,
       });
     }

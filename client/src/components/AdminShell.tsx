@@ -65,6 +65,9 @@ export function AdminShell({ children }: AdminShellProps) {
     if (location === '/admin/planos') {
       return { title: "Planos de Assinatura", description: "Gerencie os planos disponíveis para clientes" };
     }
+    if (location === '/admin/newsletter') {
+      return { title: "Newsletter", description: "Gerencie as inscrições da newsletter" };
+    }
     return { title: "Dashboard", description: "" };
   };
 
