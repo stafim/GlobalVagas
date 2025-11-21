@@ -82,10 +82,12 @@ export default function JobView() {
       });
       if (!response.ok) {
         const error = await response.json();
-        if (error.profileIncomplete) {
-          throw { profileIncomplete: true, message: error.message };
-        }
-        throw new Error(error.message || "Erro ao aplicar a vaga");
+        const errorObj = { 
+          profileIncomplete: error.profileIncomplete || false,
+          message: error.message || "Erro ao aplicar a vaga",
+          missingFields: error.missingFields || []
+        };
+        throw errorObj;
       }
       return response.json();
     },
@@ -100,14 +102,14 @@ export default function JobView() {
       });
     },
     onError: (error: any) => {
-      if (error.profileIncomplete) {
+      if (error?.profileIncomplete === true) {
         setDialogOpen(false);
         setProfileIncompleteDialog(true);
       } else {
         toast({
           variant: "destructive",
           title: "Erro ao aplicar",
-          description: error.message || "Erro ao aplicar a vaga",
+          description: error?.message || "Erro ao aplicar a vaga",
         });
       }
     },

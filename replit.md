@@ -1,7 +1,7 @@
 # Operlist - Bilingual Job Board Platform
 
 ## Overview
-Operlist is a comprehensive, bilingual (Portuguese/English) job board platform designed to connect job seekers (operators) with employers (companies). It facilitates job postings, applications, and user management across various profiles (operators, companies, administrators). The platform aims to provide a modern, efficient, and scalable solution for the job market, offering robust administrative control and supporting diverse user needs with features like a multi-step job creation wizard, dynamic questionnaires, and integrated communication tools.
+Operlist is a comprehensive, bilingual (Portuguese/English) job board platform connecting job seekers (operators) with employers (companies). It supports job postings, applications, and user management across various profiles (operators, companies, administrators). The platform aims to be an efficient, scalable solution for the job market, offering robust administrative control, a multi-step job creation wizard, dynamic questionnaires, and integrated communication tools to enhance the hiring process.
 
 ## User Preferences
 - Focus on production-ready code
@@ -11,28 +11,29 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform d
 
 ## System Architecture
 
+### Core Features & Design
+- **User Management**: Distinct roles (Operators, Companies, Administrators) with session-based authentication. Operators must have 100% complete profiles before applying to jobs, with an AlertDialog guiding them to required fields (birthDate, experienceYears, preferredLocation, skills, bio).
+- **Job Management**: Companies create/manage jobs via a 4-step wizard, including dynamic question selection. Jobs have 'Active'/'Suspended' statuses and are publicly listed with search/filter capabilities.
+- **Job Application System**: Operators apply to jobs and complete dynamic questionnaires. The system validates only required questions, indicated visually, and prevents duplicate applications. Unauthenticated users are redirected to log in.
+- **Profile Management**: Detailed profiles for Companies (presentation pages, banner uploads) and Operators (experience tracking, photos).
+- **Administration Panel**: Comprehensive interface for system settings, email configuration, content, and user management, including a financial dashboard.
+- **Localization**: Full platform support for Portuguese and English.
+- **Email System**: Integrated SMTP for notifications and password recovery.
+- **Object Storage**: Replit Object Storage for user photos, company logos, and event images.
+- **Form Validation**: Client-side and server-side validation using Zod.
+- **UI/UX**: Clean, modern, responsive interface using Shadcn UI, featuring intuitive workflows, enhanced job card visualization, and consistent header/footer across all public pages. Company sidebar navigation is reorganized into distinct sections (Menu Principal, Questionários, Cadastros Básicos) for clarity.
+- **Visit Counter System**: Tracks unique home page visits.
+- **Public Jobs Page**: `/vagas` page with advanced filtering and real-time search.
+- **Events Management**: System for displaying trade shows and workshops.
+- **Company Credits System**: Dashboard for companies to manage credits, view transaction history, and track balances for plan purchases and job postings. Purchasing plans automatically assigns credits.
+- **Communication Tools**: WhatsApp contact button for direct communication and CV download feature for PDF resumes.
+- **Questionnaire System**: Dynamic question selection during job creation and interactive questionnaires for operators, with companies viewing responses.
+- **Company Configuration CRUDs**: Management of company-specific `Work Types` and `Contract Types` with full CRUD functionality via dedicated pages (`/empresa/tipos-trabalho`, `/empresa/tipos-contrato`). These are used for job categorization.
+
 ### Technology Stack
 - **Frontend**: React + TypeScript + Vite, Shadcn UI + Tailwind CSS, TanStack Query, React Hook Form + Zod
 - **Backend**: Express + TypeScript
 - **Database**: PostgreSQL (Neon-backed Replit database) with Drizzle ORM
-
-### Core Features & Design
-- **User Management**: Distinct roles (Operators, Companies, Administrators) with session-based authentication.
-- **Job Management**: Companies can create/manage jobs via a 4-step wizard (including question selection). Jobs have 'Active'/'Suspended' statuses and are publicly listed with search/filter capabilities.
-- **Job Application System**: Operators can apply to jobs, complete dynamic questionnaires, and are prevented from duplicate applications. Unauthenticated users are redirected to login for application.
-- **Profile Management**: Detailed profiles for Companies (presentation pages, banner uploads) and Operators (experience tracking, photos).
-- **Administration Panel**: Comprehensive interface for system settings, email configuration, content, and user management, including a financial dashboard.
-- **Bilingual Support**: Full platform localization for Portuguese and English.
-- **Email Configuration**: Integrated SMTP for notifications, configurable via admin panel. Includes a password recovery system with email verification.
-- **Object Storage**: Replit Object Storage for user photos, company logos, and event images.
-- **Form Validation**: Client-side and server-side validation using Zod.
-- **UI/UX**: Clean, modern, responsive interface using Shadcn UI, featuring intuitive workflows like multi-step forms and real-time statistics. Enhanced job card visualization with clear borders and shadows.
-- **Visit Counter System**: Tracks unique home page visits with daily and total statistics.
-- **Public Jobs Page**: Accessible `/vagas` page with advanced filtering and real-time search.
-- **Events Management**: System for displaying trade shows and workshops.
-- **Company Credits System**: Dashboard for companies to manage credits, view transaction history, and track balances for plan purchases and job postings.
-- **Communication Tools**: WhatsApp contact button for companies to communicate directly with candidates, and a CV download feature for generating PDF resumes of candidates.
-- **Questionnaire System**: Dynamic question selection during job creation and interactive questionnaires for operators during application. Companies can view operator responses.
 
 ### Project Structure
 - `client/` - React frontend application
@@ -54,169 +55,3 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform d
 - **Recharts**: For data visualization.
 - **cookie-parser**: Express middleware for cookie handling.
 - **jsPDF**: Client-side PDF generation.
-
-## Recent Changes
-
-### November 21, 2025 - Profile Completion Requirement for Job Applications
-- **Complete Profile Enforcement**: Operators must have 100% complete profiles before applying to jobs
-  - **Required Fields**: birthDate, experienceYears, preferredLocation, skills, bio
-  - **Backend Validation**:
-    - Created `isOperatorProfileComplete()` function in `storage.ts`
-    - Returns object with `isComplete` boolean and `missingFields` array
-    - New endpoint: `GET /api/operator/profile-complete`
-    - Enhanced `POST /api/applications` to check profile completion before allowing applications
-    - Returns specific error with `profileIncomplete: true` flag when profile is incomplete
-  - **Frontend Experience** (`JobView.tsx`):
-    - AlertDialog appears when operator tries to apply with incomplete profile
-    - Clear message explaining which fields are required
-    - "Completar Perfil" button redirects to `/perfil/operador`
-    - "Cancelar" option to dismiss dialog
-  - **User Flow**:
-    1. Operator clicks "Candidatar-me" on job listing
-    2. If profile incomplete, backend rejects application
-    3. AlertDialog shows explaining profile requirements
-    4. Operator can click "Completar Perfil" to navigate to profile page
-    5. After completing profile, operator can successfully apply
-- **Purpose**: 
-  - Ensures companies receive complete candidate information
-  - Improves data quality for hiring decisions
-  - Guides operators to maintain professional profiles
-  - Better matching between operators and opportunities
-
-### November 21, 2025 - Mandatory Questionnaire Validation for Job Applications
-- **Smart Questionnaire System**: Implemented intelligent validation for job application questionnaires
-  - **Required Questions Only**: System now validates only questions marked as required (`isRequired` field)
-  - **Visual Indicators**: Clear UI showing which questions are mandatory
-    - Red asterisk (*) next to required question text
-    - "Obrigatória" badge in destructive variant for required questions
-  - **Backend Changes**:
-    - Modified `GET /api/jobs/:jobId/questions` endpoint to include `isRequired` field
-    - Created `QuestionWithRequired` type in `shared/schema.ts` for type safety
-    - Endpoint now returns complete question data with requirement status
-  - **Frontend Improvements** (`JobView.tsx`):
-    - Updated questionnaire validation to check only required questions
-    - Improved error message: "Por favor, responda todas as perguntas obrigatórias antes de enviar"
-    - Enhanced UI with clear visual distinction between required and optional questions
-  - **User Experience**:
-    - Operators can skip optional questions during application
-    - Required questions must be answered to submit application
-    - Clear feedback when required questions are missing
-    - Maintains flexibility for companies to have mix of required/optional questions
-- **Purpose**: 
-  - Provides flexibility in questionnaire design (companies can have optional questions)
-  - Improves conversion rates by not forcing operators to answer all questions
-  - Maintains data quality for truly important questions
-  - Better user experience with clear expectations
-
-### November 21, 2025 - Reorganized Company Sidebar Navigation
-- **Improved Menu Structure**: Reorganized company sidebar for better organization and clarity
-  - Removed collapsible "Configurações" menu
-  - Created three distinct sections with visual labels:
-    - **Menu Principal** (unlabeled): Dashboard, Minhas Vagas, Meu Plano, Meus Créditos, Perfil da Empresa
-    - **Questionários** (labeled): Banco de Perguntas
-    - **Cadastros Básicos** (labeled): Tipos de Trabalho, Tipos de Contrato
-- **Better Visual Hierarchy**: 
-  - Section labels with uppercase, tracked spacing, and muted color
-  - Clear separation between groups with spacing (mt-6)
-  - All items at same level - no nested menus
-  - Cleaner, more professional appearance
-- **Purpose**: Makes it easier to find and access different sections of company management
-  - Separates main navigation from configuration options
-  - Groups related functionality together logically
-  - Improves user experience with clearer information architecture
-
-### November 21, 2025 - Company Configuration CRUDs: Work Types & Contract Types
-- **New Configuration Management**: Created two new CRUD systems for company settings
-  - **Tipos de Trabalho (Work Types)**: Manage work schedule types (Full-time, Part-time, etc.)
-    - Full CRUD: Create, Read, Update, Delete
-    - Fields: name, description, isActive
-    - Company-specific data (each company manages their own types)
-    - New page: `/empresa/tipos-trabalho`
-  - **Tipos de Contrato (Contract Types)**: Manage contract types (CLT, PJ, Temporary, etc.)
-    - Full CRUD: Create, Read, Update, Delete
-    - Fields: name, description, isActive
-    - Company-specific data (each company manages their own types)
-    - New page: `/empresa/tipos-contrato`
-- **Database Schema**: Added two new tables
-  - `work_types` table with company relationship
-  - `contract_types` table with company relationship
-  - Both tables track creation dates and active status
-- **Backend API**: New endpoints for both entities
-  - GET/POST `/api/company/work-types`
-  - PATCH/DELETE `/api/company/work-types/:id`
-  - GET/POST `/api/company/contract-types`
-  - PATCH/DELETE `/api/company/contract-types/:id`
-  - All endpoints protected with company authentication
-- **Navigation Update**: Added new menu items under "Configurações" submenu
-  - "Tipos de Trabalho" with Clock icon
-  - "Tipos de Contrato" with FileText icon
-  - Both accessible from collapsible Configurações menu
-- **UI/UX Features**:
-  - Card-based grid layout for listing items
-  - Dialog forms for create/edit operations
-  - Confirmation alerts for deletions
-  - Active/Inactive status badges
-  - Empty state with call-to-action
-  - Full Portuguese localization
-- **Purpose**: These configuration types will be used during job posting to categorize vacancies
-  - Allows companies to standardize their job classifications
-  - Provides flexibility for different business needs
-  - Simplifies job creation with predefined options
-
-### November 21, 2025 - Standardized Navigation: Header Across All Pages
-- **Consistent Navigation**: Added Header and Footer components to all public pages
-  - Updated Login page to include Header and Footer
-  - Updated ForgotPassword page to include Header and Footer
-  - Ensured consistent user experience across authentication flows
-  - All public pages now have standard top navigation and footer
-  - Users can navigate to other sections (Vagas, Eventos) even from login/signup pages
-  - Improved accessibility with consistent layout structure
-
-### November 21, 2025 - Reorganized Navigation: Banco de Perguntas as Submenu
-- **Navigation Restructure**: Moved "Banco de Perguntas" to be a submenu item under "Configurações"
-  - Updated CompanySidebar to support collapsible menu items with submenus
-  - Implemented using Shadcn Collapsible component for smooth expand/collapse
-  - Changed route from `/empresa/configuracoes` to `/empresa/banco-perguntas`
-  - Menu automatically expands when submenu item is active
-  - Updated all internal links to use new route
-  - Improved menu organization for better UX
-
-### November 21, 2025 - Bug Fixes: Job Creation & Question Options UI
-- **Fixed 400 Error**: Corrected `displayOrder` field type issue when adding questions to jobs
-  - Problem: Field expected string but received number
-  - Solution: Convert displayOrder to string: `String(i + 1)`
-  - Job creation with questions now works correctly
-- **Improved Multiple Choice UI**: Enhanced question creation form for better clarity
-  - Added explicit instruction: "Digite cada opção em uma linha separada"
-  - Added visual warning icon to emphasize one-option-per-line requirement
-  - Improved placeholder text with clearer examples
-  - Increased textarea rows from 5 to 6 for better visibility
-
-### November 21, 2025 - Fix: Questions Not Appearing in Job Creation Wizard
-- **Bug Fix**: Corrected endpoint in job creation wizard (step 4 - Questionnaire)
-  - Changed from non-existent `/api/questions` to correct `/api/company/questions`
-  - Questions now properly load and display during job creation
-  - Companies can now select questions when creating new job postings
-  - Issue: The frontend was calling an endpoint that didn't exist on the backend
-  - Solution: Updated `CompanyJobs.tsx` to use the proper company-specific questions endpoint
-
-### November 21, 2025 - Automatic Credit Assignment on Plan Purchase
-- **Purchase Flow Integration**: Implemented automatic credit assignment when companies purchase plans
-  - Created `POST /api/companies/purchase-plan` endpoint for plan purchases
-  - System automatically creates or finds client record by company CNPJ
-  - Creates purchase record linking company to plan
-  - **Automatically credits** the plan's `vacancyQuantity` to company account
-  - Creates transaction record documenting the credit addition
-  - Updates company credits balance in real-time
-- **Enhanced Company Plans Page**:
-  - Added "Planos Disponíveis" section showing all active plans
-  - Each plan card displays: name, description, price, and credits included
-  - "Adquirir Plano" button to purchase plans
-  - Real-time balance updates after purchase
-  - Success notification showing credits received
-  - Automatic cache invalidation for credits and transactions
-- **Integration Points**:
-  - Plan purchase → Client creation/lookup → Purchase record → Credit transaction → Balance update
-  - Full transactional integrity with proper error handling
-  - 1-year validity period for purchased plans
-  - Invalidates relevant caches: purchases, credits, transactions
