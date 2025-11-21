@@ -1,5 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import express from "express";
+import path from "path";
 import { storage } from "./storage";
 import { insertCompanySchema, insertOperatorSchema, insertAdminSchema, insertPlanSchema, insertClientSchema, insertSectorSchema, insertSubsectorSchema, insertEventSchema, insertBannerSchema, insertJobSchema, insertQuestionSchema, insertJobQuestionSchema, insertApplicationAnswerSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
@@ -2192,6 +2194,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       return res.status(500).json({ message: "Erro ao salvar respostas" });
     }
   });
+
+  // Serve static files from attached_assets directory
+  app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
 
   const httpServer = createServer(app);
 
