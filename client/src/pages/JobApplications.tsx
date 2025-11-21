@@ -313,7 +313,7 @@ export default function JobApplications() {
             </CardContent>
           </Card>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="space-y-3">
             {applications.map((application) => {
               const { operator } = application;
               
@@ -324,55 +324,57 @@ export default function JobApplications() {
                   onClick={() => setSelectedCandidate(application)}
                   data-testid={`card-candidate-${application.id}`}
                 >
-                  <CardHeader>
-                    <div className="flex items-start gap-4">
-                      <Avatar className="h-16 w-16">
-                        <AvatarImage src={operator.profilePhotoUrl || undefined} />
-                        <AvatarFallback className="text-lg">
-                          {getInitials(operator.fullName)}
-                        </AvatarFallback>
-                      </Avatar>
-                      
-                      <div className="flex-1 min-w-0">
-                        <CardTitle className="text-lg mb-1 truncate" data-testid={`text-candidate-name-${application.id}`}>
-                          {operator.fullName}
-                        </CardTitle>
-                        <CardDescription className="text-sm">
-                          {operator.profession}
-                        </CardDescription>
-                        {operator.experienceYears && (
-                          <p className="text-xs text-muted-foreground mt-1">
-                            {operator.experienceYears} anos de experiência
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4 flex-wrap">
+                      {/* Avatar e informações básicas */}
+                      <div className="flex items-center gap-3 flex-1 min-w-[250px]">
+                        <Avatar className="h-12 w-12">
+                          <AvatarImage src={operator.profilePhotoUrl || undefined} />
+                          <AvatarFallback>
+                            {getInitials(operator.fullName)}
+                          </AvatarFallback>
+                        </Avatar>
+                        
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold truncate" data-testid={`text-candidate-name-${application.id}`}>
+                            {operator.fullName}
+                          </h3>
+                          <p className="text-sm text-muted-foreground truncate">
+                            {operator.profession}
                           </p>
-                        )}
+                        </div>
                       </div>
-                    </div>
-                  </CardHeader>
 
-                  <CardContent className="space-y-3">
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2 text-sm">
+                      {/* Experiência */}
+                      {operator.experienceYears && (
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Briefcase className="h-4 w-4 flex-shrink-0" />
+                          <span className="whitespace-nowrap">{operator.experienceYears} anos</span>
+                        </div>
+                      )}
+
+                      {/* Email */}
+                      <div className="flex items-center gap-2 text-sm min-w-[200px]">
                         <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                         <span className="truncate">{operator.email}</span>
                       </div>
-                      
+
+                      {/* Telefone */}
                       <div className="flex items-center gap-2 text-sm">
                         <SiWhatsapp className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span>{operator.phone}</span>
+                        <span className="whitespace-nowrap">{operator.phone}</span>
                       </div>
 
+                      {/* Localização */}
                       {operator.preferredLocation && (
-                        <div className="flex items-center gap-2 text-sm">
+                        <div className="flex items-center gap-2 text-sm min-w-[150px]">
                           <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                           <span className="truncate">{operator.preferredLocation}</span>
                         </div>
                       )}
-                    </div>
 
-                    <Separator />
-
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2">
+                      {/* Ações e status */}
+                      <div className="flex items-center gap-3 ml-auto">
                         <Button
                           size="sm"
                           variant="ghost"
@@ -383,14 +385,17 @@ export default function JobApplications() {
                           title="Baixar Currículo em PDF"
                           data-testid={`button-download-cv-${application.id}`}
                         >
-                          <FileDown className="h-4 w-4" />
+                          <FileDown className="h-4 w-4 mr-2" />
+                          CV
                         </Button>
-                        <div className="flex items-center gap-2 text-muted-foreground">
-                          <Clock className="h-4 w-4" />
-                          <span>{formatDateTime(application.appliedAt)}</span>
+                        
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                          <Clock className="h-3 w-3" />
+                          <span className="whitespace-nowrap">{formatDateTime(application.appliedAt)}</span>
                         </div>
+                        
+                        {getStatusBadge(application.status)}
                       </div>
-                      {getStatusBadge(application.status)}
                     </div>
                   </CardContent>
                 </Card>
