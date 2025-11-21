@@ -2,6 +2,30 @@ import nodemailer from 'nodemailer';
 import type { EmailSettings } from '@shared/schema';
 
 export class EmailService {
+  private settings: EmailSettings;
+
+  constructor(settings: EmailSettings) {
+    this.settings = settings;
+  }
+
+  private async createTransporter() {
+    if (!this.settings || this.settings.isActive !== 'true') {
+      throw new Error('Email service is not configured or inactive');
+    }
+
+    const config: any = {
+      host: this.settings.smtpHost,
+      port: parseInt(this.settings.smtpPort || '587'),
+      secure: parseInt(this.settings.smtpPort || '587') === 465,
+      auth: {
+        user: this.settings.smtpUser,
+        pass: this.settings.smtpPassword,
+      },
+    };
+
+    return nodemailer.createTransport(config);
+  }
+
   private static async createTransporter(settings: EmailSettings) {
     if (!settings || settings.isActive !== 'true') {
       throw new Error('Email service is not configured or inactive');
@@ -179,6 +203,182 @@ Data: ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
       subject,
       html,
       text: text || html.replace(/<[^>]*>/g, ''),
+    };
+
+    await transporter.sendMail(mailOptions);
+  }
+
+  async sendPasswordResetCode(email: string, code: string, userName: string): Promise<void> {
+    const transporter = await this.createTransporter();
+
+    const mailOptions = {
+      from: `"${this.settings.senderName}" <${this.settings.senderEmail}>`,
+      to: email,
+      subject: '🔐 Código de Recuperação de Senha - Operlist',
+      html: `
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+        <head>
+          <meta charset="UTF-8">
+          <style>
+            body {
+              font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+              line-height: 1.6;
+              color: #333;
+              max-width: 600px;
+              margin: 0 auto;
+              padding: 20px;
+              background-color: #f8f9fa;
+            }
+            .container {
+              background: white;
+              border-radius: 12px;
+              overflow: hidden;
+              box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            }
+            .header {
+              background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+              color: white;
+              padding: 40px 30px;
+              text-align: center;
+            }
+            .header h1 {
+              margin: 0;
+              font-size: 28px;
+              font-weight: 600;
+            }
+            .content {
+              padding: 40px 30px;
+            }
+            .greeting {
+              font-size: 18px;
+              margin-bottom: 20px;
+              color: #1f2937;
+            }
+            .code-container {
+              background: #f3f4f6;
+              border: 2px dashed #dc2626;
+              border-radius: 8px;
+              padding: 30px;
+              text-align: center;
+              margin: 30px 0;
+            }
+            .code {
+              font-size: 48px;
+              font-weight: 700;
+              letter-spacing: 8px;
+              color: #dc2626;
+              font-family: 'Courier New', monospace;
+            }
+            .code-label {
+              font-size: 14px;
+              color: #6b7280;
+              margin-top: 10px;
+            }
+            .info-box {
+              background: #fef3c7;
+              border-left: 4px solid #f59e0b;
+              padding: 15px;
+              margin: 20px 0;
+              border-radius: 4px;
+            }
+            .info-box strong {
+              color: #92400e;
+            }
+            .warning-box {
+              background: #fee2e2;
+              border-left: 4px solid #dc2626;
+              padding: 15px;
+              margin: 20px 0;
+              border-radius: 4px;
+              color: #991b1b;
+            }
+            .footer {
+              text-align: center;
+              color: #6b7280;
+              font-size: 14px;
+              padding: 30px;
+              background: #f9fafb;
+              border-top: 1px solid #e5e7eb;
+            }
+            .button {
+              display: inline-block;
+              background: #dc2626;
+              color: white;
+              padding: 12px 30px;
+              text-decoration: none;
+              border-radius: 6px;
+              font-weight: 600;
+              margin: 20px 0;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <div class="header">
+              <h1>🔐 Recuperação de Senha</h1>
+            </div>
+            
+            <div class="content">
+              <div class="greeting">
+                Olá, <strong>${userName}</strong>!
+              </div>
+              
+              <p>Recebemos uma solicitação para redefinir a senha da sua conta na plataforma <strong>Operlist</strong>.</p>
+              
+              <p>Use o código abaixo para continuar com a recuperação:</p>
+              
+              <div class="code-container">
+                <div class="code">${code}</div>
+                <div class="code-label">Código de Verificação</div>
+              </div>
+              
+              <div class="info-box">
+                <strong>⏱️ Atenção:</strong> Este código é válido por <strong>15 minutos</strong>.
+              </div>
+              
+              <p>Após inserir o código, você poderá criar uma nova senha para sua conta.</p>
+              
+              <div class="warning-box">
+                <strong>🔒 Segurança:</strong> Se você não solicitou esta recuperação de senha, ignore este email. Sua senha permanecerá inalterada.
+              </div>
+              
+              <p style="margin-top: 30px;">Se tiver qualquer dúvida, entre em contato com nosso suporte.</p>
+            </div>
+            
+            <div class="footer">
+              <p><strong>Operlist</strong> - Plataforma de Vagas para Operadores</p>
+              <p style="font-size: 12px; color: #9ca3af; margin-top: 10px;">
+                Email enviado em ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
+              </p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `,
+      text: `
+🔐 Recuperação de Senha - Operlist
+
+Olá, ${userName}!
+
+Recebemos uma solicitação para redefinir a senha da sua conta na plataforma Operlist.
+
+Use o código abaixo para continuar com a recuperação:
+
+CÓDIGO: ${code}
+
+⏱️ Atenção: Este código é válido por 15 minutos.
+
+Após inserir o código, você poderá criar uma nova senha para sua conta.
+
+🔒 Segurança: Se você não solicitou esta recuperação de senha, ignore este email. Sua senha permanecerá inalterada.
+
+Se tiver qualquer dúvida, entre em contato com nosso suporte.
+
+---
+Operlist - Plataforma de Vagas para Operadores
+Email enviado em ${new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' })}
+      `.trim(),
     };
 
     await transporter.sendMail(mailOptions);

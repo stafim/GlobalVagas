@@ -6,7 +6,7 @@ import multer from "multer";
 import { randomUUID } from "crypto";
 import fs from "fs";
 import { storage } from "./storage";
-import { insertCompanySchema, insertOperatorSchema, insertAdminSchema, insertPlanSchema, insertClientSchema, insertSectorSchema, insertSubsectorSchema, insertEventSchema, insertBannerSchema, insertJobSchema, insertQuestionSchema, insertJobQuestionSchema, insertApplicationAnswerSchema, insertNewsletterSubscriptionSchema } from "@shared/schema";
+import { insertCompanySchema, insertOperatorSchema, insertAdminSchema, insertPlanSchema, insertClientSchema, insertSectorSchema, insertSubsectorSchema, insertEventSchema, insertBannerSchema, insertJobSchema, insertQuestionSchema, insertJobQuestionSchema, insertApplicationAnswerSchema, insertNewsletterSubscriptionSchema, insertPasswordResetCodeSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
 import { ObjectStorageService, ObjectNotFoundError } from "./objectStorage";
 import { EmailService } from "./emailService";
@@ -491,6 +491,168 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error logging out:", error);
       return res.status(500).json({ message: "Erro ao fazer logout" });
+    }
+  });
+
+  app.post("/api/auth/forgot-password", async (req, res) => {
+    try {
+      const { email, userType } = req.body;
+
+      if (!email || !userType) {
+        return res.status(400).json({ 
+          message: "Email e tipo de usuário são obrigatórios" 
+        });
+      }
+
+      if (!['company', 'operator'].includes(userType)) {
+        return res.status(400).json({ 
+          message: "Tipo de usuário inválido" 
+        });
+      }
+
+      let userName = '';
+      if (userType === 'company') {
+        const company = await storage.getCompanyByEmail(email);
+        if (!company) {
+          return res.status(404).json({ 
+            message: "Usuário não encontrado" 
+          });
+        }
+        userName = company.companyName;
+      } else {
+        const operator = await storage.getOperatorByEmail(email);
+        if (!operator) {
+          return res.status(404).json({ 
+            message: "Usuário não encontrado" 
+          });
+        }
+        userName = operator.fullName;
+      }
+
+      const code = Math.floor(1000 + Math.random() * 9000).toString();
+      
+      const expiresAt = new Date();
+      expiresAt.setMinutes(expiresAt.getMinutes() + 15);
+
+      await storage.createPasswordResetCode({
+        email,
+        code,
+        userType,
+        expiresAt: expiresAt.toISOString(),
+        isUsed: 'false',
+      });
+
+      const emailSettings = await storage.getEmailSettings();
+      if (emailSettings) {
+        const emailService = new EmailService(emailSettings);
+        await emailService.sendPasswordResetCode(email, code, userName);
+      }
+
+      return res.status(200).json({ 
+        message: "Código de recuperação enviado para seu e-mail" 
+      });
+    } catch (error) {
+      console.error("Error sending reset code:", error);
+      return res.status(500).json({ 
+        message: "Erro ao enviar código de recuperação" 
+      });
+    }
+  });
+
+  app.post("/api/auth/verify-reset-code", async (req, res) => {
+    try {
+      const { email, code } = req.body;
+
+      if (!email || !code) {
+        return res.status(400).json({ 
+          message: "Email e código são obrigatórios" 
+        });
+      }
+
+      const resetCode = await storage.getPasswordResetCode(email, code);
+
+      if (!resetCode) {
+        return res.status(400).json({ 
+          message: "Código inválido ou expirado" 
+        });
+      }
+
+      const now = new Date();
+      const expiresAt = new Date(resetCode.expiresAt);
+
+      if (now > expiresAt) {
+        return res.status(400).json({ 
+          message: "Código expirado. Solicite um novo código." 
+        });
+      }
+
+      return res.status(200).json({ 
+        message: "Código verificado com sucesso",
+        userType: resetCode.userType 
+      });
+    } catch (error) {
+      console.error("Error verifying reset code:", error);
+      return res.status(500).json({ 
+        message: "Erro ao verificar código" 
+      });
+    }
+  });
+
+  app.post("/api/auth/reset-password", async (req, res) => {
+    try {
+      const { email, code, newPassword } = req.body;
+
+      if (!email || !code || !newPassword) {
+        return res.status(400).json({ 
+          message: "Email, código e nova senha são obrigatórios" 
+        });
+      }
+
+      if (newPassword.length < 6) {
+        return res.status(400).json({ 
+          message: "A senha deve ter pelo menos 6 caracteres" 
+        });
+      }
+
+      const resetCode = await storage.getPasswordResetCode(email, code);
+
+      if (!resetCode) {
+        return res.status(400).json({ 
+          message: "Código inválido ou expirado" 
+        });
+      }
+
+      const now = new Date();
+      const expiresAt = new Date(resetCode.expiresAt);
+
+      if (now > expiresAt) {
+        return res.status(400).json({ 
+          message: "Código expirado. Solicite um novo código." 
+        });
+      }
+
+      if (resetCode.userType === 'company') {
+        const company = await storage.getCompanyByEmail(email);
+        if (company) {
+          await storage.updateCompany(company.id, { password: newPassword });
+        }
+      } else if (resetCode.userType === 'operator') {
+        const operator = await storage.getOperatorByEmail(email);
+        if (operator) {
+          await storage.updateOperator(operator.id, { password: newPassword });
+        }
+      }
+
+      await storage.markPasswordResetCodeAsUsed(resetCode.id);
+
+      return res.status(200).json({ 
+        message: "Senha alterada com sucesso" 
+      });
+    } catch (error) {
+      console.error("Error resetting password:", error);
+      return res.status(500).json({ 
+        message: "Erro ao resetar senha" 
+      });
     }
   });
 
