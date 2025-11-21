@@ -166,8 +166,8 @@ export function HeroSection() {
                         className="p-4 hover-elevate cursor-pointer transition-colors"
                         data-testid={`hero-search-result-${job.id}`}
                       >
-                        <div className="flex items-start gap-3">
-                          <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                        <div className="flex items-start gap-4">
+                          <div className="h-16 w-16 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0 overflow-hidden">
                             {job.companyLogo ? (
                               <img 
                                 src={job.companyLogo} 
@@ -175,7 +175,7 @@ export function HeroSection() {
                                 className="h-full w-full object-cover"
                               />
                             ) : (
-                              <Building2 className="h-5 w-5 text-primary" />
+                              <Building2 className="h-7 w-7 text-primary" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
