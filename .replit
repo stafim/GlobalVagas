@@ -64,3 +64,9 @@ expertMode = true
 
 [objectStorage]
 defaultBucketID = "replit-objstore-04290629-17f3-4282-9c01-072e871a15a7"
+
+[userenv]
+
+[userenv.shared]
+PRIVATE_OBJECT_DIR = "gs://operlist-storage/private"
+PUBLIC_OBJECT_SEARCH_PATHS = "gs://operlist-storage/public,gs://operlist-storage/uploads"
