@@ -232,6 +232,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/operator/profile-complete", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'operator') {
+        return res.status(401).json({ message: "Não autenticado" });
+      }
+
+      const profileCheck = await storage.isOperatorProfileComplete(req.session.userId);
+      return res.status(200).json(profileCheck);
+    } catch (error) {
+      console.error("Error checking profile completion:", error);
+      return res.status(500).json({ message: "Erro ao verificar perfil" });
+    }
+  });
+
   app.get("/api/companies/dashboard-stats", async (req, res) => {
     try {
       if (!req.session.userId || req.session.userType !== 'company') {
