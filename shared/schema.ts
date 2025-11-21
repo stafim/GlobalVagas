@@ -472,3 +472,25 @@ export const insertNewsletterSubscriptionSchema = createInsertSchema(newsletterS
 
 export type InsertNewsletterSubscription = z.infer<typeof insertNewsletterSubscriptionSchema>;
 export type NewsletterSubscription = typeof newsletterSubscriptions.$inferSelect;
+
+export const passwordResetCodes = pgTable("password_reset_codes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: text("email").notNull(),
+  code: text("code").notNull(),
+  userType: text("user_type").notNull(),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  expiresAt: text("expires_at").notNull(),
+  isUsed: text("is_used").notNull().default('false'),
+}, (table) => ({
+  emailIdx: index("password_reset_codes_email_idx").on(table.email),
+  codeIdx: index("password_reset_codes_code_idx").on(table.code),
+  expiresAtIdx: index("password_reset_codes_expires_at_idx").on(table.expiresAt),
+}));
+
+export const insertPasswordResetCodeSchema = createInsertSchema(passwordResetCodes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertPasswordResetCode = z.infer<typeof insertPasswordResetCodeSchema>;
+export type PasswordResetCode = typeof passwordResetCodes.$inferSelect;
