@@ -53,12 +53,19 @@ export function ObjectUploader({
         fieldName: 'file',
         getResponseData(responseText: string, response: any) {
           try {
+            console.log('XHR Response Text:', responseText);
+            console.log('XHR Response Object:', response);
             const data = JSON.parse(responseText);
+            console.log('Parsed data:', data);
+            const url = data.filePath || data.uploadURL;
+            console.log('Upload URL:', url);
             return {
-              uploadURL: data.filePath || data.uploadURL,
+              uploadURL: url,
             };
           } catch (error) {
             console.error('Error parsing response:', error);
+            console.error('Response text was:', responseText);
+            console.error('Response object was:', response);
             return {};
           }
         },
