@@ -57,6 +57,14 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform d
 
 ## Recent Changes
 
+### November 21, 2025 - Fix: Questions Not Appearing in Job Creation Wizard
+- **Bug Fix**: Corrected endpoint in job creation wizard (step 4 - Questionnaire)
+  - Changed from non-existent `/api/questions` to correct `/api/company/questions`
+  - Questions now properly load and display during job creation
+  - Companies can now select questions when creating new job postings
+  - Issue: The frontend was calling an endpoint that didn't exist on the backend
+  - Solution: Updated `CompanyJobs.tsx` to use the proper company-specific questions endpoint
+
 ### November 21, 2025 - Automatic Credit Assignment on Plan Purchase
 - **Purchase Flow Integration**: Implemented automatic credit assignment when companies purchase plans
   - Created `POST /api/companies/purchase-plan` endpoint for plan purchases

@@ -57,7 +57,7 @@ export default function CompanyJobs() {
   });
 
   const { data: questions = [] } = useQuery<Question[]>({
-    queryKey: ['/api/questions'],
+    queryKey: ['/api/company/questions'],
   });
 
   const createJobMutation = useMutation({
