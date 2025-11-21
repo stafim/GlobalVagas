@@ -10,7 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Plus, Trash2, Edit, FileQuestion, MessageSquare, CheckSquare, AlignLeft } from "lucide-react";
+import { Plus, Trash2, Edit, FileQuestion, MessageSquare, AlignLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { insertQuestionSchema, type Question } from "@shared/schema";
@@ -19,21 +19,19 @@ import { useState } from "react";
 
 const questionFormSchema = insertQuestionSchema.extend({
   questionText: z.string().min(5, "A pergunta deve ter pelo menos 5 caracteres"),
-  questionType: z.enum(["text", "multiple_choice", "textarea"]),
+  questionType: z.enum(["text", "textarea"]),
   options: z.string().optional(),
 }).omit({ companyId: true, clientId: true });
 
 type QuestionFormData = z.infer<typeof questionFormSchema>;
 
 const questionTypeLabels = {
-  text: "Texto Livre",
-  multiple_choice: "Múltipla Escolha",
-  textarea: "Texto Longo",
+  text: "Resposta Curta (20 caracteres)",
+  textarea: "Resposta Longa (1000 caracteres)",
 };
 
 const questionTypeIcons = {
   text: AlignLeft,
-  multiple_choice: CheckSquare,
   textarea: MessageSquare,
 };
 
@@ -134,7 +132,7 @@ export default function CompanyQuestions() {
     setEditingQuestion(question);
     form.reset({
       questionText: question.questionText,
-      questionType: question.questionType as "text" | "multiple_choice" | "textarea",
+      questionType: question.questionType as "text" | "textarea",
       options: question.options || "",
       isActive: question.isActive,
     });
@@ -224,19 +222,13 @@ export default function CompanyQuestions() {
                           <SelectItem value="text">
                             <div className="flex items-center gap-2">
                               <AlignLeft className="h-4 w-4" />
-                              Texto Livre (resposta curta)
-                            </div>
-                          </SelectItem>
-                          <SelectItem value="multiple_choice">
-                            <div className="flex items-center gap-2">
-                              <CheckSquare className="h-4 w-4" />
-                              Múltipla Escolha
+                              Resposta Curta (20 caracteres)
                             </div>
                           </SelectItem>
                           <SelectItem value="textarea">
                             <div className="flex items-center gap-2">
                               <MessageSquare className="h-4 w-4" />
-                              Texto Longo (resposta aberta)
+                              Resposta Longa (1000 caracteres)
                             </div>
                           </SelectItem>
                         </SelectContent>
@@ -264,30 +256,6 @@ export default function CompanyQuestions() {
                     </FormItem>
                   )}
                 />
-
-                {questionType === "multiple_choice" && (
-                  <FormField
-                    control={form.control}
-                    name="options"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Opções de Resposta</FormLabel>
-                        <FormControl>
-                          <Textarea
-                            {...field}
-                            placeholder="Digite cada opção em uma linha separada:&#10;Menos de 1 ano&#10;1 a 3 anos&#10;3 a 5 anos&#10;Mais de 5 anos"
-                            rows={6}
-                            data-testid="input-question-options"
-                          />
-                        </FormControl>
-                        <p className="text-sm text-muted-foreground">
-                          ⚠️ Importante: Digite cada opção em uma linha separada
-                        </p>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                )}
 
                 <FormField
                   control={form.control}
@@ -407,21 +375,6 @@ export default function CompanyQuestions() {
                           {question.questionText}
                         </CardTitle>
                       </CardHeader>
-                      {question.questionType === "multiple_choice" && question.options && (
-                        <CardContent>
-                          <p className="text-sm text-muted-foreground mb-2">Opções:</p>
-                          <ul className="text-sm space-y-1">
-                            {question.options.split('\n').slice(0, 3).map((option, idx) => (
-                              <li key={idx} className="truncate">• {option}</li>
-                            ))}
-                            {question.options.split('\n').length > 3 && (
-                              <li className="text-muted-foreground">
-                                ... e mais {question.options.split('\n').length - 3} opções
-                              </li>
-                            )}
-                          </ul>
-                        </CardContent>
-                      )}
                     </Card>
                   );
                 })}
