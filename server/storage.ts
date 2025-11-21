@@ -1,4 +1,4 @@
-import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, savedJobs, questions, jobQuestions, applicationAnswers, siteVisits, newsletterSubscriptions, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type SavedJob, type InsertSavedJob, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit, type NewsletterSubscription, type InsertNewsletterSubscription } from "@shared/schema";
+import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, savedJobs, questions, jobQuestions, applicationAnswers, siteVisits, newsletterSubscriptions, passwordResetCodes, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type SavedJob, type InsertSavedJob, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit, type NewsletterSubscription, type InsertNewsletterSubscription, type PasswordResetCode, type InsertPasswordResetCode } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, not, like, sql } from "drizzle-orm";
 
@@ -127,6 +127,11 @@ export interface IStorage {
   getNewsletterSubscription(email: string): Promise<NewsletterSubscription | undefined>;
   getAllNewsletterSubscriptions(): Promise<NewsletterSubscription[]>;
   getActiveNewsletterSubscriptions(): Promise<NewsletterSubscription[]>;
+  
+  createPasswordResetCode(resetCode: InsertPasswordResetCode): Promise<PasswordResetCode>;
+  getPasswordResetCode(email: string, code: string): Promise<PasswordResetCode | undefined>;
+  markPasswordResetCodeAsUsed(id: string): Promise<void>;
+  deleteExpiredPasswordResetCodes(): Promise<void>;
   
   getQuestion(id: string): Promise<Question | undefined>;
   getQuestionsByCompany(companyId: string): Promise<Question[]>;
@@ -1052,6 +1057,42 @@ export class DatabaseStorage implements IStorage {
       .from(newsletterSubscriptions)
       .where(eq(newsletterSubscriptions.isActive, 'true'))
       .orderBy(desc(newsletterSubscriptions.subscribedAt));
+  }
+
+  async createPasswordResetCode(resetCode: InsertPasswordResetCode): Promise<PasswordResetCode> {
+    const [code] = await db
+      .insert(passwordResetCodes)
+      .values(resetCode)
+      .returning();
+    return code;
+  }
+
+  async getPasswordResetCode(email: string, code: string): Promise<PasswordResetCode | undefined> {
+    const [resetCode] = await db
+      .select()
+      .from(passwordResetCodes)
+      .where(
+        and(
+          eq(passwordResetCodes.email, email),
+          eq(passwordResetCodes.code, code),
+          eq(passwordResetCodes.isUsed, 'false')
+        )
+      );
+    return resetCode || undefined;
+  }
+
+  async markPasswordResetCodeAsUsed(id: string): Promise<void> {
+    await db
+      .update(passwordResetCodes)
+      .set({ isUsed: 'true' })
+      .where(eq(passwordResetCodes.id, id));
+  }
+
+  async deleteExpiredPasswordResetCodes(): Promise<void> {
+    const now = new Date().toISOString();
+    await db
+      .delete(passwordResetCodes)
+      .where(lte(passwordResetCodes.expiresAt, now));
   }
 }
 
