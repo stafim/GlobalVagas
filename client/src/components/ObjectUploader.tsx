@@ -3,7 +3,6 @@ import { useState } from "react";
 import type { ReactNode } from "react";
 import Uppy from "@uppy/core";
 import Dashboard from "@uppy/dashboard";
-import AwsS3 from "@uppy/aws-s3";
 import XHR from "@uppy/xhr-upload";
 import type { UploadResult } from "@uppy/core";
 import { Button } from "@/components/ui/button";
@@ -32,8 +31,6 @@ export function ObjectUploader({
   buttonClassName,
   children,
 }: ObjectUploaderProps) {
-  const [useLocalUpload, setUseLocalUpload] = useState(false);
-  
   const [uppy] = useState(() => {
     const uppyInstance = new Uppy({
       restrictions: {
@@ -49,49 +46,26 @@ export function ObjectUploader({
         proudlyDisplayPoweredByUppy: false,
         showRemoveButtonAfterComplete: true,
       })
+      .use(XHR, {
+        endpoint: '/api/upload/local',
+        method: 'POST',
+        formData: true,
+        fieldName: 'file',
+      })
       .on("complete", (result) => {
-        onComplete?.(result);
+        if (onComplete) {
+          onComplete(result as any);
+        }
         const dashboardPlugin = uppyInstance.getPlugin('Dashboard') as any;
-        dashboardPlugin?.closeModal();
+        if (dashboardPlugin) {
+          dashboardPlugin.closeModal();
+        }
       });
     
     return uppyInstance;
   });
 
-  const handleOpenDashboard = async () => {
-    // Check if we should use local upload
-    try {
-      const params = await onGetUploadParameters();
-      
-      // Remove existing upload plugins
-      if (uppy.getPlugin('AwsS3')) {
-        uppy.removePlugin(uppy.getPlugin('AwsS3')!);
-      }
-      if (uppy.getPlugin('XHRUpload')) {
-        uppy.removePlugin(uppy.getPlugin('XHRUpload')!);
-      }
-      
-      if (params.useLocal) {
-        // Use local XHR upload
-        setUseLocalUpload(true);
-        uppy.use(XHR, {
-          endpoint: params.url,
-          method: 'POST',
-          formData: true,
-          fieldName: 'file',
-        });
-      } else {
-        // Use S3-style upload
-        setUseLocalUpload(false);
-        uppy.use(AwsS3, {
-          shouldUseMultipart: false,
-          getUploadParameters: onGetUploadParameters,
-        });
-      }
-    } catch (error) {
-      console.error('Error checking upload method:', error);
-    }
-    
+  const handleOpenDashboard = () => {
     const dashboardPlugin = uppy.getPlugin('Dashboard') as any;
     if (dashboardPlugin) {
       dashboardPlugin.openModal();
