@@ -2482,6 +2482,162 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Work Types endpoints
+  app.get("/api/company/work-types", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const workTypes = await storage.getWorkTypesByCompany(req.session.userId);
+      return res.status(200).json(workTypes);
+    } catch (error) {
+      console.error("Error fetching work types:", error);
+      return res.status(500).json({ message: "Erro ao buscar tipos de trabalho" });
+    }
+  });
+
+  app.post("/api/company/work-types", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const workType = await storage.createWorkType({
+        ...req.body,
+        companyId: req.session.userId,
+      });
+      return res.status(201).json(workType);
+    } catch (error) {
+      console.error("Error creating work type:", error);
+      return res.status(500).json({ message: "Erro ao criar tipo de trabalho" });
+    }
+  });
+
+  app.patch("/api/company/work-types/:id", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const existingWorkType = await storage.getWorkType(req.params.id);
+      if (!existingWorkType) {
+        return res.status(404).json({ message: "Tipo de trabalho não encontrado" });
+      }
+
+      if (existingWorkType.companyId !== req.session.userId) {
+        return res.status(403).json({ message: "Você não tem permissão para editar este tipo de trabalho" });
+      }
+
+      const workType = await storage.updateWorkType(req.params.id, req.body);
+      return res.status(200).json(workType);
+    } catch (error) {
+      console.error("Error updating work type:", error);
+      return res.status(500).json({ message: "Erro ao atualizar tipo de trabalho" });
+    }
+  });
+
+  app.delete("/api/company/work-types/:id", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const existingWorkType = await storage.getWorkType(req.params.id);
+      if (!existingWorkType) {
+        return res.status(404).json({ message: "Tipo de trabalho não encontrado" });
+      }
+
+      if (existingWorkType.companyId !== req.session.userId) {
+        return res.status(403).json({ message: "Você não tem permissão para deletar este tipo de trabalho" });
+      }
+
+      await storage.deleteWorkType(req.params.id);
+      return res.status(200).json({ message: "Tipo de trabalho deletado com sucesso" });
+    } catch (error) {
+      console.error("Error deleting work type:", error);
+      return res.status(500).json({ message: "Erro ao deletar tipo de trabalho" });
+    }
+  });
+
+  // Contract Types endpoints
+  app.get("/api/company/contract-types", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const contractTypes = await storage.getContractTypesByCompany(req.session.userId);
+      return res.status(200).json(contractTypes);
+    } catch (error) {
+      console.error("Error fetching contract types:", error);
+      return res.status(500).json({ message: "Erro ao buscar tipos de contrato" });
+    }
+  });
+
+  app.post("/api/company/contract-types", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const contractType = await storage.createContractType({
+        ...req.body,
+        companyId: req.session.userId,
+      });
+      return res.status(201).json(contractType);
+    } catch (error) {
+      console.error("Error creating contract type:", error);
+      return res.status(500).json({ message: "Erro ao criar tipo de contrato" });
+    }
+  });
+
+  app.patch("/api/company/contract-types/:id", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const existingContractType = await storage.getContractType(req.params.id);
+      if (!existingContractType) {
+        return res.status(404).json({ message: "Tipo de contrato não encontrado" });
+      }
+
+      if (existingContractType.companyId !== req.session.userId) {
+        return res.status(403).json({ message: "Você não tem permissão para editar este tipo de contrato" });
+      }
+
+      const contractType = await storage.updateContractType(req.params.id, req.body);
+      return res.status(200).json(contractType);
+    } catch (error) {
+      console.error("Error updating contract type:", error);
+      return res.status(500).json({ message: "Erro ao atualizar tipo de contrato" });
+    }
+  });
+
+  app.delete("/api/company/contract-types/:id", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const existingContractType = await storage.getContractType(req.params.id);
+      if (!existingContractType) {
+        return res.status(404).json({ message: "Tipo de contrato não encontrado" });
+      }
+
+      if (existingContractType.companyId !== req.session.userId) {
+        return res.status(403).json({ message: "Você não tem permissão para deletar este tipo de contrato" });
+      }
+
+      await storage.deleteContractType(req.params.id);
+      return res.status(200).json({ message: "Tipo de contrato deletado com sucesso" });
+    } catch (error) {
+      console.error("Error deleting contract type:", error);
+      return res.status(500).json({ message: "Erro ao deletar tipo de contrato" });
+    }
+  });
+
   // Credits endpoints
   app.get("/api/company/credits", async (req, res) => {
     try {

@@ -1,4 +1,4 @@
-import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, savedJobs, questions, jobQuestions, applicationAnswers, siteVisits, newsletterSubscriptions, passwordResetCodes, creditTransactions, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type SavedJob, type InsertSavedJob, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit, type NewsletterSubscription, type InsertNewsletterSubscription, type PasswordResetCode, type InsertPasswordResetCode, type CreditTransaction, type InsertCreditTransaction } from "@shared/schema";
+import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, savedJobs, questions, jobQuestions, applicationAnswers, siteVisits, newsletterSubscriptions, passwordResetCodes, creditTransactions, workTypes, contractTypes, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type SavedJob, type InsertSavedJob, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit, type NewsletterSubscription, type InsertNewsletterSubscription, type PasswordResetCode, type InsertPasswordResetCode, type CreditTransaction, type InsertCreditTransaction, type WorkType, type InsertWorkType, type ContractType, type InsertContractType } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, not, like, sql } from "drizzle-orm";
 
@@ -139,6 +139,18 @@ export interface IStorage {
   createQuestion(question: InsertQuestion): Promise<Question>;
   updateQuestion(id: string, question: Partial<InsertQuestion>): Promise<Question>;
   deleteQuestion(id: string): Promise<void>;
+  
+  getWorkType(id: string): Promise<WorkType | undefined>;
+  getWorkTypesByCompany(companyId: string): Promise<WorkType[]>;
+  createWorkType(workType: InsertWorkType): Promise<WorkType>;
+  updateWorkType(id: string, workType: Partial<InsertWorkType>): Promise<WorkType>;
+  deleteWorkType(id: string): Promise<void>;
+  
+  getContractType(id: string): Promise<ContractType | undefined>;
+  getContractTypesByCompany(companyId: string): Promise<ContractType[]>;
+  createContractType(contractType: InsertContractType): Promise<ContractType>;
+  updateContractType(id: string, contractType: Partial<InsertContractType>): Promise<ContractType>;
+  deleteContractType(id: string): Promise<void>;
   
   getJobQuestion(id: string): Promise<JobQuestion | undefined>;
   getJobQuestionsByJob(jobId: string): Promise<Array<JobQuestion & { question: Question }>>;
@@ -954,6 +966,70 @@ export class DatabaseStorage implements IStorage {
 
   async deleteQuestion(id: string): Promise<void> {
     await db.delete(questions).where(eq(questions.id, id));
+  }
+
+  async getWorkType(id: string): Promise<WorkType | undefined> {
+    const [workType] = await db.select().from(workTypes).where(eq(workTypes.id, id));
+    return workType || undefined;
+  }
+
+  async getWorkTypesByCompany(companyId: string): Promise<WorkType[]> {
+    return await db.select().from(workTypes)
+      .where(eq(workTypes.companyId, companyId))
+      .orderBy(desc(workTypes.createdAt));
+  }
+
+  async createWorkType(insertWorkType: InsertWorkType): Promise<WorkType> {
+    const [workType] = await db
+      .insert(workTypes)
+      .values(insertWorkType)
+      .returning();
+    return workType;
+  }
+
+  async updateWorkType(id: string, updateData: Partial<InsertWorkType>): Promise<WorkType> {
+    const [workType] = await db
+      .update(workTypes)
+      .set(updateData)
+      .where(eq(workTypes.id, id))
+      .returning();
+    return workType;
+  }
+
+  async deleteWorkType(id: string): Promise<void> {
+    await db.delete(workTypes).where(eq(workTypes.id, id));
+  }
+
+  async getContractType(id: string): Promise<ContractType | undefined> {
+    const [contractType] = await db.select().from(contractTypes).where(eq(contractTypes.id, id));
+    return contractType || undefined;
+  }
+
+  async getContractTypesByCompany(companyId: string): Promise<ContractType[]> {
+    return await db.select().from(contractTypes)
+      .where(eq(contractTypes.companyId, companyId))
+      .orderBy(desc(contractTypes.createdAt));
+  }
+
+  async createContractType(insertContractType: InsertContractType): Promise<ContractType> {
+    const [contractType] = await db
+      .insert(contractTypes)
+      .values(insertContractType)
+      .returning();
+    return contractType;
+  }
+
+  async updateContractType(id: string, updateData: Partial<InsertContractType>): Promise<ContractType> {
+    const [contractType] = await db
+      .update(contractTypes)
+      .set(updateData)
+      .where(eq(contractTypes.id, id))
+      .returning();
+    return contractType;
+  }
+
+  async deleteContractType(id: string): Promise<void> {
+    await db.delete(contractTypes).where(eq(contractTypes.id, id));
   }
 
   async getJobQuestion(id: string): Promise<JobQuestion | undefined> {
