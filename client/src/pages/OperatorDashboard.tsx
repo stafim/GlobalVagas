@@ -204,7 +204,7 @@ export default function OperatorDashboard() {
                     <Briefcase className="mr-2 h-5 w-5" />
                     Buscar Vagas
                   </Button>
-                  <Button variant="outline" className="w-full justify-start" data-testid="button-saved-jobs">
+                  <Button variant="outline" className="w-full justify-start" onClick={() => setLocation("/vagas-salvas")} data-testid="button-saved-jobs">
                     <Bookmark className="mr-2 h-5 w-5" />
                     Vagas Salvas
                   </Button>

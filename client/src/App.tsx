@@ -19,6 +19,7 @@ import CompanyPlan from "@/pages/CompanyPlan";
 import CompanyQuestions from "@/pages/CompanyQuestions";
 import OperatorDashboard from "@/pages/OperatorDashboard";
 import OperatorProfile from "@/pages/OperatorProfile";
+import SavedJobs from "@/pages/SavedJobs";
 import UsersList from "@/pages/UsersList";
 import AdminLogin from "@/pages/AdminLogin";
 import AdminDashboard from "@/pages/AdminDashboard";
@@ -51,6 +52,7 @@ function Router() {
       <Route path="/empresa/configuracoes" component={CompanyQuestions} />
       <Route path="/dashboard/operador" component={OperatorDashboard} />
       <Route path="/perfil/operador" component={OperatorProfile} />
+      <Route path="/vagas-salvas" component={SavedJobs} />
       <Route path="/vagas" component={PublicJobs} />
       <Route path="/vaga/:id" component={JobView} />
       <Route path="/eventos" component={Events} />
