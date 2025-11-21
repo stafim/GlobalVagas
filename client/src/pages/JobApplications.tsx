@@ -16,7 +16,8 @@ import {
   Award,
   Clock,
   User,
-  FileText
+  FileText,
+  FileDown
 } from "lucide-react";
 import { useLocation, useRoute } from "wouter";
 import { useQuery } from "@tanstack/react-query";
@@ -24,6 +25,7 @@ import { useState } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { Job, Operator, Application, Question, ApplicationAnswer } from "@shared/schema";
+import jsPDF from "jspdf";
 
 type ApplicationWithOperator = Application & { operator: Operator };
 type AnswerWithQuestion = ApplicationAnswer & { question: Question };
@@ -86,6 +88,148 @@ export default function JobApplications() {
       default:
         return <Badge>{status}</Badge>;
     }
+  };
+
+  const downloadCV = (operator: Operator, jobTitle: string) => {
+    const doc = new jsPDF();
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let yPos = 20;
+
+    // Header
+    doc.setFontSize(20);
+    doc.setFont("helvetica", "bold");
+    doc.text("CURRÍCULO", pageWidth / 2, yPos, { align: "center" });
+    yPos += 15;
+
+    // Nome
+    doc.setFontSize(16);
+    doc.text(operator.fullName, pageWidth / 2, yPos, { align: "center" });
+    yPos += 10;
+
+    // Profissão
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "normal");
+    if (operator.profession) {
+      doc.text(operator.profession, pageWidth / 2, yPos, { align: "center" });
+      yPos += 15;
+    }
+
+    // Linha separadora
+    doc.setLineWidth(0.5);
+    doc.line(20, yPos, pageWidth - 20, yPos);
+    yPos += 10;
+
+    // Informações de Contato
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("INFORMAÇÕES DE CONTATO", 20, yPos);
+    yPos += 8;
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Email: ${operator.email}`, 20, yPos);
+    yPos += 6;
+    doc.text(`Telefone: ${operator.phone}`, 20, yPos);
+    yPos += 6;
+    
+    if (operator.birthDate) {
+      doc.text(`Data de Nascimento: ${formatDate(operator.birthDate)}`, 20, yPos);
+      yPos += 6;
+    }
+
+    if (operator.preferredLocation) {
+      doc.text(`Localização Preferida: ${operator.preferredLocation}`, 20, yPos);
+      yPos += 10;
+    } else {
+      yPos += 4;
+    }
+
+    // Experiência Profissional
+    doc.setFontSize(14);
+    doc.setFont("helvetica", "bold");
+    doc.text("EXPERIÊNCIA PROFISSIONAL", 20, yPos);
+    yPos += 8;
+
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "normal");
+    if (operator.experienceYears) {
+      doc.text(`Tempo de Experiência: ${operator.experienceYears} anos`, 20, yPos);
+      yPos += 6;
+    }
+
+    if (operator.workType) {
+      doc.text(`Tipo de Trabalho Preferido: ${operator.workType}`, 20, yPos);
+      yPos += 6;
+    }
+
+    if (operator.availability) {
+      doc.text(`Disponibilidade: ${operator.availability}`, 20, yPos);
+      yPos += 10;
+    } else {
+      yPos += 4;
+    }
+
+    // Habilidades
+    if (operator.skills) {
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("HABILIDADES", 20, yPos);
+      yPos += 8;
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      const skillsLines = doc.splitTextToSize(operator.skills, pageWidth - 40);
+      doc.text(skillsLines, 20, yPos);
+      yPos += (skillsLines.length * 6) + 4;
+    }
+
+    // Certificações
+    if (operator.certifications) {
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("CERTIFICAÇÕES", 20, yPos);
+      yPos += 8;
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      const certLines = doc.splitTextToSize(operator.certifications, pageWidth - 40);
+      doc.text(certLines, 20, yPos);
+      yPos += (certLines.length * 6) + 4;
+    }
+
+    // Sobre
+    if (operator.bio) {
+      if (yPos > 250) {
+        doc.addPage();
+        yPos = 20;
+      }
+
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("SOBRE", 20, yPos);
+      yPos += 8;
+
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      const bioLines = doc.splitTextToSize(operator.bio, pageWidth - 40);
+      doc.text(bioLines, 20, yPos);
+    }
+
+    // Footer
+    const timestamp = format(new Date(), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+    doc.setFontSize(8);
+    doc.setTextColor(128, 128, 128);
+    doc.text(`Currículo gerado para a vaga: ${jobTitle}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 10, { align: "center" });
+    doc.text(`Data de geração: ${timestamp}`, pageWidth / 2, doc.internal.pageSize.getHeight() - 6, { align: "center" });
+
+    // Download
+    const fileName = `CV_${operator.fullName.replace(/\s+/g, '_')}_${new Date().getTime()}.pdf`;
+    doc.save(fileName);
   };
 
   if (isLoadingJob || isLoadingApplications) {
@@ -228,9 +372,23 @@ export default function JobApplications() {
                     <Separator />
 
                     <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center gap-2 text-muted-foreground">
-                        <Clock className="h-4 w-4" />
-                        <span>{formatDateTime(application.appliedAt)}</span>
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            downloadCV(operator, job.title);
+                          }}
+                          title="Baixar Currículo em PDF"
+                          data-testid={`button-download-cv-${application.id}`}
+                        >
+                          <FileDown className="h-4 w-4" />
+                        </Button>
+                        <div className="flex items-center gap-2 text-muted-foreground">
+                          <Clock className="h-4 w-4" />
+                          <span>{formatDateTime(application.appliedAt)}</span>
+                        </div>
                       </div>
                       {getStatusBadge(application.status)}
                     </div>

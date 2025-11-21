@@ -53,6 +53,25 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 
 ## Recent Changes
 
+### November 21, 2025 - CV Download Feature in Job Applications
+- **PDF Download Button**: Added ability to download candidate curriculum vitae (CV) as PDF
+  - Download icon (FileDown) appears in each candidate card
+  - Clicking the button generates a professional PDF resume
+  - PDF includes all candidate information:
+    - Personal information (name, profession, contact details)
+    - Professional experience (years, work type, availability)
+    - Skills and certifications
+    - Biography/About section
+  - PDF footer shows job title and generation timestamp
+  - File naming: `CV_[CandidateName]_[timestamp].pdf`
+  - Uses jsPDF library for client-side PDF generation
+  - Click event stops propagation to prevent opening candidate modal
+- **UI Integration**:
+  - Icon button placed next to application date in candidate card
+  - Ghost variant button for subtle appearance
+  - Tooltip shows "Baixar Currículo em PDF"
+  - Proper data-testid for automated testing
+
 ### November 21, 2025 - Application Count Display in Job Cards
 - **Enhanced Job Cards**: Added application count display to each job card in CompanyJobs page
   - Shows total number of candidates who applied to each job
