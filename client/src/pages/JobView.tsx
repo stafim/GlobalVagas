@@ -29,7 +29,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/use-auth";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import type { Job, Company, Question } from "@shared/schema";
+import type { Job, Company, QuestionWithRequired } from "@shared/schema";
 import { useState, useEffect } from "react";
 import { Header } from "@/components/Header";
 
@@ -52,7 +52,7 @@ export default function JobView() {
     enabled: !!params?.id,
   });
 
-  const questionsQuery = useQuery<Question[]>({
+  const questionsQuery = useQuery<QuestionWithRequired[]>({
     queryKey: ['/api/jobs', params?.id, 'questions'],
     enabled: !!params?.id,
   });
@@ -115,13 +115,16 @@ export default function JobView() {
 
   const handleSubmitApplication = () => {
     const questions = questionsQuery.data || [];
-    const allAnswered = questions.every(q => answers[q.id] && answers[q.id].trim() !== '');
     
-    if (!allAnswered) {
+    // Validate only required questions
+    const requiredQuestions = questions.filter(q => q.isRequired === 'true');
+    const allRequiredAnswered = requiredQuestions.every(q => answers[q.id] && answers[q.id].trim() !== '');
+    
+    if (!allRequiredAnswered) {
       toast({
         variant: "destructive",
         title: "Respostas incompletas",
-        description: "Por favor, responda todas as perguntas antes de enviar.",
+        description: "Por favor, responda todas as perguntas obrigatórias antes de enviar.",
       });
       return;
     }
@@ -433,9 +436,19 @@ export default function JobView() {
         <div className="space-y-4 mt-4">
           {questionsQuery.data?.map((question, index) => (
             <div key={question.id} className="space-y-2">
-              <Label className="text-base font-medium">
-                {index + 1}. {question.questionText}
-              </Label>
+              <div className="flex items-center gap-2">
+                <Label className="text-base font-medium">
+                  {index + 1}. {question.questionText}
+                  {question.isRequired === 'true' && (
+                    <span className="text-destructive ml-1">*</span>
+                  )}
+                </Label>
+                {question.isRequired === 'true' && (
+                  <Badge variant="destructive" className="text-xs">
+                    Obrigatória
+                  </Badge>
+                )}
+              </div>
               
               {question.questionType === 'text' && (
                 <Input

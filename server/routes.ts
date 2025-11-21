@@ -2701,9 +2701,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/jobs/:jobId/questions", async (req, res) => {
     try {
       const jobQuestions = await storage.getJobQuestionsByJob(req.params.jobId);
-      // Extract only the questions from the results
-      const questions = jobQuestions.map(jq => jq.question);
-      return res.status(200).json(questions);
+      // Include isRequired field from jobQuestions along with question data
+      const questionsWithRequired = jobQuestions.map(jq => ({
+        ...jq.question,
+        isRequired: jq.isRequired
+      }));
+      return res.status(200).json(questionsWithRequired);
     } catch (error) {
       console.error("Error fetching job questions:", error);
       return res.status(500).json({ message: "Erro ao buscar perguntas da vaga" });

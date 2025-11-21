@@ -57,6 +57,31 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform d
 
 ## Recent Changes
 
+### November 21, 2025 - Mandatory Questionnaire Validation for Job Applications
+- **Smart Questionnaire System**: Implemented intelligent validation for job application questionnaires
+  - **Required Questions Only**: System now validates only questions marked as required (`isRequired` field)
+  - **Visual Indicators**: Clear UI showing which questions are mandatory
+    - Red asterisk (*) next to required question text
+    - "Obrigatória" badge in destructive variant for required questions
+  - **Backend Changes**:
+    - Modified `GET /api/jobs/:jobId/questions` endpoint to include `isRequired` field
+    - Created `QuestionWithRequired` type in `shared/schema.ts` for type safety
+    - Endpoint now returns complete question data with requirement status
+  - **Frontend Improvements** (`JobView.tsx`):
+    - Updated questionnaire validation to check only required questions
+    - Improved error message: "Por favor, responda todas as perguntas obrigatórias antes de enviar"
+    - Enhanced UI with clear visual distinction between required and optional questions
+  - **User Experience**:
+    - Operators can skip optional questions during application
+    - Required questions must be answered to submit application
+    - Clear feedback when required questions are missing
+    - Maintains flexibility for companies to have mix of required/optional questions
+- **Purpose**: 
+  - Provides flexibility in questionnaire design (companies can have optional questions)
+  - Improves conversion rates by not forcing operators to answer all questions
+  - Maintains data quality for truly important questions
+  - Better user experience with clear expectations
+
 ### November 21, 2025 - Reorganized Company Sidebar Navigation
 - **Improved Menu Structure**: Reorganized company sidebar for better organization and clarity
   - Removed collapsible "Configurações" menu

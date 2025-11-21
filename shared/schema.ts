@@ -416,6 +416,8 @@ export const insertJobQuestionSchema = createInsertSchema(jobQuestions).omit({
 export type InsertJobQuestion = z.infer<typeof insertJobQuestionSchema>;
 export type JobQuestion = typeof jobQuestions.$inferSelect;
 
+export type QuestionWithRequired = Question & { isRequired: string };
+
 export const applicationAnswers = pgTable("application_answers", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   applicationId: varchar("application_id").notNull().references(() => applications.id, { onDelete: 'cascade' }),
