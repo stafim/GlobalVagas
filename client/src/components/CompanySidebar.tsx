@@ -1,4 +1,4 @@
-import { Building2, LayoutDashboard, Briefcase, CreditCard, Settings, Coins, ChevronDown, FileQuestion, Clock, FileText } from "lucide-react";
+import { Building2, LayoutDashboard, Briefcase, CreditCard, Coins, FileQuestion, Clock, FileText } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -8,12 +8,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubItem,
-  SidebarMenuSubButton,
   SidebarHeader,
 } from "@/components/ui/sidebar";
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { useLocation, Link } from "wouter";
 import { useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
@@ -21,7 +17,7 @@ import type { Company } from "@shared/schema";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useMemo } from "react";
 
-const menuItems = [
+const mainMenuItems = [
   {
     title: "Dashboard",
     url: "/dashboard/empresa",
@@ -47,26 +43,26 @@ const menuItems = [
     url: "/empresa/perfil",
     icon: Building2,
   },
+];
+
+const questionnaireMenuItems = [
   {
-    title: "Configurações",
-    icon: Settings,
-    subItems: [
-      {
-        title: "Banco de Perguntas",
-        url: "/empresa/banco-perguntas",
-        icon: FileQuestion,
-      },
-      {
-        title: "Tipos de Trabalho",
-        url: "/empresa/tipos-trabalho",
-        icon: Clock,
-      },
-      {
-        title: "Tipos de Contrato",
-        url: "/empresa/tipos-contrato",
-        icon: FileText,
-      },
-    ],
+    title: "Banco de Perguntas",
+    url: "/empresa/banco-perguntas",
+    icon: FileQuestion,
+  },
+];
+
+const settingsMenuItems = [
+  {
+    title: "Tipos de Trabalho",
+    url: "/empresa/tipos-trabalho",
+    icon: Clock,
+  },
+  {
+    title: "Tipos de Contrato",
+    url: "/empresa/tipos-contrato",
+    icon: FileText,
   },
 ];
 
@@ -110,76 +106,82 @@ export function CompanySidebar() {
           </div>
         </div>
       </SidebarHeader>
-      <SidebarContent className="pt-6 px-3">
+      <SidebarContent className="pt-4 px-3">
+        {/* Menu Principal */}
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="gap-2">
-              {menuItems.map((item) => {
-                // Item com submenu
-                if ('subItems' in item && item.subItems) {
-                  const isAnySubItemActive = item.subItems.some(sub => location === sub.url);
-                  return (
-                    <Collapsible
-                      key={item.title}
-                      asChild
-                      defaultOpen={isAnySubItemActive}
+              {mainMenuItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location === item.url}
+                    data-testid={`sidebar-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="h-11 px-4 rounded-lg font-medium"
+                  >
+                    <Link 
+                      href={item.url}
+                      onMouseEnter={() => prefetchData(item.url)}
+                      onFocus={() => prefetchData(item.url)}
                     >
-                      <SidebarMenuItem>
-                        <CollapsibleTrigger asChild>
-                          <SidebarMenuButton
-                            className="h-11 px-4 rounded-lg font-medium"
-                            data-testid={`sidebar-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-                          >
-                            <item.icon className="h-5 w-5 mr-3" />
-                            <span>{item.title}</span>
-                            <ChevronDown className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]:rotate-180" />
-                          </SidebarMenuButton>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <SidebarMenuSub className="ml-4 mt-1">
-                            {item.subItems.map((subItem) => (
-                              <SidebarMenuSubItem key={subItem.title}>
-                                <SidebarMenuSubButton
-                                  asChild
-                                  isActive={location === subItem.url}
-                                  className="h-10 px-4 rounded-lg"
-                                  data-testid={`sidebar-${subItem.title.toLowerCase().replace(/\s+/g, '-')}`}
-                                >
-                                  <Link href={subItem.url}>
-                                    <subItem.icon className="h-4 w-4 mr-3" />
-                                    <span>{subItem.title}</span>
-                                  </Link>
-                                </SidebarMenuSubButton>
-                              </SidebarMenuSubItem>
-                            ))}
-                          </SidebarMenuSub>
-                        </CollapsibleContent>
-                      </SidebarMenuItem>
-                    </Collapsible>
-                  );
-                }
-                
-                // Item normal sem submenu
-                return (
-                  <SidebarMenuItem key={item.title}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={location === item.url}
-                      data-testid={`sidebar-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-                      className="h-11 px-4 rounded-lg font-medium"
-                    >
-                      <Link 
-                        href={item.url}
-                        onMouseEnter={() => prefetchData(item.url)}
-                        onFocus={() => prefetchData(item.url)}
-                      >
-                        <item.icon className="h-5 w-5 mr-3" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
+                      <item.icon className="h-5 w-5 mr-3" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Questionários */}
+        <SidebarGroup className="mt-6">
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 mb-2">
+            Questionários
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-2">
+              {questionnaireMenuItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location === item.url}
+                    data-testid={`sidebar-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="h-11 px-4 rounded-lg font-medium"
+                  >
+                    <Link href={item.url}>
+                      <item.icon className="h-5 w-5 mr-3" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Cadastros Básicos */}
+        <SidebarGroup className="mt-6">
+          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 mb-2">
+            Cadastros Básicos
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu className="gap-2">
+              {settingsMenuItems.map((item) => (
+                <SidebarMenuItem key={item.title}>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location === item.url}
+                    data-testid={`sidebar-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
+                    className="h-11 px-4 rounded-lg font-medium"
+                  >
+                    <Link href={item.url}>
+                      <item.icon className="h-5 w-5 mr-3" />
+                      <span>{item.title}</span>
+                    </Link>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              ))}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
