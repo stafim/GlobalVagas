@@ -9,7 +9,6 @@ import { useMutation } from "@tanstack/react-query";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import operlistLogo from "@assets/operlist2025_1763133653351.png";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 
@@ -18,7 +17,6 @@ type Step = 'email' | 'code' | 'password';
 export default function ForgotPassword() {
   const [step, setStep] = useState<Step>('email');
   const [email, setEmail] = useState("");
-  const [userType, setUserType] = useState<'company' | 'operator'>('operator');
   const [code, setCode] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -26,7 +24,7 @@ export default function ForgotPassword() {
   const [, setLocation] = useLocation();
 
   const requestCodeMutation = useMutation({
-    mutationFn: async (data: { email: string; userType: string }) => {
+    mutationFn: async (data: { email: string }) => {
       return await apiRequest('POST', '/api/auth/forgot-password', data);
     },
     onSuccess: () => {
@@ -97,7 +95,7 @@ export default function ForgotPassword() {
       });
       return;
     }
-    requestCodeMutation.mutate({ email, userType });
+    requestCodeMutation.mutate({ email });
   };
 
   const handleVerifyCode = (e: React.FormEvent) => {
@@ -163,24 +161,6 @@ export default function ForgotPassword() {
         {step === 'email' && (
           <form onSubmit={handleRequestCode} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="userType">Tipo de Conta</Label>
-              <RadioGroup value={userType} onValueChange={(value) => setUserType(value as 'company' | 'operator')}>
-                <div className="flex items-center space-x-2 rounded-md border p-3 hover-elevate active-elevate-2">
-                  <RadioGroupItem value="operator" id="operator" data-testid="radio-operator" />
-                  <Label htmlFor="operator" className="cursor-pointer flex-1">
-                    Operador
-                  </Label>
-                </div>
-                <div className="flex items-center space-x-2 rounded-md border p-3 hover-elevate active-elevate-2">
-                  <RadioGroupItem value="company" id="company" data-testid="radio-company" />
-                  <Label htmlFor="company" className="cursor-pointer flex-1">
-                    Empresa
-                  </Label>
-                </div>
-              </RadioGroup>
-            </div>
-
-            <div className="space-y-2">
               <Label htmlFor="email">E-mail</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
@@ -195,6 +175,9 @@ export default function ForgotPassword() {
                   data-testid="input-email"
                 />
               </div>
+              <p className="text-xs text-muted-foreground">
+                Digite o e-mail cadastrado na sua conta
+              </p>
             </div>
 
             <Button
@@ -213,7 +196,9 @@ export default function ForgotPassword() {
             <Card>
               <CardContent className="pt-6">
                 <div className="text-center space-y-2">
-                  <KeyRound className="h-12 w-12 mx-auto text-primary" />
+                  <div className="h-12 w-12 mx-auto rounded-lg bg-muted flex items-center justify-center">
+                    <KeyRound className="h-6 w-6 text-muted-foreground" />
+                  </div>
                   <p className="text-sm text-muted-foreground">
                     Código enviado para <strong>{email}</strong>
                   </p>

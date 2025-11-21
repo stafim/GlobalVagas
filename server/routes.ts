@@ -538,37 +538,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post("/api/auth/forgot-password", async (req, res) => {
     try {
-      const { email, userType } = req.body;
+      const { email } = req.body;
 
-      if (!email || !userType) {
+      if (!email) {
         return res.status(400).json({ 
-          message: "Email e tipo de usuário são obrigatórios" 
+          message: "Email é obrigatório" 
         });
       }
 
-      if (!['company', 'operator'].includes(userType)) {
-        return res.status(400).json({ 
-          message: "Tipo de usuário inválido" 
-        });
-      }
-
+      // Auto-detect user type by checking both tables
       let userName = '';
-      if (userType === 'company') {
-        const company = await storage.getCompanyByEmail(email);
-        if (!company) {
-          return res.status(404).json({ 
-            message: "Usuário não encontrado" 
-          });
-        }
+      let userType = '';
+
+      // Check company first
+      const company = await storage.getCompanyByEmail(email);
+      if (company) {
         userName = company.companyName;
+        userType = 'company';
       } else {
+        // Check operator
         const operator = await storage.getOperatorByEmail(email);
-        if (!operator) {
+        if (operator) {
+          userName = operator.fullName;
+          userType = 'operator';
+        } else {
           return res.status(404).json({ 
             message: "Usuário não encontrado" 
           });
         }
-        userName = operator.fullName;
       }
 
       const code = Math.floor(1000 + Math.random() * 9000).toString();

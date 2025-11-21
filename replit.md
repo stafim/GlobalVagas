@@ -59,6 +59,21 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 
 ## Recent Changes
 
+### November 21, 2025 - Simplified Password Recovery (No User Type Selection)
+- **Simplified Password Recovery**: Removed user type selection from forgot password flow
+  - **Auto-Detection**: Backend automatically detects user type by searching both Company and Operator tables
+  - **User Experience**: Users only need to enter their email address
+  - **Consistent with Login**: Matches the unified login system behavior
+  - **Backend Changes**:
+    - Updated `/api/auth/forgot-password` to accept only email (no userType)
+    - Searches Company table first, then Operator table
+    - Automatically determines user type and name for email
+  - **Frontend Changes**:
+    - Removed RadioGroup selection for account type
+    - Simplified form to single email input field
+    - Added helper text: "Digite o e-mail cadastrado na sua conta"
+    - Updated KeyRound icon to use neutral design (bg-muted)
+
 ### November 21, 2025 - Simplified Flat UI Design
 - **Flat Icon Design**: Removed colorful icons across the entire platform for a cleaner, more professional look
   - **Removed Color Gradients**: Eliminated all colored gradients (`from-blue-500/10 to-blue-600/10`) from stat cards
