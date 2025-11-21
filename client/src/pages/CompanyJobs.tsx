@@ -972,7 +972,7 @@ export default function CompanyJobs() {
                 </CardContent>
               </Card>
               {index < filteredJobs.length - 1 && (
-                <Separator className="my-6" />
+                <Separator className="my-6 h-0.5" />
               )}
             </div>
           ))}
