@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Briefcase, Plus, Search, MapPin, Clock, DollarSign, Users, ChevronRight, ChevronLeft, Building2, Check, ChevronsUpDown, Eye, Trash2, UserCheck, ExternalLink, Pause, Play, Filter, X } from "lucide-react";
+import { Briefcase, Plus, Search, MapPin, Clock, DollarSign, Users, ChevronRight, ChevronLeft, Building2, Check, ChevronsUpDown, Eye, Trash2, UserCheck, ExternalLink, Pause, Play, Filter, X, Coins, AlertCircle } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
@@ -51,6 +51,7 @@ export default function CompanyJobs() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
+  const [creditsDialogOpen, setCreditsDialogOpen] = useState(false);
 
   const { data: jobs = [], isLoading } = useQuery<JobWithApplicationCount[]>({
     queryKey: ['/api/jobs'],
@@ -58,6 +59,10 @@ export default function CompanyJobs() {
 
   const { data: questions = [] } = useQuery<Question[]>({
     queryKey: ['/api/company/questions'],
+  });
+
+  const { data: companyCredits = 0 } = useQuery<number>({
+    queryKey: ['/api/company/credits'],
   });
 
   const createJobMutation = useMutation({
@@ -83,21 +88,40 @@ export default function CompanyJobs() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/jobs'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/company/credits'] });
       setDialogOpen(false);
       setCurrentStep(1);
       setSelectedQuestions([]);
       form.reset();
       toast({
         title: "Vaga criada com sucesso!",
-        description: "Sua vaga foi publicada e está visível para candidatos.",
+        description: "Sua vaga foi publicada e 1 crédito foi debitado da sua conta.",
       });
     },
-    onError: (error: Error) => {
-      toast({
-        variant: "destructive",
-        title: "Erro ao criar vaga",
-        description: error.message || "Tente novamente mais tarde.",
-      });
+    onError: (error: any) => {
+      if (error?.insufficientCredits) {
+        toast({
+          variant: "destructive",
+          title: "Créditos insuficientes",
+          description: error.message || "Você não possui créditos suficientes para publicar uma vaga.",
+          action: (
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => window.location.href = '/empresa/creditos'}
+              data-testid="button-buy-credits-toast"
+            >
+              Comprar Créditos
+            </Button>
+          ),
+        });
+      } else {
+        toast({
+          variant: "destructive",
+          title: "Erro ao criar vaga",
+          description: error.message || "Tente novamente mais tarde.",
+        });
+      }
     },
   });
 
@@ -283,13 +307,17 @@ export default function CompanyJobs() {
               )}
             </Button>
             
+            <Button 
+              size="lg" 
+              onClick={() => setCreditsDialogOpen(true)} 
+              className="shadow-lg" 
+              data-testid="button-new-job"
+            >
+              <Plus className="h-5 w-5 mr-2" />
+              Nova Vaga
+            </Button>
+
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-              <DialogTrigger asChild>
-                <Button size="lg" onClick={() => setCurrentStep(1)} className="shadow-lg" data-testid="button-new-job">
-                  <Plus className="h-5 w-5 mr-2" />
-                  Nova Vaga
-                </Button>
-              </DialogTrigger>
               <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                   <DialogTitle>Criar Nova Vaga</DialogTitle>
@@ -1112,6 +1140,87 @@ export default function CompanyJobs() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Dialog de Verificação de Créditos */}
+      <AlertDialog open={creditsDialogOpen} onOpenChange={setCreditsDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="flex items-center gap-2">
+              <Coins className="h-6 w-6 text-primary" />
+              Publicar Nova Vaga
+            </AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-4 pt-2">
+                <div className="bg-muted rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-foreground">Créditos Disponíveis:</span>
+                    <Badge variant={companyCredits > 0 ? "default" : "destructive"} className="text-lg px-3 py-1">
+                      <Coins className="h-4 w-4 mr-1" />
+                      {companyCredits}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium text-foreground">Custo da Publicação:</span>
+                    <Badge variant="outline" className="text-lg px-3 py-1">
+                      <Coins className="h-4 w-4 mr-1" />
+                      1
+                    </Badge>
+                  </div>
+                </div>
+
+                {companyCredits > 0 ? (
+                  <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950 border border-blue-200 dark:border-blue-800 rounded-lg">
+                    <AlertCircle className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-blue-900 dark:text-blue-100">
+                      <p className="font-medium mb-1">Confirmar publicação</p>
+                      <p>
+                        Ao publicar esta vaga, <strong>1 crédito</strong> será debitado da sua conta. 
+                        Você ficará com <strong>{companyCredits - 1} crédito{companyCredits - 1 !== 1 ? 's' : ''}</strong> restante{companyCredits - 1 !== 1 ? 's' : ''}.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-start gap-3 p-3 bg-orange-50 dark:bg-orange-950 border border-orange-200 dark:border-orange-800 rounded-lg">
+                    <AlertCircle className="h-5 w-5 text-orange-600 dark:text-orange-400 flex-shrink-0 mt-0.5" />
+                    <div className="text-sm text-orange-900 dark:text-orange-100">
+                      <p className="font-medium mb-1">Créditos Insuficientes</p>
+                      <p>
+                        Você não possui créditos suficientes para publicar uma vaga. 
+                        Adquira mais créditos através da compra de planos para continuar publicando suas oportunidades.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-credits">Cancelar</AlertDialogCancel>
+            {companyCredits > 0 ? (
+              <AlertDialogAction
+                onClick={() => {
+                  setCreditsDialogOpen(false);
+                  setCurrentStep(1);
+                  setDialogOpen(true);
+                }}
+                data-testid="button-confirm-credits"
+              >
+                Continuar
+              </AlertDialogAction>
+            ) : (
+              <AlertDialogAction
+                onClick={() => {
+                  setCreditsDialogOpen(false);
+                  window.location.href = '/empresa/creditos';
+                }}
+                data-testid="button-buy-credits"
+              >
+                Comprar Créditos
+              </AlertDialogAction>
+            )}
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Dialog de Confirmação de Exclusão */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

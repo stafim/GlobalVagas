@@ -58,6 +58,39 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 
 ## Recent Changes
 
+### November 21, 2025 - Credit System for Job Publishing & Fixed Application Dashboard
+- **Credit Verification Popup**: Companies must have credits before publishing jobs
+  - **Popup Dialog**: When clicking "Nova Vaga", an AlertDialog shows:
+    - Current available credits with badge (green if available, red if none)
+    - Cost of publication: 1 credit
+    - Confirmation message explaining 1 credit will be deducted
+    - Warning message if no credits available
+    - "Continuar" button to proceed (if credits available)
+    - "Comprar Créditos" button to purchase credits (if no credits)
+  - **Backend Validation**:
+    - POST `/api/jobs` endpoint checks credits before creating job
+    - Returns error with `insufficientCredits: true` if no credits
+    - Automatically deducts 1 credit after successful job creation
+    - Creates credit transaction record with job details
+  - **User Experience**:
+    - Credits query is invalidated after job creation to show updated balance
+    - Success toast shows "1 crédito foi debitado da sua conta"
+    - Error toast with "Comprar Créditos" button if insufficient credits
+    - Prevents job creation without credits at both frontend and backend levels
+
+- **Fixed Operator Applications Dashboard**:
+  - **Backend**: Created `getApplicationsWithJobByOperator()` function in storage
+    - Returns applications with full job details (title, location, company)
+    - Uses JOIN to fetch related job and company data
+  - **Frontend**: Updated OperatorDashboard to display applications properly
+    - Shows up to 5 recent applications with job details
+    - Each card displays: job title, company name, location, status badge, application date
+    - Status badges: "Pendente" (secondary), "Aceita" (default), "Rejeitada" (destructive)
+    - Cards are clickable and redirect to job details page
+    - "Ver Todas" button appears if more than 5 applications
+    - Proper empty state with "Explorar Vagas" button
+    - Safe rendering with null-check filter for job data
+
 ### November 21, 2025 - Profile Completion Requirement with Light, Friendly Toast
 - **Complete Profile Enforcement**: Operators must have 100% complete profiles before applying to jobs
   - **Required Fields**: birthDate, experienceYears, preferredLocation, skills, bio

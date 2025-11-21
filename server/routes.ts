@@ -1878,6 +1878,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Apenas empresas podem criar vagas" });
       }
 
+      // Verificar se a empresa tem créditos suficientes
+      const companyCredits = await storage.getCompanyCredits(req.session.userId);
+      if (companyCredits < 1) {
+        return res.status(400).json({ 
+          message: "Créditos insuficientes. Adquira mais créditos para publicar vagas.",
+          insufficientCredits: true
+        });
+      }
+
       const result = insertJobSchema.safeParse(req.body);
       
       if (!result.success) {
@@ -1893,9 +1902,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
       };
 
       const job = await storage.createJob(jobData);
+
+      // Debitar 1 crédito da empresa
+      await storage.deductCreditsFromCompany(
+        req.session.userId,
+        1,
+        `Publicação da vaga: ${job.title}`,
+        job.id
+      );
+
       return res.status(201).json(job);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error creating job:", error);
+      if (error.message && error.message.includes('Créditos insuficientes')) {
+        return res.status(400).json({ 
+          message: error.message,
+          insufficientCredits: true
+        });
+      }
       return res.status(500).json({ message: "Erro ao criar vaga" });
     }
   });
