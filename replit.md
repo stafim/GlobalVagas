@@ -53,6 +53,40 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 
 ## Recent Changes
 
+### November 21, 2025 - Password Recovery System Implementation
+- **Complete Password Recovery Flow**: Implemented full password reset functionality with email verification
+  - Created `password_reset_codes` database table to store 4-character verification codes
+  - Codes expire after 15 minutes for security
+  - Separate flows for Operators and Companies
+- **3-Step Recovery Process**:
+  - **Step 1 - Request Code**: User selects account type (Operator/Company) and enters email
+  - **Step 2 - Verify Code**: User enters 4-digit code sent to email
+  - **Step 3 - New Password**: User creates new password after code verification
+- **Backend API Routes**:
+  - `POST /api/auth/forgot-password` - Generates and sends 4-character code via email
+  - `POST /api/auth/verify-reset-code` - Validates code and checks expiration
+  - `POST /api/auth/reset-password` - Updates password after code verification
+- **Email Integration**:
+  - Professional HTML email template with recovery code
+  - Uses existing `emailSettings` configuration from admin panel
+  - Sends code to user's registered email with 15-minute expiration notice
+  - Email template includes user name, security warnings, and Operlist branding
+- **Frontend Page**: `/recuperar-senha` route with modern UI
+  - Radio button selection for account type (Operator/Company)
+  - 4-digit code input with automatic number formatting
+  - Password confirmation with validation
+  - Clear error messages and loading states
+  - "Voltar para o login" link on all steps
+- **Storage Methods**:
+  - `createPasswordResetCode(code)` - Creates new reset code entry
+  - `getPasswordResetCode(email, code)` - Retrieves and validates code
+  - `markPasswordResetCodeAsUsed(id)` - Marks code as used after successful reset
+- **Security Features**:
+  - 15-minute code expiration
+  - One-time use codes (marked as used after password reset)
+  - Minimum 6-character password requirement
+  - User type verification (prevents cross-account password resets)
+
 ### November 21, 2025 - Fixed "Nova Pergunta" Button in Company Questions
 - **Bug Fix**: Corrected Dialog control issue preventing "Nova Pergunta" button from working
   - Removed conflicting `DialogTrigger` wrapper that was interfering with manual state control
