@@ -54,3 +54,26 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform d
 - **Recharts**: For data visualization.
 - **cookie-parser**: Express middleware for cookie handling.
 - **jsPDF**: Client-side PDF generation.
+
+## Recent Changes
+
+### November 21, 2025 - Automatic Credit Assignment on Plan Purchase
+- **Purchase Flow Integration**: Implemented automatic credit assignment when companies purchase plans
+  - Created `POST /api/companies/purchase-plan` endpoint for plan purchases
+  - System automatically creates or finds client record by company CNPJ
+  - Creates purchase record linking company to plan
+  - **Automatically credits** the plan's `vacancyQuantity` to company account
+  - Creates transaction record documenting the credit addition
+  - Updates company credits balance in real-time
+- **Enhanced Company Plans Page**:
+  - Added "Planos Disponíveis" section showing all active plans
+  - Each plan card displays: name, description, price, and credits included
+  - "Adquirir Plano" button to purchase plans
+  - Real-time balance updates after purchase
+  - Success notification showing credits received
+  - Automatic cache invalidation for credits and transactions
+- **Integration Points**:
+  - Plan purchase → Client creation/lookup → Purchase record → Credit transaction → Balance update
+  - Full transactional integrity with proper error handling
+  - 1-year validity period for purchased plans
+  - Invalidates relevant caches: purchases, credits, transactions

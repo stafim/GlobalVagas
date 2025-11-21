@@ -2162,6 +2162,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/companies/purchase-plan", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const { planId } = req.body;
+
+      if (!planId) {
+        return res.status(400).json({ message: "ID do plano é obrigatório" });
+      }
+
+      const company = await storage.getCompany(req.session.userId);
+      if (!company) {
+        return res.status(404).json({ message: "Empresa não encontrada" });
+      }
+
+      const plan = await storage.getPlan(planId);
+      if (!plan) {
+        return res.status(404).json({ message: "Plano não encontrado" });
+      }
+
+      if (plan.isActive !== 'true') {
+        return res.status(400).json({ message: "Este plano não está mais disponível" });
+      }
+
+      let client = await storage.getClientByCnpj(company.cnpj);
+      
+      if (!client) {
+        client = await storage.createClient({
+          companyName: company.companyName,
+          cnpj: company.cnpj,
+          email: company.email,
+          phone: company.phone,
+          website: company.website || '',
+          contactName: company.companyName,
+          contactEmail: company.email,
+          contactPhone: company.phone,
+          primaryColor: '#8b5cf6',
+          secondaryColor: '#a78bfa',
+          accentColor: '#c4b5fd',
+          isActive: 'true',
+        });
+      }
+
+      const purchaseDate = new Date().toISOString();
+      const expiryDate = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+
+      const purchase = await storage.createPurchase({
+        clientId: client.id,
+        planId: plan.id,
+        purchaseDate,
+        expiryDate,
+        amount: plan.price,
+        status: 'active',
+      });
+
+      const creditsToAdd = parseInt(plan.vacancyQuantity);
+      
+      await storage.addCreditsToCompany(
+        company.id,
+        creditsToAdd,
+        `Créditos do plano ${plan.name}`,
+        plan.id
+      );
+
+      return res.status(201).json({ 
+        message: "Plano adquirido com sucesso",
+        purchase,
+        creditsAdded: creditsToAdd
+      });
+    } catch (error) {
+      console.error("Error purchasing plan:", error);
+      return res.status(500).json({ message: "Erro ao adquirir plano" });
+    }
+  });
+
   app.get("/api/companies/my-purchases", async (req, res) => {
     try {
       if (!req.session.userId) {
