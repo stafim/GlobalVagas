@@ -1,7 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Tags, Briefcase, FileText, Plus, Pencil, Trash2, Loader2, Layers } from "lucide-react";
-import SectorsTab from "@/components/SectorsTab";
+import { Tags, Briefcase, FileText, Plus, Pencil, Trash2, Loader2, Layers, ChevronRight } from "lucide-react";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
@@ -230,14 +229,10 @@ export default function AdminTaxonomy() {
       </div>
 
       <Tabs defaultValue="tags" className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-3">
           <TabsTrigger value="tags" data-testid="tab-tags">
             <Tags className="h-4 w-4 mr-2" />
             Tags
-          </TabsTrigger>
-          <TabsTrigger value="setores" data-testid="tab-sectors">
-            <Layers className="h-4 w-4 mr-2" />
-            Setores
           </TabsTrigger>
           <TabsTrigger value="tipos-trabalho" data-testid="tab-work-types">
             <Briefcase className="h-4 w-4 mr-2" />
@@ -339,10 +334,6 @@ export default function AdminTaxonomy() {
               )}
             </CardContent>
           </Card>
-        </TabsContent>
-
-        <TabsContent value="setores" className="space-y-4">
-          <SectorsTab />
         </TabsContent>
 
         <TabsContent value="tipos-trabalho" className="space-y-4">

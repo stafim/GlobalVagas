@@ -1,4 +1,4 @@
-import { LayoutDashboard, Building2, HardHat, Briefcase, CreditCard, DollarSign, Settings, Calendar, Image, Layers, Mail, Tags } from "lucide-react";
+import { LayoutDashboard, Building2, HardHat, Briefcase, CreditCard, DollarSign, Settings, Calendar, Image, Mail, Tags } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -44,11 +44,6 @@ const menuItems = [
     title: "Financeiro",
     url: "/admin/financeiro",
     icon: DollarSign,
-  },
-  {
-    title: "Setores",
-    url: "/admin/setores",
-    icon: Layers,
   },
   {
     title: "Taxonomia",
