@@ -10,6 +10,7 @@ import { useEffect } from "react";
 import AdminDashboard from "@/pages/AdminDashboard";
 import AdminClients from "@/pages/AdminClients";
 import AdminOperators from "@/pages/AdminOperators";
+import AdminJobs from "@/pages/AdminJobs";
 import AdminPlans from "@/pages/AdminPlans";
 
 export function AdminRouter() {
@@ -56,6 +57,9 @@ export function AdminRouter() {
     if (location === '/admin/operadores') {
       return { title: "Meus Operadores", description: "Gerenciamento de profissionais cadastrados" };
     }
+    if (location === '/admin/vagas') {
+      return { title: "Vagas", description: "Visualize todas as vagas criadas pelos clientes" };
+    }
     if (location === '/admin/planos') {
       return { title: "Planos de Assinatura", description: "Gerencie os planos disponíveis para clientes" };
     }
@@ -94,6 +98,7 @@ export function AdminRouter() {
               <Route path="/admin" component={AdminDashboard} />
               <Route path="/admin/clientes" component={AdminClients} />
               <Route path="/admin/operadores" component={AdminOperators} />
+              <Route path="/admin/vagas" component={AdminJobs} />
               <Route path="/admin/planos" component={AdminPlans} />
             </Switch>
           </main>

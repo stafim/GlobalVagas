@@ -1,4 +1,4 @@
-import { LayoutDashboard, Building2, HardHat, CreditCard, DollarSign, Settings, Calendar, Image, Layers, Mail } from "lucide-react";
+import { LayoutDashboard, Building2, HardHat, Briefcase, CreditCard, DollarSign, Settings, Calendar, Image, Layers, Mail } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -29,6 +29,11 @@ const menuItems = [
     title: "Meus Operadores",
     url: "/admin/operadores",
     icon: HardHat,
+  },
+  {
+    title: "Vagas",
+    url: "/admin/vagas",
+    icon: Briefcase,
   },
   {
     title: "Planos",
@@ -103,6 +108,11 @@ export function AdminSidebar() {
     } else if (url === '/admin/newsletter') {
       queryClient.prefetchQuery({
         queryKey: ['/api/admin/newsletter-subscriptions'],
+        staleTime: 1000 * 60 * 5,
+      });
+    } else if (url === '/admin/vagas') {
+      queryClient.prefetchQuery({
+        queryKey: ['/api/admin/jobs'],
         staleTime: 1000 * 60 * 5,
       });
     }
