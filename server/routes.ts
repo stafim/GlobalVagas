@@ -68,7 +68,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const company = await storage.createCompany(result.data);
+      const hashedPassword = await bcrypt.hash(result.data.password, 10);
+      const company = await storage.createCompany({
+        ...result.data,
+        password: hashedPassword
+      });
       
       req.session.userId = company.id;
       req.session.userType = 'company';
@@ -97,7 +101,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const company = await storage.getCompanyByEmail(email);
       
-      if (!company || company.password !== password) {
+      if (!company) {
+        return res.status(401).json({ 
+          message: "E-mail ou senha inválidos" 
+        });
+      }
+
+      const isPasswordValid = await bcrypt.compare(password, company.password);
+      if (!isPasswordValid) {
         return res.status(401).json({ 
           message: "E-mail ou senha inválidos" 
         });
@@ -142,7 +153,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const operator = await storage.createOperator(result.data);
+      const hashedPassword = await bcrypt.hash(result.data.password, 10);
+      const operator = await storage.createOperator({
+        ...result.data,
+        password: hashedPassword
+      });
       
       req.session.userId = operator.id;
       req.session.userType = 'operator';
@@ -171,7 +186,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const operator = await storage.getOperatorByEmail(email);
       
-      if (!operator || operator.password !== password) {
+      if (!operator) {
+        return res.status(401).json({ 
+          message: "E-mail ou senha inválidos" 
+        });
+      }
+
+      const isPasswordValid = await bcrypt.compare(password, operator.password);
+      if (!isPasswordValid) {
         return res.status(401).json({ 
           message: "E-mail ou senha inválidos" 
         });
