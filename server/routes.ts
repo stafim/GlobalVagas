@@ -2428,7 +2428,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Não autorizado" });
       }
 
-      const jobs = await storage.getAllJobs();
+      const jobs = await storage.getAllJobsWithCompany();
       return res.status(200).json(jobs);
     } catch (error) {
       console.error("Error fetching all jobs:", error);

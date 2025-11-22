@@ -104,6 +104,7 @@ export interface IStorage {
   
   getJob(id: string): Promise<Job | undefined>;
   getAllJobs(): Promise<Job[]>;
+  getAllJobsWithCompany(): Promise<Array<Job & { company: { id: string; name: string } | null }>>;
   getActiveJobs(): Promise<Job[]>;
   getJobsByCompany(companyId: string): Promise<Job[]>;
   getJobsByClient(clientId: string): Promise<Job[]>;
@@ -762,6 +763,19 @@ export class DatabaseStorage implements IStorage {
 
   async getAllJobs(): Promise<Job[]> {
     return await db.select().from(jobs).orderBy(desc(jobs.createdAt));
+  }
+
+  async getAllJobsWithCompany(): Promise<Array<Job & { company: { id: string; name: string } | null }>> {
+    const results = await db
+      .select()
+      .from(jobs)
+      .leftJoin(companies, eq(jobs.companyId, companies.id))
+      .orderBy(desc(jobs.createdAt));
+
+    return results.map((result) => ({
+      ...result.jobs,
+      company: result.companies ? { id: result.companies.id, name: result.companies.name } : null,
+    }));
   }
 
   async getActiveJobs(): Promise<Job[]> {
