@@ -559,3 +559,23 @@ export const insertContractTypeSchema = createInsertSchema(contractTypes).omit({
 
 export type InsertContractType = z.infer<typeof insertContractTypeSchema>;
 export type ContractType = typeof contractTypes.$inferSelect;
+
+export const tags = pgTable("tags", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  description: text("description"),
+  color: text("color"),
+  isActive: text("is_active").notNull().default('true'),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({
+  slugIdx: index("tags_slug_idx").on(table.slug),
+}));
+
+export const insertTagSchema = createInsertSchema(tags).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertTag = z.infer<typeof insertTagSchema>;
+export type Tag = typeof tags.$inferSelect;

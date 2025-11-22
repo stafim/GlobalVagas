@@ -1,4 +1,4 @@
-import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, savedJobs, questions, jobQuestions, applicationAnswers, siteVisits, newsletterSubscriptions, passwordResetCodes, creditTransactions, workTypes, contractTypes, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type SavedJob, type InsertSavedJob, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit, type NewsletterSubscription, type InsertNewsletterSubscription, type PasswordResetCode, type InsertPasswordResetCode, type CreditTransaction, type InsertCreditTransaction, type WorkType, type InsertWorkType, type ContractType, type InsertContractType } from "@shared/schema";
+import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, savedJobs, questions, jobQuestions, applicationAnswers, siteVisits, newsletterSubscriptions, passwordResetCodes, creditTransactions, workTypes, contractTypes, tags, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type SavedJob, type InsertSavedJob, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit, type NewsletterSubscription, type InsertNewsletterSubscription, type PasswordResetCode, type InsertPasswordResetCode, type CreditTransaction, type InsertCreditTransaction, type WorkType, type InsertWorkType, type ContractType, type InsertContractType, type Tag, type InsertTag } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, not, like, sql } from "drizzle-orm";
 
@@ -153,6 +153,13 @@ export interface IStorage {
   createContractType(contractType: InsertContractType): Promise<ContractType>;
   updateContractType(id: string, contractType: Partial<InsertContractType>): Promise<ContractType>;
   deleteContractType(id: string): Promise<void>;
+  
+  getTag(id: string): Promise<Tag | undefined>;
+  getAllTags(): Promise<Tag[]>;
+  getActiveTags(): Promise<Tag[]>;
+  createTag(tag: InsertTag): Promise<Tag>;
+  updateTag(id: string, tag: Partial<InsertTag>): Promise<Tag>;
+  deleteTag(id: string): Promise<void>;
   
   getJobQuestion(id: string): Promise<JobQuestion | undefined>;
   getJobQuestionsByJob(jobId: string): Promise<Array<JobQuestion & { question: Question }>>;
@@ -1091,6 +1098,42 @@ export class DatabaseStorage implements IStorage {
 
   async deleteContractType(id: string): Promise<void> {
     await db.delete(contractTypes).where(eq(contractTypes.id, id));
+  }
+
+  async getTag(id: string): Promise<Tag | undefined> {
+    const [tag] = await db.select().from(tags).where(eq(tags.id, id));
+    return tag || undefined;
+  }
+
+  async getAllTags(): Promise<Tag[]> {
+    return await db.select().from(tags).orderBy(desc(tags.createdAt));
+  }
+
+  async getActiveTags(): Promise<Tag[]> {
+    return await db.select().from(tags)
+      .where(eq(tags.isActive, 'true'))
+      .orderBy(desc(tags.createdAt));
+  }
+
+  async createTag(insertTag: InsertTag): Promise<Tag> {
+    const [tag] = await db
+      .insert(tags)
+      .values(insertTag)
+      .returning();
+    return tag;
+  }
+
+  async updateTag(id: string, updateData: Partial<InsertTag>): Promise<Tag> {
+    const [tag] = await db
+      .update(tags)
+      .set(updateData)
+      .where(eq(tags.id, id))
+      .returning();
+    return tag;
+  }
+
+  async deleteTag(id: string): Promise<void> {
+    await db.delete(tags).where(eq(tags.id, id));
   }
 
   async getJobQuestion(id: string): Promise<JobQuestion | undefined> {

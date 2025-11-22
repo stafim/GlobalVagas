@@ -2758,6 +2758,73 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Tags endpoints (Admin only)
+  app.get("/api/admin/tags", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const tags = await storage.getAllTags();
+      return res.status(200).json(tags);
+    } catch (error) {
+      console.error("Error fetching tags:", error);
+      return res.status(500).json({ message: "Erro ao buscar tags" });
+    }
+  });
+
+  app.post("/api/admin/tags", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const tag = await storage.createTag(req.body);
+      return res.status(201).json(tag);
+    } catch (error) {
+      console.error("Error creating tag:", error);
+      return res.status(500).json({ message: "Erro ao criar tag" });
+    }
+  });
+
+  app.patch("/api/admin/tags/:id", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const existingTag = await storage.getTag(req.params.id);
+      if (!existingTag) {
+        return res.status(404).json({ message: "Tag não encontrada" });
+      }
+
+      const tag = await storage.updateTag(req.params.id, req.body);
+      return res.status(200).json(tag);
+    } catch (error) {
+      console.error("Error updating tag:", error);
+      return res.status(500).json({ message: "Erro ao atualizar tag" });
+    }
+  });
+
+  app.delete("/api/admin/tags/:id", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const existingTag = await storage.getTag(req.params.id);
+      if (!existingTag) {
+        return res.status(404).json({ message: "Tag não encontrada" });
+      }
+
+      await storage.deleteTag(req.params.id);
+      return res.status(200).json({ message: "Tag deletada com sucesso" });
+    } catch (error) {
+      console.error("Error deleting tag:", error);
+      return res.status(500).json({ message: "Erro ao deletar tag" });
+    }
+  });
+
   // Credits endpoints
   app.get("/api/company/credits", async (req, res) => {
     try {
