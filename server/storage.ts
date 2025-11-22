@@ -12,6 +12,7 @@ export interface IStorage {
   getCompanyByCnpj(cnpj: string): Promise<Company | undefined>;
   createCompany(company: InsertCompany): Promise<Company>;
   updateCompany(id: string, company: Partial<InsertCompany>): Promise<Company>;
+  updateCompanyLastLogin(id: string): Promise<void>;
   getAllCompanies(): Promise<Company[]>;
   
   getOperator(id: string): Promise<Operator | undefined>;
@@ -19,6 +20,7 @@ export interface IStorage {
   getOperatorByCpf(cpf: string): Promise<Operator | undefined>;
   createOperator(operator: InsertOperator): Promise<Operator>;
   updateOperator(id: string, operator: Partial<InsertOperator>): Promise<Operator>;
+  updateOperatorLastLogin(id: string): Promise<void>;
   getAllOperators(): Promise<Operator[]>;
   isOperatorProfileComplete(operatorId: string): Promise<{ complete: boolean; missingFields: string[]; percentage: number; filledCount: number; totalCount: number }>;
   
@@ -31,6 +33,7 @@ export interface IStorage {
   getAdmin(id: string): Promise<Admin | undefined>;
   getAdminByEmail(email: string): Promise<Admin | undefined>;
   createAdmin(admin: InsertAdmin): Promise<Admin>;
+  updateAdminLastLogin(id: string): Promise<void>;
   getAllAdmins(): Promise<Admin[]>;
   
   getPlan(id: string): Promise<Plan | undefined>;
@@ -256,6 +259,13 @@ export class DatabaseStorage implements IStorage {
     return company;
   }
 
+  async updateCompanyLastLogin(id: string): Promise<void> {
+    await db
+      .update(companies)
+      .set({ lastLoginAt: new Date().toISOString() })
+      .where(eq(companies.id, id));
+  }
+
   async getAllCompanies(): Promise<Company[]> {
     return await db.select().from(companies);
   }
@@ -290,6 +300,13 @@ export class DatabaseStorage implements IStorage {
       .where(eq(operators.id, id))
       .returning();
     return operator;
+  }
+
+  async updateOperatorLastLogin(id: string): Promise<void> {
+    await db
+      .update(operators)
+      .set({ lastLoginAt: new Date().toISOString() })
+      .where(eq(operators.id, id));
   }
 
   async getAllOperators(): Promise<Operator[]> {
@@ -394,6 +411,13 @@ export class DatabaseStorage implements IStorage {
       .values(insertAdmin)
       .returning();
     return admin;
+  }
+
+  async updateAdminLastLogin(id: string): Promise<void> {
+    await db
+      .update(admins)
+      .set({ lastLoginAt: new Date().toISOString() })
+      .where(eq(admins.id, id));
   }
 
   async getAllAdmins(): Promise<Admin[]> {
