@@ -320,56 +320,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const company = await storage.getCompanyByEmail(email);
-      if (company && company.password === password) {
-        req.session.userId = company.id;
-        req.session.userType = 'company';
-        await storage.updateCompanyLastLogin(company.id);
-        const { password: _, ...companyWithoutPassword } = company;
-        return res.status(200).json({ 
-          user: companyWithoutPassword, 
-          userType: 'company' 
-        });
+      if (company) {
+        const isPasswordValid = await bcrypt.compare(password, company.password);
+        if (isPasswordValid) {
+          req.session.userId = company.id;
+          req.session.userType = 'company';
+          await storage.updateCompanyLastLogin(company.id);
+          const { password: _, ...companyWithoutPassword } = company;
+          return res.status(200).json({ 
+            user: companyWithoutPassword, 
+            userType: 'company' 
+          });
+        }
       }
 
       const operator = await storage.getOperatorByEmail(email);
-      if (operator && operator.password === password) {
-        req.session.userId = operator.id;
-        req.session.userType = 'operator';
-        await storage.updateOperatorLastLogin(operator.id);
-        const { password: _, ...operatorWithoutPassword } = operator;
-        return res.status(200).json({ 
-          user: operatorWithoutPassword, 
-          userType: 'operator' 
-        });
+      if (operator) {
+        const isPasswordValid = await bcrypt.compare(password, operator.password);
+        if (isPasswordValid) {
+          req.session.userId = operator.id;
+          req.session.userType = 'operator';
+          await storage.updateOperatorLastLogin(operator.id);
+          const { password: _, ...operatorWithoutPassword } = operator;
+          return res.status(200).json({ 
+            user: operatorWithoutPassword, 
+            userType: 'operator' 
+          });
+        }
       }
 
       const admin = await storage.getAdminByEmail(email);
-      if (admin && admin.password === password) {
-        req.session.userId = admin.id;
-        req.session.userType = 'admin';
-        await storage.updateAdminLastLogin(admin.id);
-        
-        await new Promise<void>((resolve, reject) => {
-          req.session.save((err) => {
-            if (err) {
-              console.error("❌ Error saving admin session:", err);
-              reject(err);
-            } else {
-              console.log("✅ Admin session saved:", {
-                userId: req.session.userId,
-                userType: req.session.userType,
-                sessionID: req.sessionID
-              });
-              resolve();
-            }
+      if (admin) {
+        const isPasswordValid = await bcrypt.compare(password, admin.password);
+        if (isPasswordValid) {
+          req.session.userId = admin.id;
+          req.session.userType = 'admin';
+          await storage.updateAdminLastLogin(admin.id);
+          
+          await new Promise<void>((resolve, reject) => {
+            req.session.save((err) => {
+              if (err) {
+                console.error("❌ Error saving admin session:", err);
+                reject(err);
+              } else {
+                console.log("✅ Admin session saved:", {
+                  userId: req.session.userId,
+                  userType: req.session.userType,
+                  sessionID: req.sessionID
+                });
+                resolve();
+              }
+            });
           });
-        });
-        
-        const { password: _, ...adminWithoutPassword } = admin;
-        return res.status(200).json({ 
-          user: adminWithoutPassword, 
-          userType: 'admin' 
-        });
+          
+          const { password: _, ...adminWithoutPassword } = admin;
+          return res.status(200).json({ 
+            user: adminWithoutPassword, 
+            userType: 'admin' 
+          });
+        }
       }
 
       return res.status(401).json({ 
@@ -790,7 +799,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const admin = await storage.getAdminByEmail(email);
       
-      if (!admin || admin.password !== password) {
+      if (!admin) {
+        return res.status(401).json({ 
+          message: "E-mail ou senha inválidos" 
+        });
+      }
+
+      const isPasswordValid = await bcrypt.compare(password, admin.password);
+      if (!isPasswordValid) {
         return res.status(401).json({ 
           message: "E-mail ou senha inválidos" 
         });
