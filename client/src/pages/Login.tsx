@@ -36,6 +36,8 @@ export default function Login() {
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/global-work-types'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/global-contract-types'] });
       toast({
         title: "Login realizado com sucesso!",
         description: "Redirecionando...",
