@@ -62,7 +62,10 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 
 ## External Dependencies
 - **PostgreSQL**: Primary database.
-- **Replit Object Storage**: For static asset storage.
+- **Replit Object Storage**: For static asset storage (bucket: `operlist-storage`).
+  - Public path: `operlist-storage/public`
+  - Private path: `operlist-storage/private`
+  - See [OBJECT_STORAGE_SETUP.md](./OBJECT_STORAGE_SETUP.md) for details
 - **Gmail SMTP / Custom SMTP**: For email notifications.
 - **Vite**: Frontend build tool.
 - **Tailwind CSS**: Utility-first CSS framework.
