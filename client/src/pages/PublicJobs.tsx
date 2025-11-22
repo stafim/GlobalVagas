@@ -21,7 +21,7 @@ import {
 } from "lucide-react";
 import { useLocation } from "wouter";
 import { useState, useMemo, useEffect } from "react";
-import type { Job } from "@shared/schema";
+import type { Job, GlobalWorkType, GlobalContractType } from "@shared/schema";
 
 interface JobWithCompany extends Job {
   companyName?: string;
@@ -57,6 +57,14 @@ export default function PublicJobs() {
 
   const { data: jobs = [], isLoading } = useQuery<JobWithCompany[]>({
     queryKey: ['/api/public/jobs'],
+  });
+
+  const { data: globalWorkTypes = [] } = useQuery<GlobalWorkType[]>({
+    queryKey: ['/api/admin/global-work-types'],
+  });
+
+  const { data: globalContractTypes = [] } = useQuery<GlobalContractType[]>({
+    queryKey: ['/api/admin/global-contract-types'],
   });
 
   // Get unique values for filters
@@ -143,22 +151,15 @@ export default function PublicJobs() {
   };
 
   const getWorkTypeLabel = (type: string | null) => {
-    const labels: Record<string, string> = {
-      'presencial': 'Presencial',
-      'remoto': 'Remoto',
-      'hibrido': 'Híbrido',
-    };
-    return type ? labels[type] || type : null;
+    if (!type) return null;
+    const workType = globalWorkTypes.find(wt => wt.name === type);
+    return workType?.name || type;
   };
 
   const getContractTypeLabel = (type: string | null) => {
-    const labels: Record<string, string> = {
-      'clt': 'CLT',
-      'pj': 'PJ',
-      'estagio': 'Estágio',
-      'temporario': 'Temporário',
-    };
-    return type ? labels[type] || type : null;
+    if (!type) return null;
+    const contractType = globalContractTypes.find(ct => ct.name === type);
+    return contractType?.name || type;
   };
 
   return (
@@ -227,16 +228,18 @@ export default function PublicJobs() {
                     <div className="space-y-3">
                       <h3 className="font-semibold text-sm">Tipo de Trabalho</h3>
                       <div className="space-y-2">
-                        {['presencial', 'remoto', 'hibrido'].map((type) => (
-                          <div key={type} className="flex items-center space-x-2">
+                        {globalWorkTypes
+                          .filter(wt => wt.isActive === 'true')
+                          .map((workType) => (
+                          <div key={workType.id} className="flex items-center space-x-2">
                             <Checkbox
-                              id={`work-${type}`}
-                              checked={filters.workTypes.includes(type)}
-                              onCheckedChange={() => toggleFilter('workTypes', type)}
-                              data-testid={`checkbox-work-${type}`}
+                              id={`work-${workType.name}`}
+                              checked={filters.workTypes.includes(workType.name)}
+                              onCheckedChange={() => toggleFilter('workTypes', workType.name)}
+                              data-testid={`checkbox-work-${workType.name}`}
                             />
-                            <Label htmlFor={`work-${type}`} className="text-sm cursor-pointer">
-                              {getWorkTypeLabel(type)}
+                            <Label htmlFor={`work-${workType.name}`} className="text-sm cursor-pointer">
+                              {workType.name}
                             </Label>
                           </div>
                         ))}
@@ -249,16 +252,18 @@ export default function PublicJobs() {
                     <div className="space-y-3">
                       <h3 className="font-semibold text-sm">Tipo de Contrato</h3>
                       <div className="space-y-2">
-                        {['clt', 'pj', 'estagio', 'temporario'].map((type) => (
-                          <div key={type} className="flex items-center space-x-2">
+                        {globalContractTypes
+                          .filter(ct => ct.isActive === 'true')
+                          .map((contractType) => (
+                          <div key={contractType.id} className="flex items-center space-x-2">
                             <Checkbox
-                              id={`contract-${type}`}
-                              checked={filters.contractTypes.includes(type)}
-                              onCheckedChange={() => toggleFilter('contractTypes', type)}
-                              data-testid={`checkbox-contract-${type}`}
+                              id={`contract-${contractType.name}`}
+                              checked={filters.contractTypes.includes(contractType.name)}
+                              onCheckedChange={() => toggleFilter('contractTypes', contractType.name)}
+                              data-testid={`checkbox-contract-${contractType.name}`}
                             />
-                            <Label htmlFor={`contract-${type}`} className="text-sm cursor-pointer">
-                              {getContractTypeLabel(type)}
+                            <Label htmlFor={`contract-${contractType.name}`} className="text-sm cursor-pointer">
+                              {contractType.name}
                             </Label>
                           </div>
                         ))}

@@ -17,7 +17,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { insertJobSchema, type Job, type Question } from "@shared/schema";
+import { insertJobSchema, type Job, type Question, type GlobalWorkType, type GlobalContractType } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -63,6 +63,14 @@ export default function CompanyJobs() {
 
   const { data: companyCredits = 0 } = useQuery<number>({
     queryKey: ['/api/company/credits'],
+  });
+
+  const { data: globalWorkTypes = [] } = useQuery<GlobalWorkType[]>({
+    queryKey: ['/api/admin/global-work-types'],
+  });
+
+  const { data: globalContractTypes = [] } = useQuery<GlobalContractType[]>({
+    queryKey: ['/api/admin/global-contract-types'],
   });
 
   const createJobMutation = useMutation({
@@ -465,9 +473,13 @@ export default function CompanyJobs() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="presencial">Presencial</SelectItem>
-                                <SelectItem value="remoto">Remoto</SelectItem>
-                                <SelectItem value="hibrido">Híbrido</SelectItem>
+                                {globalWorkTypes
+                                  .filter(wt => wt.isActive === 'true')
+                                  .map((workType) => (
+                                    <SelectItem key={workType.id} value={workType.name}>
+                                      {workType.name}
+                                    </SelectItem>
+                                  ))}
                               </SelectContent>
                             </Select>
                             <FormMessage />
@@ -488,10 +500,13 @@ export default function CompanyJobs() {
                                 </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                                <SelectItem value="clt">CLT</SelectItem>
-                                <SelectItem value="pj">PJ</SelectItem>
-                                <SelectItem value="temporario">Temporário</SelectItem>
-                                <SelectItem value="estagio">Estágio</SelectItem>
+                                {globalContractTypes
+                                  .filter(ct => ct.isActive === 'true')
+                                  .map((contractType) => (
+                                    <SelectItem key={contractType.id} value={contractType.name}>
+                                      {contractType.name}
+                                    </SelectItem>
+                                  ))}
                               </SelectContent>
                             </Select>
                             <FormMessage />
