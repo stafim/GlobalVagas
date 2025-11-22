@@ -29,6 +29,7 @@ import AdminDashboard from "@/pages/AdminDashboard";
 import AdminClients from "@/pages/AdminClients";
 import AdminOperators from "@/pages/AdminOperators";
 import AdminJobs from "@/pages/AdminJobs";
+import AdminEditJob from "@/pages/AdminEditJob";
 import AdminPlans from "@/pages/AdminPlans";
 import AdminSectors from "@/pages/AdminSectors";
 import AdminEvents from "@/pages/AdminEvents";
@@ -70,6 +71,7 @@ function Router() {
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/clientes" component={AdminClients} />
       <Route path="/admin/operadores" component={AdminOperators} />
+      <Route path="/admin/vagas/:id/editar" component={AdminEditJob} />
       <Route path="/admin/vagas" component={AdminJobs} />
       <Route path="/admin/planos" component={AdminPlans} />
       <Route path="/admin/financeiro" component={AdminFinanceiro} />

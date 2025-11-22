@@ -65,6 +65,9 @@ export function AdminShell({ children }: AdminShellProps) {
     if (location === '/admin/vagas') {
       return { title: "Vagas", description: "Visualize todas as vagas criadas pelos clientes" };
     }
+    if (location.startsWith('/admin/vagas/') && location.endsWith('/editar')) {
+      return { title: "Editar Vaga", description: "Atualize as informações da vaga" };
+    }
     if (location === '/admin/planos') {
       return { title: "Planos de Assinatura", description: "Gerencie os planos disponíveis para clientes" };
     }

@@ -20,7 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Briefcase, Building2, MapPin, Eye } from "lucide-react";
+import { Briefcase, Building2, MapPin, Eye, Pencil } from "lucide-react";
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -258,15 +258,26 @@ export default function AdminJobs() {
                         {format(new Date(job.createdAt), "dd/MM/yyyy", { locale: ptBR })}
                       </TableCell>
                       <TableCell className="text-right">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setLocation(`/vaga/${job.id}`)}
-                          data-testid={`button-view-job-${job.id}`}
-                        >
-                          <Eye className="h-4 w-4 mr-2" />
-                          Visualizar
-                        </Button>
+                        <div className="flex items-center justify-end gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setLocation(`/admin/vagas/${job.id}/editar`)}
+                            data-testid={`button-edit-job-${job.id}`}
+                          >
+                            <Pencil className="h-4 w-4 mr-2" />
+                            Editar
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setLocation(`/vaga/${job.id}`)}
+                            data-testid={`button-view-job-${job.id}`}
+                          >
+                            <Eye className="h-4 w-4 mr-2" />
+                            Visualizar
+                          </Button>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))}
