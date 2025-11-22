@@ -1977,6 +1977,38 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // PATCH endpoint para edição completa (compatibilidade com frontend)
+  app.patch("/api/jobs/:id", async (req, res) => {
+    try {
+      if (!req.session.userId) {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const existingJob = await storage.getJob(req.params.id);
+      
+      if (!existingJob) {
+        return res.status(404).json({ message: "Vaga não encontrada" });
+      }
+
+      // Admin pode editar qualquer vaga
+      if (req.session.userType === 'admin') {
+        const job = await storage.updateJob(req.params.id, req.body);
+        return res.status(200).json(job);
+      }
+
+      // Company pode editar apenas suas próprias vagas
+      if (req.session.userType === 'company' && existingJob.companyId !== req.session.userId) {
+        return res.status(403).json({ message: "Você não tem permissão para editar esta vaga" });
+      }
+
+      const job = await storage.updateJob(req.params.id, req.body);
+      return res.status(200).json(job);
+    } catch (error) {
+      console.error("Error updating job:", error);
+      return res.status(500).json({ message: "Erro ao atualizar vaga" });
+    }
+  });
+
   app.delete("/api/jobs/:id", async (req, res) => {
     try {
       if (!req.session.userId) {
