@@ -51,11 +51,7 @@ export default function WorkTypesTab() {
 
   const createMutation = useMutation({
     mutationFn: async (data: WorkTypeFormData) => {
-      return await apiRequest("/api/admin/global-work-types", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      return await apiRequest("POST", "/api/admin/global-work-types", data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/global-work-types"] });
@@ -77,11 +73,7 @@ export default function WorkTypesTab() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: WorkTypeFormData }) => {
-      return await apiRequest(`/api/admin/global-work-types/${id}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      return await apiRequest("PATCH", `/api/admin/global-work-types/${id}`, data);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/global-work-types"] });
@@ -103,9 +95,7 @@ export default function WorkTypesTab() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await apiRequest(`/api/admin/global-work-types/${id}`, {
-        method: "DELETE",
-      });
+      return await apiRequest("DELETE", `/api/admin/global-work-types/${id}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/admin/global-work-types"] });
