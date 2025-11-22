@@ -53,6 +53,7 @@ export default function ContractTypesTab() {
     mutationFn: async (data: ContractTypeFormData) => {
       return await apiRequest("/api/admin/global-contract-types", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
     },
@@ -78,6 +79,7 @@ export default function ContractTypesTab() {
     mutationFn: async ({ id, data }: { id: string; data: ContractTypeFormData }) => {
       return await apiRequest(`/api/admin/global-contract-types/${id}`, {
         method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
     },

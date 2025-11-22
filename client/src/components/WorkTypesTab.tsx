@@ -53,6 +53,7 @@ export default function WorkTypesTab() {
     mutationFn: async (data: WorkTypeFormData) => {
       return await apiRequest("/api/admin/global-work-types", {
         method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
     },
@@ -78,6 +79,7 @@ export default function WorkTypesTab() {
     mutationFn: async ({ id, data }: { id: string; data: WorkTypeFormData }) => {
       return await apiRequest(`/api/admin/global-work-types/${id}`, {
         method: "PATCH",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
       });
     },
