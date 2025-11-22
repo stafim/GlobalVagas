@@ -34,6 +34,7 @@ export const companies = pgTable("companies", {
   culture: text("culture"),
   bannerUrl: text("banner_url"),
   credits: text("credits").notNull().default('0'),
+  lastLoginAt: text("last_login_at"),
 }, (table) => ({
   emailIdx: index("companies_email_idx").on(table.email),
   cnpjIdx: index("companies_cnpj_idx").on(table.cnpj),
@@ -63,6 +64,7 @@ export const operators = pgTable("operators", {
   skills: text("skills"),
   bio: text("bio"),
   profilePhotoUrl: text("profile_photo_url"),
+  lastLoginAt: text("last_login_at"),
 }, (table) => ({
   emailIdx: index("operators_email_idx").on(table.email),
   cpfIdx: index("operators_cpf_idx").on(table.cpf),
@@ -99,6 +101,7 @@ export const admins = pgTable("admins", {
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
   name: text("name").notNull(),
+  lastLoginAt: text("last_login_at"),
 }, (table) => ({
   emailIdx: index("admins_email_idx").on(table.email),
 }));
