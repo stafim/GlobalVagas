@@ -1149,9 +1149,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "logoURL é obrigatório" });
       }
 
-      const objectStorageService = new ObjectStorageService();
+      let objectPath = req.body.logoURL;
       
-      let objectPath;
+      // Check if it's a local upload (starts with /attached_assets)
+      if (objectPath.startsWith('/attached_assets/')) {
+        // Local upload - just return the path
+        console.log("✅ Logo set (local):", objectPath);
+        res.status(200).json({ objectPath });
+        return;
+      }
+
+      // Object Storage upload - set ACL with retry logic
+      const objectStorageService = new ObjectStorageService();
       let retries = 3;
       let lastError;
 
@@ -1240,8 +1249,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "profilePhotoURL é obrigatório" });
       }
 
+      let objectPath = req.body.profilePhotoURL;
+      
+      // Check if it's a local upload (starts with /attached_assets)
+      if (objectPath.startsWith('/attached_assets/')) {
+        // Local upload - just save the path
+        await storage.updateOperator(req.session.userId, { profilePhotoUrl: objectPath });
+        res.status(200).json({ objectPath });
+        return;
+      }
+
+      // Object Storage upload - set ACL
       const objectStorageService = new ObjectStorageService();
-      const objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
+      objectPath = await objectStorageService.trySetObjectEntityAclPolicy(
         req.body.profilePhotoURL,
         {
           owner: req.session.userId,
@@ -1670,9 +1690,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "coverURL é obrigatório" });
       }
 
-      const objectStorageService = new ObjectStorageService();
+      let objectPath = req.body.coverURL;
       
-      let objectPath;
+      // Check if it's a local upload (starts with /attached_assets)
+      if (objectPath.startsWith('/attached_assets/')) {
+        // Local upload - just return the path
+        return res.json({ objectPath });
+      }
+
+      // Object Storage upload - set ACL with retry logic
+      const objectStorageService = new ObjectStorageService();
       let retries = 3;
       let lastError;
 
@@ -1803,9 +1830,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "imageURL é obrigatório" });
       }
 
-      const objectStorageService = new ObjectStorageService();
+      let objectPath = req.body.imageURL;
       
-      let objectPath;
+      // Check if it's a local upload (starts with /attached_assets)
+      if (objectPath.startsWith('/attached_assets/')) {
+        // Local upload - just return the path
+        return res.json({ objectPath });
+      }
+
+      // Object Storage upload - set ACL with retry logic
+      const objectStorageService = new ObjectStorageService();
       let retries = 3;
       let lastError;
 

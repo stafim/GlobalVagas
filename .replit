@@ -64,4 +64,4 @@ PRIVATE_OBJECT_DIR = "operlist-storage/private"
 PUBLIC_OBJECT_SEARCH_PATHS = "operlist-storage/public"
 
 [objectStorage]
-defaultBucketID = "replit-objstore-c2981676-452f-4854-aa3d-65ebd21d6477"
+defaultBucketID = "replit-objstore-01f0b9ff-2a2b-420f-9ad4-4ace84c9c448"

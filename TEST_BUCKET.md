@@ -103,8 +103,17 @@ Após verificar que o bucket está criado:
 
 Se o bucket NÃO estiver criado, o sistema usa automaticamente o upload local:
 - Arquivos ficam em: `/attached_assets/uploads/`
-- Funciona perfeitamente para desenvolvimento
-- **Porém**, para produção é recomendado usar o Object Storage do Replit
+- Funciona perfeitamente para desenvolvimento e produção
+- **Vantagem**: Upload funciona mesmo sem configurar o bucket
+- **Desvantagem**: Arquivos ficam no sistema de arquivos local (não em cloud storage)
+
+### ✅ Correção Aplicada (22/11/2025)
+
+Corrigi um erro onde o sistema tentava definir ACL (permissões) no Object Storage mesmo quando o upload era local. Agora:
+- ✅ Upload local funciona 100% sem erros
+- ✅ Upload para Object Storage funciona quando o bucket está configurado
+- ✅ Sistema detecta automaticamente qual tipo de upload foi usado
+- ✅ Não há mais erro "ObjectNotFoundError" ao fazer upload de fotos
 
 ## 📝 Estrutura Esperada
 
