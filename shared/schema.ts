@@ -317,6 +317,7 @@ export const jobs = pgTable("jobs", {
   experienceLevel: text("experience_level"),
   educationLevel: text("education_level"),
   status: text("status").notNull().default('active'),
+  tags: text("tags").array(),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: text("updated_at"),
   expiryDate: text("expiry_date"),

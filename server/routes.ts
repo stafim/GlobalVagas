@@ -2758,13 +2758,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Tags endpoints (Admin only)
+  // Tags endpoints (GET is public for authenticated users, others admin only)
   app.get("/api/admin/tags", async (req, res) => {
     try {
-      if (!req.session.userId || req.session.userType !== 'admin') {
-        return res.status(401).json({ message: "Não autorizado" });
-      }
-
+      // Allow any authenticated user to read tags
       const tags = await storage.getAllTags();
       return res.status(200).json(tags);
     } catch (error) {

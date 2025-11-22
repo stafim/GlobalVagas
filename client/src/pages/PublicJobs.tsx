@@ -465,6 +465,11 @@ export default function PublicJobs() {
                             {getContractTypeLabel(job.contractType)}
                           </Badge>
                         )}
+                        {job.tags && job.tags.length > 0 && job.tags.map((tag, index) => (
+                          <Badge key={index} variant="default" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
                       </div>
                     </div>
                   </CardContent>

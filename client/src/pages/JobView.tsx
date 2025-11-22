@@ -328,6 +328,11 @@ export default function JobView() {
                     {job.salary}
                   </Badge>
                 )}
+                {job.tags && job.tags.length > 0 && job.tags.map((tag, index) => (
+                  <Badge key={index} variant="default" className="text-xs">
+                    {tag}
+                  </Badge>
+                ))}
                 {job.status === 'suspended' && (
                   <Badge 
                     variant="outline" 

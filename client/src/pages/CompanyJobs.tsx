@@ -17,7 +17,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { insertJobSchema, type Job, type Question, type GlobalWorkType, type GlobalContractType } from "@shared/schema";
+import { insertJobSchema, type Job, type Question, type GlobalWorkType, type GlobalContractType, type Tag } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -51,6 +51,7 @@ export default function CompanyJobs() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [jobToDelete, setJobToDelete] = useState<string | null>(null);
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [creditsDialogOpen, setCreditsDialogOpen] = useState(false);
 
   const { data: jobs = [], isLoading } = useQuery<JobWithApplicationCount[]>({
@@ -71,6 +72,10 @@ export default function CompanyJobs() {
 
   const { data: globalContractTypes = [] } = useQuery<GlobalContractType[]>({
     queryKey: ['/api/admin/global-contract-types'],
+  });
+
+  const { data: tags = [] } = useQuery<Tag[]>({
+    queryKey: ['/api/admin/tags'],
   });
 
   const createJobMutation = useMutation({
@@ -100,6 +105,7 @@ export default function CompanyJobs() {
       setDialogOpen(false);
       setCurrentStep(1);
       setSelectedQuestions([]);
+      setSelectedTags([]);
       form.reset();
       toast({
         title: "Vaga criada com sucesso!",
@@ -204,7 +210,11 @@ export default function CompanyJobs() {
     const isValid = await form.trigger();
     if (isValid) {
       const data = form.getValues();
-      createJobMutation.mutate(data);
+      const jobData = {
+        ...data,
+        tags: selectedTags,
+      };
+      createJobMutation.mutate(jobData);
     }
   };
 
@@ -513,6 +523,45 @@ export default function CompanyJobs() {
                           </FormItem>
                         )}
                       />
+                    </div>
+
+                    <div className="space-y-2">
+                      <FormLabel>Tags (Opcional)</FormLabel>
+                      <p className="text-sm text-muted-foreground">
+                        Selecione tags que descrevem melhor esta vaga
+                      </p>
+                      {tags.filter(t => t.isActive === 'true').length === 0 ? (
+                        <p className="text-sm text-muted-foreground py-4">
+                          Nenhuma tag disponível no momento.
+                        </p>
+                      ) : (
+                        <div className="flex flex-wrap gap-2">
+                          {tags
+                            .filter(t => t.isActive === 'true')
+                            .map((tag) => (
+                              <Badge
+                                key={tag.id}
+                                variant={selectedTags.includes(tag.name) ? "default" : "outline"}
+                                className="cursor-pointer"
+                                onClick={() => {
+                                  if (selectedTags.includes(tag.name)) {
+                                    setSelectedTags(selectedTags.filter(t => t !== tag.name));
+                                  } else {
+                                    setSelectedTags([...selectedTags, tag.name]);
+                                  }
+                                }}
+                                data-testid={`badge-tag-${tag.id}`}
+                              >
+                                {tag.name}
+                              </Badge>
+                            ))}
+                        </div>
+                      )}
+                      {selectedTags.length > 0 && (
+                        <p className="text-sm text-muted-foreground mt-2">
+                          {selectedTags.length} {selectedTags.length === 1 ? 'tag selecionada' : 'tags selecionadas'}
+                        </p>
+                      )}
                     </div>
                   </div>
                 )}
@@ -923,6 +972,11 @@ export default function CompanyJobs() {
                           {job.salary}
                         </Badge>
                       )}
+                      {job.tags && job.tags.length > 0 && job.tags.map((tag, index) => (
+                        <Badge key={index} variant="default" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
                     </div>
                     <p className="text-sm text-muted-foreground truncate">
                       {job.description.length > 20 
