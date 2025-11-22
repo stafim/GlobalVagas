@@ -387,6 +387,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/users/login-history", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(403).json({ 
+          message: "Acesso negado. Apenas administradores podem acessar esta página." 
+        });
+      }
+
+      const companies = await storage.getAllCompanies();
+      const operators = await storage.getAllOperators();
+
+      const companiesLoginData = companies.map(({ password, ...company }) => ({
+        id: company.id,
+        name: company.companyName,
+        email: company.email,
+        type: 'company' as const,
+        lastLoginAt: company.lastLoginAt,
+      }));
+
+      const operatorsLoginData = operators.map(({ password, ...operator }) => ({
+        id: operator.id,
+        name: operator.fullName,
+        email: operator.email,
+        type: 'operator' as const,
+        lastLoginAt: operator.lastLoginAt,
+      }));
+
+      const allUsers = [...companiesLoginData, ...operatorsLoginData];
+      allUsers.sort((a, b) => {
+        if (!a.lastLoginAt) return 1;
+        if (!b.lastLoginAt) return -1;
+        return new Date(b.lastLoginAt).getTime() - new Date(a.lastLoginAt).getTime();
+      });
+
+      return res.status(200).json({
+        users: allUsers,
+        total: allUsers.length,
+      });
+    } catch (error) {
+      console.error("Error fetching login history:", error);
+      return res.status(500).json({ message: "Erro ao buscar histórico de logins" });
+    }
+  });
+
   app.get("/api/stats", async (req, res) => {
     try {
       if (!req.session.userId || req.session.userType !== 'admin') {
