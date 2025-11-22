@@ -339,6 +339,7 @@ export const jobs = pgTable("jobs", {
   updatedAt: text("updated_at"),
   expiryDate: text("expiry_date"),
   vacancies: text("vacancies").notNull().default('1'),
+  viewCount: text("view_count").notNull().default('0'),
 }, (table) => ({
   companyIdIdx: index("jobs_company_id_idx").on(table.companyId),
   clientIdIdx: index("jobs_client_id_idx").on(table.clientId),

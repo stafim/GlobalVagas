@@ -64,6 +64,21 @@ export default function JobView() {
     }
   }, [checkApplicationQuery.data]);
 
+  // Increment view count when page loads
+  useEffect(() => {
+    const incrementView = async () => {
+      if (params?.id) {
+        try {
+          await apiRequest("POST", `/api/jobs/${params.id}/increment-view`);
+        } catch (error) {
+          // Silently fail - view count is not critical
+        }
+      }
+    };
+
+    incrementView();
+  }, [params?.id]);
+
   const applyMutation = useMutation({
     mutationFn: async (answers?: Record<string, string>) => {
       const response = await apiRequest("POST", "/api/applications", {

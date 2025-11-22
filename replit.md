@@ -13,10 +13,10 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 ## System Architecture
 
 ### Core Features & Design
-- **User Management**: Distinct roles (Operators, Companies, Administrators) with session-based authentication. Operators must have 100% complete profiles before applying to jobs, with an AlertDialog guiding them to required fields.
+- **User Management**: Distinct roles (Operators, Companies, Administrators) with session-based authentication. Operators must have ≥50% profile completion before applying to jobs, with an AlertDialog guiding them to required fields.
 - **Job Management**: Companies create/manage jobs via a 4-step wizard, including dynamic question selection. Jobs have 'Active'/'Suspended' statuses and are publicly listed with search/filter capabilities. A credit system dictates job publishing.
-- **Job Application System**: Operators apply to jobs and complete dynamic questionnaires. The system validates required questions and prevents duplicate applications.
-- **Profile Management**: Detailed profiles for Companies (presentation pages, banner uploads) and Operators (experience tracking, photos).
+- **Job Application System**: Operators apply to jobs and complete dynamic questionnaires. The system validates required questions and prevents duplicate applications. Features advanced filtering (search, status, location) for companies to manage applications efficiently.
+- **Profile Management**: Detailed profiles for Companies (presentation pages, banner uploads) and Operators (experience tracking, photos). Operator profile completion tracked via 13 fields with 50% minimum threshold.
 - **Administration Panel**: Comprehensive interface for system settings, email configuration, content, user management, and financial dashboard.
 - **Localization**: Full platform support for Portuguese and English.
 - **Email System**: Integrated SMTP for notifications and password recovery.
@@ -24,6 +24,7 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 - **Form Validation**: Client-side and server-side validation using Zod.
 - **UI/UX**: Clean, modern, responsive interface using Shadcn UI, featuring intuitive workflows, enhanced job card visualization, and consistent header/footer across all public pages. Company sidebar navigation is reorganized for clarity.
 - **Visit Counter System**: Tracks unique home page visits.
+- **Job View Counter**: Each job tracks total views automatically when users access the job details page. Companies can see view counts alongside applications and other metrics.
 - **Public Jobs Page**: `/vagas` page with advanced filtering and real-time search.
 - **Events Management**: System for displaying trade shows and workshops.
 - **Company Credits System**: Dashboard for companies to manage credits, view transaction history, and track balances for plan purchases and job postings.

@@ -1893,6 +1893,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.post("/api/jobs/:id/increment-view", async (req, res) => {
+    try {
+      const jobId = req.params.id;
+      const job = await storage.getJob(jobId);
+      
+      if (!job) {
+        return res.status(404).json({ message: "Vaga não encontrada" });
+      }
+
+      await storage.incrementJobViewCount(jobId);
+      
+      return res.status(200).json({ success: true });
+    } catch (error) {
+      console.error("Error incrementing job view count:", error);
+      return res.status(500).json({ message: "Erro ao incrementar visualização" });
+    }
+  });
+
   app.post("/api/jobs", async (req, res) => {
     try {
       if (!req.session.userId) {

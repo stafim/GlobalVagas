@@ -111,6 +111,7 @@ export interface IStorage {
   createJob(job: InsertJob): Promise<Job>;
   updateJob(id: string, job: Partial<InsertJob>): Promise<Job>;
   deleteJob(id: string): Promise<void>;
+  incrementJobViewCount(jobId: string): Promise<void>;
   
   getApplication(id: string): Promise<Application | undefined>;
   getApplicationsByJob(jobId: string): Promise<Application[]>;
@@ -860,6 +861,17 @@ export class DatabaseStorage implements IStorage {
 
   async deleteJob(id: string): Promise<void> {
     await db.delete(jobs).where(eq(jobs.id, id));
+  }
+
+  async incrementJobViewCount(jobId: string): Promise<void> {
+    const job = await this.getJob(jobId);
+    if (job) {
+      const currentCount = parseInt(job.viewCount || '0');
+      await db
+        .update(jobs)
+        .set({ viewCount: String(currentCount + 1) })
+        .where(eq(jobs.id, jobId));
+    }
   }
 
   async getApplication(id: string): Promise<Application | undefined> {

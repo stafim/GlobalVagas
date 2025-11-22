@@ -1013,6 +1013,10 @@ export default function CompanyJobs() {
                       <UserCheck className="h-3 w-3" />
                       {job.applicationCount || 0} {job.applicationCount === 1 ? 'candidatura' : 'candidaturas'}
                     </span>
+                    <span className="flex items-center gap-1" title="Visualizações">
+                      <Eye className="h-3 w-3" />
+                      {job.viewCount || 0}
+                    </span>
                   </div>
 
                   <div className="flex items-center gap-1.5">
