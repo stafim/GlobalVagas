@@ -1,6 +1,6 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -157,10 +157,10 @@ export default function WorkTypesTab() {
   };
 
   return (
-    <>
-      <div className="grid gap-4 md:grid-cols-2 mb-6">
+    <div className="space-y-4">
+      <div className="grid gap-4 md:grid-cols-2">
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Total de Tipos</CardTitle>
             <Briefcase className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -172,7 +172,7 @@ export default function WorkTypesTab() {
         </Card>
 
         <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+          <CardHeader className="flex flex-row items-center justify-between gap-4 space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Tipos Ativos</CardTitle>
             <Briefcase className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
@@ -186,65 +186,20 @@ export default function WorkTypesTab() {
 
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex items-center justify-between gap-4">
+            <div className="space-y-1">
               <CardTitle>Tipos de Trabalho</CardTitle>
               <CardDescription>
                 Gerencie os tipos de trabalho disponíveis no sistema
               </CardDescription>
             </div>
-            <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
-              <DialogTrigger asChild>
-                <Button data-testid="button-create-work-type">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Novo Tipo
-                </Button>
-              </DialogTrigger>
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Novo Tipo de Trabalho</DialogTitle>
-                  <DialogDescription>
-                    Adicione um novo tipo de trabalho ao sistema
-                  </DialogDescription>
-                </DialogHeader>
-                <Form {...createForm}>
-                  <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4">
-                    <FormField
-                      control={createForm.control}
-                      name="name"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Nome</FormLabel>
-                          <FormControl>
-                            <Input {...field} placeholder="Ex: Tempo Integral" data-testid="input-work-type-name" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={createForm.control}
-                      name="description"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Descrição (Opcional)</FormLabel>
-                          <FormControl>
-                            <Textarea {...field} placeholder="Descrição do tipo de trabalho" data-testid="input-work-type-description" />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <DialogFooter>
-                      <Button type="submit" disabled={createMutation.isPending} data-testid="button-submit-work-type">
-                        {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                        Criar
-                      </Button>
-                    </DialogFooter>
-                  </form>
-                </Form>
-              </DialogContent>
-            </Dialog>
+            <Button 
+              onClick={() => setCreateDialogOpen(true)}
+              data-testid="button-create-work-type"
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              Novo Tipo
+            </Button>
           </div>
         </CardHeader>
         <CardContent>
@@ -306,6 +261,54 @@ export default function WorkTypesTab() {
           )}
         </CardContent>
       </Card>
+
+      {/* Create Dialog */}
+      <Dialog open={createDialogOpen} onOpenChange={setCreateDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Novo Tipo de Trabalho</DialogTitle>
+            <DialogDescription>
+              Adicione um novo tipo de trabalho ao sistema
+            </DialogDescription>
+          </DialogHeader>
+          <Form {...createForm}>
+            <form onSubmit={createForm.handleSubmit(onCreateSubmit)} className="space-y-4">
+              <FormField
+                control={createForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Ex: Tempo Integral" data-testid="input-work-type-name" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={createForm.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Descrição (Opcional)</FormLabel>
+                    <FormControl>
+                      <Textarea {...field} placeholder="Descrição do tipo de trabalho" data-testid="input-work-type-description" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <DialogFooter>
+                <Button type="submit" disabled={createMutation.isPending} data-testid="button-submit-work-type">
+                  {createMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                  Criar
+                </Button>
+              </DialogFooter>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
 
       {/* Edit Dialog */}
       <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
@@ -379,6 +382,6 @@ export default function WorkTypesTab() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </div>
   );
 }
