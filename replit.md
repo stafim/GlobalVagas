@@ -10,6 +10,19 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 - **Flat, minimalist design**: Neutral colors, simple icons, reduced visual noise
 - Database-backed configuration (no hardcoded values)
 
+## System Access Credentials
+
+### Administrator Account
+- **Email**: admin@operlist.com.br
+- **Password**: Admin@2024
+- **Type**: System Administrator
+- **Access**: Full administrative panel with all permissions
+
+**Security Notes**:
+- All passwords are hashed using bcrypt (10 rounds)
+- Passwords stored in plaintext from legacy system are automatically migrated to bcrypt on first login
+- It is recommended to change the default administrator password after first login
+
 ## System Architecture
 
 ### Core Features & Design
@@ -35,6 +48,7 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 - **Simplified Password Recovery**: Users only need to enter their email; the system automatically detects user type.
 - **Flat UI Design**: Minimalist design using neutral colors and `text-muted-foreground` for icons, removing color gradients and vibrant accents for a cleaner look.
 - **Taxonomia System**: Centralized admin hub for managing platform-wide taxonomies including Tags, Setores (Sectors/Subsectors), Global Work Types, and Global Contract Types. All taxonomy management is organized under a single admin interface with dedicated tabs.
+- **Password Security**: All user passwords (Companies, Operators, Admins) are hashed using bcrypt with automatic migration from legacy plaintext passwords on login.
 
 ### Technology Stack
 - **Frontend**: React + TypeScript + Vite, Shadcn UI + Tailwind CSS, TanStack Query, React Hook Form + Zod
@@ -61,3 +75,4 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 - **Recharts**: For data visualization.
 - **cookie-parser**: Express middleware for cookie handling.
 - **jsPDF**: Client-side PDF generation.
+- **bcrypt**: Password hashing for secure credential storage.
