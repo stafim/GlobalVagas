@@ -1,4 +1,4 @@
-import { Building2, LayoutDashboard, Briefcase, CreditCard, Coins, FileQuestion, Clock, FileText } from "lucide-react";
+import { Building2, LayoutDashboard, Briefcase, CreditCard, Coins, FileQuestion } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -50,19 +50,6 @@ const questionnaireMenuItems = [
     title: "Banco de Perguntas",
     url: "/empresa/banco-perguntas",
     icon: FileQuestion,
-  },
-];
-
-const settingsMenuItems = [
-  {
-    title: "Tipos de Trabalho",
-    url: "/empresa/tipos-trabalho",
-    icon: Clock,
-  },
-  {
-    title: "Tipos de Contrato",
-    url: "/empresa/tipos-contrato",
-    icon: FileText,
   },
 ];
 
@@ -142,32 +129,6 @@ export function CompanySidebar() {
           <SidebarGroupContent>
             <SidebarMenu className="gap-2">
               {questionnaireMenuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={location === item.url}
-                    data-testid={`sidebar-${item.title.toLowerCase().replace(/\s+/g, '-')}`}
-                    className="h-11 px-4 rounded-lg font-medium"
-                  >
-                    <Link href={item.url}>
-                      <item.icon className="h-5 w-5 mr-3" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Cadastros Básicos */}
-        <SidebarGroup className="mt-6">
-          <SidebarGroupLabel className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-4 mb-2">
-            Cadastros Básicos
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu className="gap-2">
-              {settingsMenuItems.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
