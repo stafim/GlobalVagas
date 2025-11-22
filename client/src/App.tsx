@@ -32,6 +32,7 @@ import AdminJobs from "@/pages/AdminJobs";
 import AdminEditJob from "@/pages/AdminEditJob";
 import AdminPlans from "@/pages/AdminPlans";
 import AdminSectors from "@/pages/AdminSectors";
+import AdminTaxonomy from "@/pages/AdminTaxonomy";
 import AdminEvents from "@/pages/AdminEvents";
 import AdminBanners from "@/pages/AdminBanners";
 import AdminSettings from "@/pages/AdminSettings";
@@ -76,6 +77,7 @@ function Router() {
       <Route path="/admin/planos" component={AdminPlans} />
       <Route path="/admin/financeiro" component={AdminFinanceiro} />
       <Route path="/admin/setores" component={AdminSectors} />
+      <Route path="/admin/taxonomia" component={AdminTaxonomy} />
       <Route path="/admin/eventos" component={AdminEvents} />
       <Route path="/admin/banners" component={AdminBanners} />
       <Route path="/admin/newsletter" component={AdminNewsletters} />
