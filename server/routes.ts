@@ -2825,13 +2825,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Global Work Types endpoints (Admin only)
+  // Global Work Types endpoints (GET is public for authenticated users, others admin only)
   app.get("/api/admin/global-work-types", async (req, res) => {
     try {
-      if (!req.session.userId || req.session.userType !== 'admin') {
-        return res.status(401).json({ message: "Não autorizado" });
-      }
-
+      // Allow any authenticated user to read work types
       const workTypes = await storage.getAllGlobalWorkTypes();
       return res.status(200).json(workTypes);
     } catch (error) {
@@ -2892,13 +2889,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Global Contract Types endpoints (Admin only)
+  // Global Contract Types endpoints (GET is public for authenticated users, others admin only)
   app.get("/api/admin/global-contract-types", async (req, res) => {
     try {
-      if (!req.session.userId || req.session.userType !== 'admin') {
-        return res.status(401).json({ message: "Não autorizado" });
-      }
-
+      // Allow any authenticated user to read contract types
       const contractTypes = await storage.getAllGlobalContractTypes();
       return res.status(200).json(contractTypes);
     } catch (error) {
