@@ -38,6 +38,7 @@ import AdminBanners from "@/pages/AdminBanners";
 import AdminSettings from "@/pages/AdminSettings";
 import AdminFinanceiro from "@/pages/AdminFinanceiro";
 import AdminNewsletters from "@/pages/AdminNewsletters";
+import AdminLoginHistory from "@/pages/AdminLoginHistory";
 import Events from "@/pages/Events";
 import JobView from "@/pages/JobView";
 import PublicJobs from "@/pages/PublicJobs";
@@ -81,6 +82,7 @@ function Router() {
       <Route path="/admin/eventos" component={AdminEvents} />
       <Route path="/admin/banners" component={AdminBanners} />
       <Route path="/admin/newsletter" component={AdminNewsletters} />
+      <Route path="/admin/historico-logins" component={AdminLoginHistory} />
       <Route path="/admin/configuracoes" component={AdminSettings} />
       <Route component={NotFound} />
     </Switch>

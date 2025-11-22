@@ -1,4 +1,4 @@
-import { LayoutDashboard, Building2, HardHat, Briefcase, CreditCard, DollarSign, Settings, Calendar, Image, Mail, Tags } from "lucide-react";
+import { LayoutDashboard, Building2, HardHat, Briefcase, CreditCard, DollarSign, Settings, Calendar, Image, Mail, Tags, Clock } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -69,6 +69,11 @@ const menuItems = [
     title: "Newsletter",
     url: "/admin/newsletter",
     icon: Mail,
+  },
+  {
+    title: "Histórico de Logins",
+    url: "/admin/historico-logins",
+    icon: Clock,
   },
 ];
 
