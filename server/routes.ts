@@ -296,6 +296,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (company && company.password === password) {
         req.session.userId = company.id;
         req.session.userType = 'company';
+        await storage.updateCompanyLastLogin(company.id);
         const { password: _, ...companyWithoutPassword } = company;
         return res.status(200).json({ 
           user: companyWithoutPassword, 
@@ -307,6 +308,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (operator && operator.password === password) {
         req.session.userId = operator.id;
         req.session.userType = 'operator';
+        await storage.updateOperatorLastLogin(operator.id);
         const { password: _, ...operatorWithoutPassword } = operator;
         return res.status(200).json({ 
           user: operatorWithoutPassword, 
@@ -318,6 +320,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (admin && admin.password === password) {
         req.session.userId = admin.id;
         req.session.userType = 'admin';
+        await storage.updateAdminLastLogin(admin.id);
         
         await new Promise<void>((resolve, reject) => {
           req.session.save((err) => {
