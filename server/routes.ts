@@ -2825,6 +2825,140 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Global Work Types endpoints (Admin only)
+  app.get("/api/admin/global-work-types", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const workTypes = await storage.getAllGlobalWorkTypes();
+      return res.status(200).json(workTypes);
+    } catch (error) {
+      console.error("Error fetching global work types:", error);
+      return res.status(500).json({ message: "Erro ao buscar tipos de trabalho" });
+    }
+  });
+
+  app.post("/api/admin/global-work-types", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const workType = await storage.createGlobalWorkType(req.body);
+      return res.status(201).json(workType);
+    } catch (error) {
+      console.error("Error creating global work type:", error);
+      return res.status(500).json({ message: "Erro ao criar tipo de trabalho" });
+    }
+  });
+
+  app.patch("/api/admin/global-work-types/:id", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const existingWorkType = await storage.getGlobalWorkType(req.params.id);
+      if (!existingWorkType) {
+        return res.status(404).json({ message: "Tipo de trabalho não encontrado" });
+      }
+
+      const workType = await storage.updateGlobalWorkType(req.params.id, req.body);
+      return res.status(200).json(workType);
+    } catch (error) {
+      console.error("Error updating global work type:", error);
+      return res.status(500).json({ message: "Erro ao atualizar tipo de trabalho" });
+    }
+  });
+
+  app.delete("/api/admin/global-work-types/:id", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const existingWorkType = await storage.getGlobalWorkType(req.params.id);
+      if (!existingWorkType) {
+        return res.status(404).json({ message: "Tipo de trabalho não encontrado" });
+      }
+
+      await storage.deleteGlobalWorkType(req.params.id);
+      return res.status(200).json({ message: "Tipo de trabalho deletado com sucesso" });
+    } catch (error) {
+      console.error("Error deleting global work type:", error);
+      return res.status(500).json({ message: "Erro ao deletar tipo de trabalho" });
+    }
+  });
+
+  // Global Contract Types endpoints (Admin only)
+  app.get("/api/admin/global-contract-types", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const contractTypes = await storage.getAllGlobalContractTypes();
+      return res.status(200).json(contractTypes);
+    } catch (error) {
+      console.error("Error fetching global contract types:", error);
+      return res.status(500).json({ message: "Erro ao buscar tipos de contrato" });
+    }
+  });
+
+  app.post("/api/admin/global-contract-types", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const contractType = await storage.createGlobalContractType(req.body);
+      return res.status(201).json(contractType);
+    } catch (error) {
+      console.error("Error creating global contract type:", error);
+      return res.status(500).json({ message: "Erro ao criar tipo de contrato" });
+    }
+  });
+
+  app.patch("/api/admin/global-contract-types/:id", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const existingContractType = await storage.getGlobalContractType(req.params.id);
+      if (!existingContractType) {
+        return res.status(404).json({ message: "Tipo de contrato não encontrado" });
+      }
+
+      const contractType = await storage.updateGlobalContractType(req.params.id, req.body);
+      return res.status(200).json(contractType);
+    } catch (error) {
+      console.error("Error updating global contract type:", error);
+      return res.status(500).json({ message: "Erro ao atualizar tipo de contrato" });
+    }
+  });
+
+  app.delete("/api/admin/global-contract-types/:id", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const existingContractType = await storage.getGlobalContractType(req.params.id);
+      if (!existingContractType) {
+        return res.status(404).json({ message: "Tipo de contrato não encontrado" });
+      }
+
+      await storage.deleteGlobalContractType(req.params.id);
+      return res.status(200).json({ message: "Tipo de contrato deletado com sucesso" });
+    } catch (error) {
+      console.error("Error deleting global contract type:", error);
+      return res.status(500).json({ message: "Erro ao deletar tipo de contrato" });
+    }
+  });
+
   // Credits endpoints
   app.get("/api/company/credits", async (req, res) => {
     try {
