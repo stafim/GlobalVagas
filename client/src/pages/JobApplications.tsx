@@ -5,6 +5,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { 
   ArrowLeft, 
   Users, 
@@ -16,12 +18,14 @@ import {
   Clock,
   User,
   FileText,
-  FileDown
+  FileDown,
+  Search,
+  Filter
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { useLocation, useRoute } from "wouter";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { Job, Operator, Application, Question, ApplicationAnswer } from "@shared/schema";
@@ -33,6 +37,9 @@ type AnswerWithQuestion = ApplicationAnswer & { question: Question };
 export default function JobApplications() {
   const [, setLocation] = useLocation();
   const [selectedCandidate, setSelectedCandidate] = useState<ApplicationWithOperator | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [locationFilter, setLocationFilter] = useState("all");
   
   // Get jobId from URL params
   const [, params] = useRoute("/empresa/vaga/:id/candidatos");
@@ -52,6 +59,35 @@ export default function JobApplications() {
     queryKey: ['/api/applications', selectedCandidate?.id, 'answers'],
     enabled: !!selectedCandidate?.id,
   });
+
+  // Filtros
+  const uniqueLocations = useMemo(() => {
+    const locations = new Set<string>();
+    applications.forEach(app => {
+      if (app.operator.preferredLocation) {
+        locations.add(app.operator.preferredLocation);
+      }
+    });
+    return Array.from(locations).sort();
+  }, [applications]);
+
+  const filteredApplications = useMemo(() => {
+    return applications.filter(app => {
+      // Filtro de busca
+      const matchesSearch = searchTerm === "" || 
+        app.operator.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        app.operator.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        app.operator.profession.toLowerCase().includes(searchTerm.toLowerCase());
+
+      // Filtro de status
+      const matchesStatus = statusFilter === "all" || app.status === statusFilter;
+
+      // Filtro de localização
+      const matchesLocation = locationFilter === "all" || app.operator.preferredLocation === locationFilter;
+
+      return matchesSearch && matchesStatus && matchesLocation;
+    });
+  }, [applications, searchTerm, statusFilter, locationFilter]);
 
   const getInitials = (name: string) => {
     const names = name.split(' ');
@@ -279,8 +315,8 @@ export default function JobApplications() {
           </Button>
         </div>
 
-        <Card className="mb-6">
-          <CardHeader>
+        <Card className="mb-4">
+          <CardHeader className="pb-3">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1">
                 <CardTitle className="text-2xl" data-testid="text-job-title">
@@ -302,6 +338,64 @@ export default function JobApplications() {
           </CardHeader>
         </Card>
 
+        {applications.length > 0 && (
+          <Card className="mb-4">
+            <CardContent className="p-4">
+              <div className="flex items-center gap-2 mb-3">
+                <Filter className="h-4 w-4 text-muted-foreground" />
+                <h3 className="font-semibold text-sm">Filtros</h3>
+              </div>
+              <div className="grid gap-3 md:grid-cols-3">
+                {/* Busca */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por nome, email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9"
+                    data-testid="input-search-candidates"
+                  />
+                </div>
+
+                {/* Filtro de Status */}
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger data-testid="select-status-filter">
+                    <SelectValue placeholder="Status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos os Status</SelectItem>
+                    <SelectItem value="pending">Pendente</SelectItem>
+                    <SelectItem value="accepted">Aceito</SelectItem>
+                    <SelectItem value="rejected">Rejeitado</SelectItem>
+                  </SelectContent>
+                </Select>
+
+                {/* Filtro de Localização */}
+                <Select value={locationFilter} onValueChange={setLocationFilter}>
+                  <SelectTrigger data-testid="select-location-filter">
+                    <SelectValue placeholder="Localização" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas as Localizações</SelectItem>
+                    {uniqueLocations.map((location) => (
+                      <SelectItem key={location} value={location}>
+                        {location}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {filteredApplications.length !== applications.length && (
+                <div className="mt-3 text-sm text-muted-foreground">
+                  Mostrando {filteredApplications.length} de {applications.length} candidatos
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        )}
+
         {applications.length === 0 ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
@@ -312,9 +406,19 @@ export default function JobApplications() {
               </p>
             </CardContent>
           </Card>
+        ) : filteredApplications.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Search className="h-16 w-16 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">Nenhum candidato encontrado</h3>
+              <p className="text-muted-foreground text-center max-w-md">
+                Não há candidatos que correspondam aos filtros selecionados.
+              </p>
+            </CardContent>
+          </Card>
         ) : (
-          <div className="space-y-3">
-            {applications.map((application) => {
+          <div className="space-y-2">
+            {filteredApplications.map((application) => {
               const { operator } = application;
               
               return (
@@ -324,77 +428,70 @@ export default function JobApplications() {
                   onClick={() => setSelectedCandidate(application)}
                   data-testid={`card-candidate-${application.id}`}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4 flex-wrap">
-                      {/* Avatar e informações básicas */}
-                      <div className="flex items-center gap-3 flex-1 min-w-[250px]">
-                        <Avatar className="h-12 w-12">
-                          <AvatarImage src={operator.profilePhotoUrl || undefined} />
-                          <AvatarFallback>
-                            {getInitials(operator.fullName)}
-                          </AvatarFallback>
-                        </Avatar>
-                        
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-semibold truncate" data-testid={`text-candidate-name-${application.id}`}>
+                  <CardContent className="p-3">
+                    <div className="flex items-center gap-3">
+                      {/* Avatar e Nome */}
+                      <Avatar className="h-10 w-10 flex-shrink-0">
+                        <AvatarImage src={operator.profilePhotoUrl || undefined} />
+                        <AvatarFallback className="text-xs">
+                          {getInitials(operator.fullName)}
+                        </AvatarFallback>
+                      </Avatar>
+                      
+                      {/* Informações principais */}
+                      <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
+                        <div className="min-w-0">
+                          <h3 className="font-semibold text-sm truncate" data-testid={`text-candidate-name-${application.id}`}>
                             {operator.fullName}
                           </h3>
-                          <p className="text-sm text-muted-foreground truncate">
+                          <p className="text-xs text-muted-foreground truncate">
                             {operator.profession}
                           </p>
                         </div>
-                      </div>
 
-                      {/* Experiência */}
-                      {operator.experienceYears && (
-                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <Briefcase className="h-4 w-4 flex-shrink-0" />
-                          <span className="whitespace-nowrap">{operator.experienceYears} anos</span>
+                        <div className="flex items-center gap-4 text-xs">
+                          {operator.experienceYears && (
+                            <div className="flex items-center gap-1 text-muted-foreground">
+                              <Briefcase className="h-3 w-3" />
+                              <span>{operator.experienceYears}</span>
+                            </div>
+                          )}
+                          {operator.preferredLocation && (
+                            <div className="flex items-center gap-1 text-muted-foreground">
+                              <MapPin className="h-3 w-3" />
+                              <span className="truncate max-w-[120px]">{operator.preferredLocation}</span>
+                            </div>
+                          )}
                         </div>
-                      )}
 
-                      {/* Email */}
-                      <div className="flex items-center gap-2 text-sm min-w-[200px]">
-                        <Mail className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span className="truncate">{operator.email}</span>
-                      </div>
-
-                      {/* Telefone */}
-                      <div className="flex items-center gap-2 text-sm">
-                        <SiWhatsapp className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                        <span className="whitespace-nowrap">{operator.phone}</span>
-                      </div>
-
-                      {/* Localização */}
-                      {operator.preferredLocation && (
-                        <div className="flex items-center gap-2 text-sm min-w-[150px]">
-                          <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                          <span className="truncate">{operator.preferredLocation}</span>
+                        <div className="flex items-center gap-3 text-xs">
+                          <div className="flex items-center gap-1 text-muted-foreground">
+                            <Mail className="h-3 w-3" />
+                            <span className="truncate max-w-[150px]">{operator.email}</span>
+                          </div>
                         </div>
-                      )}
 
-                      {/* Ações e status */}
-                      <div className="flex items-center gap-3 ml-auto">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            downloadCV(operator, job.title);
-                          }}
-                          title="Baixar Currículo em PDF"
-                          data-testid={`button-download-cv-${application.id}`}
-                        >
-                          <FileDown className="h-4 w-4 mr-2" />
-                          CV
-                        </Button>
-                        
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                          <Clock className="h-3 w-3" />
-                          <span className="whitespace-nowrap">{formatDateTime(application.appliedAt)}</span>
+                        <div className="flex items-center gap-2 justify-end">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              downloadCV(operator, job.title);
+                            }}
+                            title="Baixar CV"
+                            data-testid={`button-download-cv-${application.id}`}
+                            className="h-7 px-2"
+                          >
+                            <FileDown className="h-3 w-3" />
+                          </Button>
+                          
+                          <div className="text-xs text-muted-foreground whitespace-nowrap">
+                            {formatDateTime(application.appliedAt)}
+                          </div>
+                          
+                          {getStatusBadge(application.status)}
                         </div>
-                        
-                        {getStatusBadge(application.status)}
                       </div>
                     </div>
                   </CardContent>
