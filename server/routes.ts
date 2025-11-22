@@ -2421,6 +2421,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin endpoint - get all jobs
+  app.get("/api/admin/jobs", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const jobs = await storage.getAllJobs();
+      return res.status(200).json(jobs);
+    } catch (error) {
+      console.error("Error fetching all jobs:", error);
+      return res.status(500).json({ message: "Erro ao buscar vagas" });
+    }
+  });
+
   // Admin endpoint - get visit statistics
   app.get("/api/admin/visit-stats", async (req, res) => {
     try {
