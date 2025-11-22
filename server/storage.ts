@@ -1,4 +1,4 @@
-import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, savedJobs, questions, jobQuestions, applicationAnswers, siteVisits, newsletterSubscriptions, passwordResetCodes, creditTransactions, workTypes, contractTypes, tags, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type SavedJob, type InsertSavedJob, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit, type NewsletterSubscription, type InsertNewsletterSubscription, type PasswordResetCode, type InsertPasswordResetCode, type CreditTransaction, type InsertCreditTransaction, type WorkType, type InsertWorkType, type ContractType, type InsertContractType, type Tag, type InsertTag } from "@shared/schema";
+import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, savedJobs, questions, jobQuestions, applicationAnswers, siteVisits, newsletterSubscriptions, passwordResetCodes, creditTransactions, workTypes, contractTypes, tags, globalWorkTypes, globalContractTypes, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type SavedJob, type InsertSavedJob, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit, type NewsletterSubscription, type InsertNewsletterSubscription, type PasswordResetCode, type InsertPasswordResetCode, type CreditTransaction, type InsertCreditTransaction, type WorkType, type InsertWorkType, type ContractType, type InsertContractType, type Tag, type InsertTag, type GlobalWorkType, type InsertGlobalWorkType, type GlobalContractType, type InsertGlobalContractType } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, not, like, sql } from "drizzle-orm";
 
@@ -160,6 +160,20 @@ export interface IStorage {
   createTag(tag: InsertTag): Promise<Tag>;
   updateTag(id: string, tag: Partial<InsertTag>): Promise<Tag>;
   deleteTag(id: string): Promise<void>;
+  
+  getGlobalWorkType(id: string): Promise<GlobalWorkType | undefined>;
+  getAllGlobalWorkTypes(): Promise<GlobalWorkType[]>;
+  getActiveGlobalWorkTypes(): Promise<GlobalWorkType[]>;
+  createGlobalWorkType(workType: InsertGlobalWorkType): Promise<GlobalWorkType>;
+  updateGlobalWorkType(id: string, workType: Partial<InsertGlobalWorkType>): Promise<GlobalWorkType>;
+  deleteGlobalWorkType(id: string): Promise<void>;
+  
+  getGlobalContractType(id: string): Promise<GlobalContractType | undefined>;
+  getAllGlobalContractTypes(): Promise<GlobalContractType[]>;
+  getActiveGlobalContractTypes(): Promise<GlobalContractType[]>;
+  createGlobalContractType(contractType: InsertGlobalContractType): Promise<GlobalContractType>;
+  updateGlobalContractType(id: string, contractType: Partial<InsertGlobalContractType>): Promise<GlobalContractType>;
+  deleteGlobalContractType(id: string): Promise<void>;
   
   getJobQuestion(id: string): Promise<JobQuestion | undefined>;
   getJobQuestionsByJob(jobId: string): Promise<Array<JobQuestion & { question: Question }>>;
@@ -1134,6 +1148,78 @@ export class DatabaseStorage implements IStorage {
 
   async deleteTag(id: string): Promise<void> {
     await db.delete(tags).where(eq(tags.id, id));
+  }
+
+  async getGlobalWorkType(id: string): Promise<GlobalWorkType | undefined> {
+    const [workType] = await db.select().from(globalWorkTypes).where(eq(globalWorkTypes.id, id));
+    return workType || undefined;
+  }
+
+  async getAllGlobalWorkTypes(): Promise<GlobalWorkType[]> {
+    return await db.select().from(globalWorkTypes).orderBy(desc(globalWorkTypes.createdAt));
+  }
+
+  async getActiveGlobalWorkTypes(): Promise<GlobalWorkType[]> {
+    return await db.select().from(globalWorkTypes)
+      .where(eq(globalWorkTypes.isActive, 'true'))
+      .orderBy(desc(globalWorkTypes.createdAt));
+  }
+
+  async createGlobalWorkType(insertWorkType: InsertGlobalWorkType): Promise<GlobalWorkType> {
+    const [workType] = await db
+      .insert(globalWorkTypes)
+      .values(insertWorkType)
+      .returning();
+    return workType;
+  }
+
+  async updateGlobalWorkType(id: string, updateData: Partial<InsertGlobalWorkType>): Promise<GlobalWorkType> {
+    const [workType] = await db
+      .update(globalWorkTypes)
+      .set(updateData)
+      .where(eq(globalWorkTypes.id, id))
+      .returning();
+    return workType;
+  }
+
+  async deleteGlobalWorkType(id: string): Promise<void> {
+    await db.delete(globalWorkTypes).where(eq(globalWorkTypes.id, id));
+  }
+
+  async getGlobalContractType(id: string): Promise<GlobalContractType | undefined> {
+    const [contractType] = await db.select().from(globalContractTypes).where(eq(globalContractTypes.id, id));
+    return contractType || undefined;
+  }
+
+  async getAllGlobalContractTypes(): Promise<GlobalContractType[]> {
+    return await db.select().from(globalContractTypes).orderBy(desc(globalContractTypes.createdAt));
+  }
+
+  async getActiveGlobalContractTypes(): Promise<GlobalContractType[]> {
+    return await db.select().from(globalContractTypes)
+      .where(eq(globalContractTypes.isActive, 'true'))
+      .orderBy(desc(globalContractTypes.createdAt));
+  }
+
+  async createGlobalContractType(insertContractType: InsertGlobalContractType): Promise<GlobalContractType> {
+    const [contractType] = await db
+      .insert(globalContractTypes)
+      .values(insertContractType)
+      .returning();
+    return contractType;
+  }
+
+  async updateGlobalContractType(id: string, updateData: Partial<InsertGlobalContractType>): Promise<GlobalContractType> {
+    const [contractType] = await db
+      .update(globalContractTypes)
+      .set(updateData)
+      .where(eq(globalContractTypes.id, id))
+      .returning();
+    return contractType;
+  }
+
+  async deleteGlobalContractType(id: string): Promise<void> {
+    await db.delete(globalContractTypes).where(eq(globalContractTypes.id, id));
   }
 
   async getJobQuestion(id: string): Promise<JobQuestion | undefined> {

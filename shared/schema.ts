@@ -579,3 +579,35 @@ export const insertTagSchema = createInsertSchema(tags).omit({
 
 export type InsertTag = z.infer<typeof insertTagSchema>;
 export type Tag = typeof tags.$inferSelect;
+
+export const globalWorkTypes = pgTable("global_work_types", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  description: text("description"),
+  isActive: text("is_active").notNull().default('true'),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertGlobalWorkTypeSchema = createInsertSchema(globalWorkTypes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertGlobalWorkType = z.infer<typeof insertGlobalWorkTypeSchema>;
+export type GlobalWorkType = typeof globalWorkTypes.$inferSelect;
+
+export const globalContractTypes = pgTable("global_contract_types", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  description: text("description"),
+  isActive: text("is_active").notNull().default('true'),
+  createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const insertGlobalContractTypeSchema = createInsertSchema(globalContractTypes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertGlobalContractType = z.infer<typeof insertGlobalContractTypeSchema>;
+export type GlobalContractType = typeof globalContractTypes.$inferSelect;
