@@ -59,6 +59,21 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 
 ## Recent Changes
 
+### November 22, 2025 - Admin VAGAS Menu for Client Job Management
+- **New Admin Menu**: Added "Vagas" menu item to admin panel for viewing all client-created jobs
+  - **Backend**: Created `/api/admin/jobs` endpoint that returns jobs with company information using LEFT JOIN
+  - **Storage**: Added `getAllJobsWithCompany()` method to retrieve jobs with company details
+  - **Frontend**: Created `AdminJobs.tsx` page with comprehensive job listing and filtering
+  - **Statistics Cards**: Display total jobs, active jobs, and suspended jobs counts
+  - **Advanced Filters**:
+    - Search filter: Search by job title, company name, or location
+    - Status filter: Filter by Active or Suspended jobs
+    - Company filter: Filter jobs by specific companies
+  - **Data Table**: Shows job title, company name, location, status badge, creation date, and view button
+  - **Navigation**: Added to admin sidebar between "Meus Operadores" and "Planos"
+  - **Responsive Design**: Full responsive layout with proper mobile support
+  - **Data Display**: Shows filtered results count (e.g., "Mostrando 5 de 10 vagas")
+
 ### November 21, 2025 - Added "Create Free Account" Button to Header
 - **New Signup Button**: Added "Criar conta grátis" button to header for unauthenticated users
   - **Location**: Header component, visible when user is not logged in
