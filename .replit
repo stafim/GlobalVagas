@@ -1,4 +1,4 @@
-modules = ["nodejs-20", "web", "postgresql-16"]
+modules = ["nodejs-20", "web"]
 run = "npm run dev"
 hidden = [".config", ".git", "generated-icon.png", "node_modules", "dist"]
 
@@ -15,7 +15,7 @@ localPort = 5000
 externalPort = 80
 
 [[ports]]
-localPort = 43859
+localPort = 38237
 externalPort = 3000
 
 [[ports]]
@@ -53,6 +53,9 @@ author = "agent"
 task = "shell.exec"
 args = "npm run dev"
 waitForPort = 5000
+
+[workflows.workflow.metadata]
+outputType = "webview"
 
 [agent]
 integrations = ["javascript_mem_db:1.0.0", "javascript_object_storage:1.0.0"]
