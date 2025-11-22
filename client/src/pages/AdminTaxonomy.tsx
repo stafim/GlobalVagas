@@ -2,6 +2,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Tags, Briefcase, FileText, Plus, Pencil, Trash2, Loader2, Layers } from "lucide-react";
 import SectorsTab from "@/components/SectorsTab";
+import WorkTypesTab from "@/components/WorkTypesTab";
+import ContractTypesTab from "@/components/ContractTypesTab";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
@@ -346,37 +348,11 @@ export default function AdminTaxonomy() {
         </TabsContent>
 
         <TabsContent value="tipos-trabalho" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Tipos de Trabalho</CardTitle>
-              <CardDescription>
-                Configure os tipos de trabalho disponíveis para as vagas
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-12 text-muted-foreground">
-                <Briefcase className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Configuração de tipos de trabalho em desenvolvimento</p>
-              </div>
-            </CardContent>
-          </Card>
+          <WorkTypesTab />
         </TabsContent>
 
         <TabsContent value="tipos-contrato" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Tipos de Contrato</CardTitle>
-              <CardDescription>
-                Configure os tipos de contrato disponíveis para as vagas
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="text-center py-12 text-muted-foreground">
-                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Configuração de tipos de contrato em desenvolvimento</p>
-              </div>
-            </CardContent>
-          </Card>
+          <ContractTypesTab />
         </TabsContent>
       </Tabs>
 
