@@ -772,9 +772,12 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(companies, eq(jobs.companyId, companies.id))
       .orderBy(desc(jobs.createdAt));
 
-    return results.map((result) => ({
+    return results.map((result: any) => ({
       ...result.jobs,
-      company: result.companies ? { id: result.companies.id, name: result.companies.name } : null,
+      company: result.companies ? { 
+        id: result.companies.id, 
+        name: result.companies.companyName || result.companies.name || 'Empresa'
+      } : null,
     }));
   }
 
