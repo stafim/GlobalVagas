@@ -10,7 +10,8 @@ import {
   Users, 
   Building2,
   HardHat,
-  Calendar
+  Calendar,
+  Shield
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -27,7 +28,7 @@ interface LoginHistoryUser {
   id: string;
   name: string;
   email: string;
-  type: 'company' | 'operator';
+  type: 'company' | 'operator' | 'admin';
   lastLoginAt: string | null;
 }
 
@@ -69,6 +70,7 @@ export default function AdminLoginHistory() {
   
   const companies = users.filter(u => u.type === 'company');
   const operators = users.filter(u => u.type === 'operator');
+  const admins = users.filter(u => u.type === 'admin');
   
   const usersWithLogin = users.filter(u => u.lastLoginAt !== null);
   const usersWithoutLogin = users.filter(u => u.lastLoginAt === null);
@@ -136,7 +138,7 @@ export default function AdminLoginHistory() {
               {totalUsers}
             </div>
             <p className="text-xs text-muted-foreground">
-              {companies.length} empresas, {operators.length} operadores
+              {companies.length} empresas, {operators.length} operadores, {admins.length} admins
             </p>
           </CardContent>
         </Card>
@@ -153,7 +155,7 @@ export default function AdminLoginHistory() {
               {usersWithLogin.length}
             </div>
             <p className="text-xs text-muted-foreground">
-              {((usersWithLogin.length / totalUsers) * 100).toFixed(1)}% do total
+              {totalUsers > 0 ? `${((usersWithLogin.length / totalUsers) * 100).toFixed(1)}% do total` : 'Nenhum usuário'}
             </p>
           </CardContent>
         </Card>
@@ -227,10 +229,15 @@ export default function AdminLoginHistory() {
                           <Building2 className="h-3 w-3" />
                           Empresa
                         </Badge>
-                      ) : (
+                      ) : user.type === 'operator' ? (
                         <Badge variant="secondary" className="gap-1">
                           <HardHat className="h-3 w-3" />
                           Operador
+                        </Badge>
+                      ) : (
+                        <Badge variant="outline" className="gap-1">
+                          <Shield className="h-3 w-3" />
+                          Admin
                         </Badge>
                       )}
                     </TableCell>

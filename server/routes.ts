@@ -71,6 +71,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       req.session.userId = company.id;
       req.session.userType = 'company';
+      await storage.updateCompanyLastLogin(company.id);
       
       const { password, ...companyWithoutPassword } = company;
       
@@ -103,6 +104,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       req.session.userId = company.id;
       req.session.userType = 'company';
+      await storage.updateCompanyLastLogin(company.id);
 
       const { password: _, ...companyWithoutPassword } = company;
       
@@ -143,6 +145,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       req.session.userId = operator.id;
       req.session.userType = 'operator';
+      await storage.updateOperatorLastLogin(operator.id);
       
       const { password, ...operatorWithoutPassword } = operator;
       
@@ -175,6 +178,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       req.session.userId = operator.id;
       req.session.userType = 'operator';
+      await storage.updateOperatorLastLogin(operator.id);
 
       const { password: _, ...operatorWithoutPassword } = operator;
       
@@ -397,6 +401,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const companies = await storage.getAllCompanies();
       const operators = await storage.getAllOperators();
+      const admins = await storage.getAllAdmins();
 
       const companiesLoginData = companies.map(({ password, ...company }) => ({
         id: company.id,
@@ -414,7 +419,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         lastLoginAt: operator.lastLoginAt,
       }));
 
-      const allUsers = [...companiesLoginData, ...operatorsLoginData];
+      const adminsLoginData = admins.map(({ password, ...admin }) => ({
+        id: admin.id,
+        name: admin.name || admin.email,
+        email: admin.email,
+        type: 'admin' as const,
+        lastLoginAt: admin.lastLoginAt,
+      }));
+
+      const allUsers = [...companiesLoginData, ...operatorsLoginData, ...adminsLoginData];
       allUsers.sort((a, b) => {
         if (!a.lastLoginAt) return 1;
         if (!b.lastLoginAt) return -1;
@@ -762,6 +775,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       req.session.userId = admin.id;
       req.session.userType = 'admin';
+      await storage.updateAdminLastLogin(admin.id);
 
       await new Promise<void>((resolve, reject) => {
         req.session.save((err) => {
