@@ -62,6 +62,9 @@ export function AdminShell({ children }: AdminShellProps) {
     if (location === '/admin/operadores') {
       return { title: "Meus Operadores", description: "Gerenciamento de profissionais cadastrados" };
     }
+    if (location === '/admin/vagas') {
+      return { title: "Vagas", description: "Visualize todas as vagas criadas pelos clientes" };
+    }
     if (location === '/admin/planos') {
       return { title: "Planos de Assinatura", description: "Gerencie os planos disponíveis para clientes" };
     }
