@@ -43,6 +43,40 @@ const upload = multer({
   }
 });
 
+async function verifyPasswordAndMigrate(
+  plainPassword: string,
+  storedPassword: string,
+  userId: string,
+  userType: 'company' | 'operator' | 'admin'
+): Promise<boolean> {
+  try {
+    const isHashedValid = await bcrypt.compare(plainPassword, storedPassword);
+    if (isHashedValid) {
+      return true;
+    }
+  } catch (error) {
+    console.log(`Password comparison failed for ${userType} ${userId}, checking plaintext fallback`);
+  }
+  
+  if (plainPassword === storedPassword) {
+    console.log(`Migrating plaintext password to bcrypt hash for ${userType} ${userId}`);
+    const hashedPassword = await bcrypt.hash(plainPassword, 10);
+    
+    if (userType === 'company') {
+      await storage.updateCompany(userId, { password: hashedPassword });
+    } else if (userType === 'operator') {
+      await storage.updateOperator(userId, { password: hashedPassword });
+    } else if (userType === 'admin') {
+      await storage.updateAdmin(userId, { password: hashedPassword });
+    }
+    
+    console.log(`Successfully migrated password for ${userType} ${userId}`);
+    return true;
+  }
+  
+  return false;
+}
+
 export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/companies/register", async (req, res) => {
     try {
@@ -107,7 +141,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const isPasswordValid = await bcrypt.compare(password, company.password);
+      const isPasswordValid = await verifyPasswordAndMigrate(password, company.password, company.id, 'company');
       if (!isPasswordValid) {
         return res.status(401).json({ 
           message: "E-mail ou senha inválidos" 
@@ -192,7 +226,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const isPasswordValid = await bcrypt.compare(password, operator.password);
+      const isPasswordValid = await verifyPasswordAndMigrate(password, operator.password, operator.id, 'operator');
       if (!isPasswordValid) {
         return res.status(401).json({ 
           message: "E-mail ou senha inválidos" 
@@ -321,7 +355,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const company = await storage.getCompanyByEmail(email);
       if (company) {
-        const isPasswordValid = await bcrypt.compare(password, company.password);
+        const isPasswordValid = await verifyPasswordAndMigrate(password, company.password, company.id, 'company');
         if (isPasswordValid) {
           req.session.userId = company.id;
           req.session.userType = 'company';
@@ -336,7 +370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const operator = await storage.getOperatorByEmail(email);
       if (operator) {
-        const isPasswordValid = await bcrypt.compare(password, operator.password);
+        const isPasswordValid = await verifyPasswordAndMigrate(password, operator.password, operator.id, 'operator');
         if (isPasswordValid) {
           req.session.userId = operator.id;
           req.session.userType = 'operator';
@@ -351,7 +385,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const admin = await storage.getAdminByEmail(email);
       if (admin) {
-        const isPasswordValid = await bcrypt.compare(password, admin.password);
+        const isPasswordValid = await verifyPasswordAndMigrate(password, admin.password, admin.id, 'admin');
         if (isPasswordValid) {
           req.session.userId = admin.id;
           req.session.userType = 'admin';
@@ -762,15 +796,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
+      const hashedPassword = await bcrypt.hash(newPassword, 10);
+      
       if (resetCode.userType === 'company') {
         const company = await storage.getCompanyByEmail(email);
         if (company) {
-          await storage.updateCompany(company.id, { password: newPassword });
+          await storage.updateCompany(company.id, { password: hashedPassword });
         }
       } else if (resetCode.userType === 'operator') {
         const operator = await storage.getOperatorByEmail(email);
         if (operator) {
-          await storage.updateOperator(operator.id, { password: newPassword });
+          await storage.updateOperator(operator.id, { password: hashedPassword });
         }
       }
 
@@ -805,7 +841,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const isPasswordValid = await bcrypt.compare(password, admin.password);
+      const isPasswordValid = await verifyPasswordAndMigrate(password, admin.password, admin.id, 'admin');
       if (!isPasswordValid) {
         return res.status(401).json({ 
           message: "E-mail ou senha inválidos" 

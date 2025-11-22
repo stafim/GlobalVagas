@@ -33,6 +33,7 @@ export interface IStorage {
   getAdmin(id: string): Promise<Admin | undefined>;
   getAdminByEmail(email: string): Promise<Admin | undefined>;
   createAdmin(admin: InsertAdmin): Promise<Admin>;
+  updateAdmin(id: string, admin: Partial<InsertAdmin>): Promise<Admin>;
   updateAdminLastLogin(id: string): Promise<void>;
   getAllAdmins(): Promise<Admin[]>;
   
@@ -409,6 +410,15 @@ export class DatabaseStorage implements IStorage {
     const [admin] = await db
       .insert(admins)
       .values(insertAdmin)
+      .returning();
+    return admin;
+  }
+
+  async updateAdmin(id: string, updateData: Partial<InsertAdmin>): Promise<Admin> {
+    const [admin] = await db
+      .update(admins)
+      .set(updateData)
+      .where(eq(admins.id, id))
       .returning();
     return admin;
   }
