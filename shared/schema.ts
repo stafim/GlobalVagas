@@ -296,6 +296,23 @@ export const insertSettingSchema = createInsertSchema(settings).omit({
 export type InsertSetting = z.infer<typeof insertSettingSchema>;
 export type Setting = typeof settings.$inferSelect;
 
+export const operatorProfileFields = pgTable("operator_profile_fields", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  fieldName: text("field_name").notNull().unique(),
+  fieldLabel: text("field_label").notNull(),
+  isRequired: text("is_required").notNull().default('false'),
+  weight: text("weight").notNull().default('1'),
+}, (table) => ({
+  fieldNameIdx: index("operator_profile_fields_field_name_idx").on(table.fieldName),
+}));
+
+export const insertOperatorProfileFieldSchema = createInsertSchema(operatorProfileFields).omit({
+  id: true,
+});
+
+export type InsertOperatorProfileField = z.infer<typeof insertOperatorProfileFieldSchema>;
+export type OperatorProfileField = typeof operatorProfileFields.$inferSelect;
+
 export const jobs = pgTable("jobs", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: varchar("company_id").references(() => companies.id, { onDelete: 'cascade' }),

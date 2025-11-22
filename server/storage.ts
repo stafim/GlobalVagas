@@ -20,7 +20,7 @@ export interface IStorage {
   createOperator(operator: InsertOperator): Promise<Operator>;
   updateOperator(id: string, operator: Partial<InsertOperator>): Promise<Operator>;
   getAllOperators(): Promise<Operator[]>;
-  isOperatorProfileComplete(operatorId: string): Promise<{ complete: boolean; missingFields: string[] }>;
+  isOperatorProfileComplete(operatorId: string): Promise<{ complete: boolean; missingFields: string[]; percentage: number; filledCount: number; totalCount: number }>;
   
   getExperience(id: string): Promise<Experience | undefined>;
   getExperiencesByOperator(operatorId: string): Promise<Experience[]>;
@@ -295,24 +295,51 @@ export class DatabaseStorage implements IStorage {
     return await db.select().from(operators);
   }
 
-  async isOperatorProfileComplete(operatorId: string): Promise<{ complete: boolean; missingFields: string[] }> {
+  async isOperatorProfileComplete(operatorId: string): Promise<{ complete: boolean; missingFields: string[]; percentage: number; filledCount: number; totalCount: number }> {
     const operator = await this.getOperator(operatorId);
     if (!operator) {
-      return { complete: false, missingFields: ['operator_not_found'] };
+      return { complete: false, missingFields: ['operator_not_found'], percentage: 0, filledCount: 0, totalCount: 13 };
     }
 
+    // Lista de todos os campos do perfil (13 campos)
+    const profileFields = [
+      { name: 'fullName', value: operator.fullName },
+      { name: 'cpf', value: operator.cpf },
+      { name: 'phone', value: operator.phone },
+      { name: 'profession', value: operator.profession },
+      { name: 'birthDate', value: operator.birthDate },
+      { name: 'experienceYears', value: operator.experienceYears },
+      { name: 'certifications', value: operator.certifications },
+      { name: 'availability', value: operator.availability },
+      { name: 'preferredLocation', value: operator.preferredLocation },
+      { name: 'workType', value: operator.workType },
+      { name: 'skills', value: operator.skills },
+      { name: 'bio', value: operator.bio },
+      { name: 'profilePhotoUrl', value: operator.profilePhotoUrl },
+    ];
+
+    const totalCount = profileFields.length;
     const missingFields: string[] = [];
-    
-    // Required fields for complete profile
-    if (!operator.birthDate) missingFields.push('birthDate');
-    if (!operator.experienceYears) missingFields.push('experienceYears');
-    if (!operator.preferredLocation) missingFields.push('preferredLocation');
-    if (!operator.skills) missingFields.push('skills');
-    if (!operator.bio) missingFields.push('bio');
+    let filledCount = 0;
+
+    // Conta campos preenchidos
+    for (const field of profileFields) {
+      if (field.value && field.value.trim() !== '') {
+        filledCount++;
+      } else {
+        missingFields.push(field.name);
+      }
+    }
+
+    const percentage = Math.round((filledCount / totalCount) * 100);
+    const complete = percentage >= 50; // 50% ou mais = completo
 
     return {
-      complete: missingFields.length === 0,
-      missingFields
+      complete,
+      missingFields,
+      percentage,
+      filledCount,
+      totalCount
     };
   }
 
