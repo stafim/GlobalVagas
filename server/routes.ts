@@ -5,6 +5,7 @@ import path from "path";
 import multer from "multer";
 import { randomUUID } from "crypto";
 import fs from "fs";
+import bcrypt from "bcrypt";
 import { storage } from "./storage";
 import { insertCompanySchema, insertOperatorSchema, insertAdminSchema, insertPlanSchema, insertClientSchema, insertSectorSchema, insertSubsectorSchema, insertEventSchema, insertBannerSchema, insertJobSchema, insertQuestionSchema, insertJobQuestionSchema, insertApplicationAnswerSchema, insertNewsletterSubscriptionSchema, insertPasswordResetCodeSchema } from "@shared/schema";
 import { fromZodError } from "zod-validation-error";
