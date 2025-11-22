@@ -22,6 +22,7 @@ import { z } from "zod";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import type { Job } from "@shared/schema";
+import { useEffect } from "react";
 
 const editJobSchema = insertJobSchema.pick({
   title: true,
@@ -42,24 +43,41 @@ export default function AdminEditJob() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
 
-  const { data: job, isLoading } = useQuery<Job>({
+  const { data: jobResponse, isLoading } = useQuery<{ job: Job }>({
     queryKey: ['/api/jobs', id],
     enabled: !!id && userType === 'admin',
   });
 
+  const job = jobResponse?.job;
+
   const form = useForm<EditJobFormData>({
     resolver: zodResolver(editJobSchema),
-    values: job ? {
-      title: job.title,
-      description: job.description,
-      requirements: job.requirements,
-      responsibilities: job.responsibilities,
-      benefits: job.benefits,
-      location: job.location,
-      salary: job.salary || '',
-      status: job.status,
-    } : undefined,
+    defaultValues: {
+      title: '',
+      description: '',
+      requirements: '',
+      responsibilities: '',
+      benefits: '',
+      location: '',
+      salary: '',
+      status: 'Active',
+    },
   });
+
+  useEffect(() => {
+    if (job) {
+      form.reset({
+        title: job.title,
+        description: job.description,
+        requirements: job.requirements,
+        responsibilities: job.responsibilities,
+        benefits: job.benefits,
+        location: job.location,
+        salary: job.salary || '',
+        status: job.status,
+      });
+    }
+  }, [job, form]);
 
   const updateJobMutation = useMutation({
     mutationFn: async (data: EditJobFormData) => {
