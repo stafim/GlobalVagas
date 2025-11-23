@@ -67,12 +67,15 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
   - Automatically hides if no content is configured
   - Clean, centered layout with icons for each section
 - **Featured Companies Section**: Showcase selected companies on homepage:
-  - Displayed below the middle banner section
-  - Administrators select companies via checkboxes in Settings panel
-  - Shows company logo, name, industry, size, and website
-  - Clickable cards linking to company presentation pages
-  - Automatically hides if no companies are selected
+  - Displayed below the middle banner section on the home page
+  - Administrators select companies via checkboxes in Settings panel (Admin → Configurações)
+  - Shows company logo, name, industry, sector, size, and website
+  - Clickable cards linking to company presentation pages (`/empresa/{id}`)
+  - Displays message if no companies are selected
   - Clean grid layout with hover effects
+  - Responsive: 1 column on mobile, 2 on tablets, 3 on desktop
+  - **Backend**: `GET /api/featured-companies` endpoint fetches companies by IDs using Drizzle ORM's `inArray` function
+  - **Storage**: Featured company IDs stored in settings table as JSON array under key `featured_companies`
 
 ### Technology Stack
 - **Frontend**: React + TypeScript + Vite, Shadcn UI + Tailwind CSS, TanStack Query, React Hook Form + Zod

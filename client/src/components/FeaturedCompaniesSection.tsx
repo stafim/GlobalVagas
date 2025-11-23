@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, MapPin, Globe, Users } from "lucide-react";
+import { Building2, Globe, Users } from "lucide-react";
 import { Link } from "wouter";
 import type { Company } from "@shared/schema";
 
@@ -15,14 +15,21 @@ export function FeaturedCompaniesSection() {
     ? JSON.parse(settingsData.featured_companies) 
     : [];
 
-  const { data: companies, isLoading } = useQuery<Company[]>({
+  const { data: companies } = useQuery<Company[]>({
     queryKey: ['/api/featured-companies', featuredCompanyIds],
+    queryFn: async () => {
+      const params = new URLSearchParams({
+        featuredCompanyIds: JSON.stringify(featuredCompanyIds)
+      });
+      const response = await fetch(`/api/featured-companies?${params}`);
+      if (!response.ok) throw new Error('Failed to fetch featured companies');
+      return response.json();
+    },
     enabled: featuredCompanyIds.length > 0,
   });
 
-  if (!featuredCompanyIds.length || !companies?.length) {
-    return null;
-  }
+  // TEMPORARY: Always render for debugging
+  const hasCompanies = featuredCompanyIds.length > 0 && companies && companies.length > 0;
 
   const getSizeLabel = (size: string | null) => {
     const labels: Record<string, string> = {
@@ -37,7 +44,7 @@ export function FeaturedCompaniesSection() {
   };
 
   return (
-    <section className="py-16 bg-background">
+    <section className="py-16 bg-background" data-testid="section-featured-companies">
       <div className="max-w-7xl mx-auto px-4 md:px-6 lg:px-8">
         <div className="text-center mb-12">
           <h2 className="text-3xl font-bold mb-3">Empresas em Destaque</h2>
@@ -46,8 +53,9 @@ export function FeaturedCompaniesSection() {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {companies.map((company) => (
+        {hasCompanies ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {companies!.map((company) => (
             <Link key={company.id} href={`/empresa/${company.id}`}>
               <Card className="hover-elevate h-full" data-testid={`card-featured-company-${company.id}`}>
                 <CardContent className="p-6">
@@ -101,8 +109,15 @@ export function FeaturedCompaniesSection() {
                 </CardContent>
               </Card>
             </Link>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center p-8">
+            <p className="text-muted-foreground">
+              Nenhuma empresa em destaque no momento.
+            </p>
+          </div>
+        )}
       </div>
     </section>
   );
