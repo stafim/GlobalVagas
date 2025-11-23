@@ -3786,6 +3786,135 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get AI settings (admin only)
+  app.get("/api/admin/ai-settings", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const settings = await storage.getAllSettings();
+      const aiSettings: Record<string, string> = {};
+      
+      // Filter AI-related settings
+      const aiKeys = ['ai_enabled', 'ai_model', 'ai_temperature', 'ai_max_tokens', 'ai_system_prompt'];
+      settings.forEach(s => {
+        if (aiKeys.includes(s.key)) {
+          aiSettings[s.key] = s.value;
+        }
+      });
+
+      // Set defaults if not configured
+      if (!aiSettings.ai_enabled) aiSettings.ai_enabled = 'false';
+      if (!aiSettings.ai_model) aiSettings.ai_model = 'grok-4';
+      if (!aiSettings.ai_temperature) aiSettings.ai_temperature = '0.7';
+      if (!aiSettings.ai_max_tokens) aiSettings.ai_max_tokens = '1000';
+      if (!aiSettings.ai_system_prompt) aiSettings.ai_system_prompt = 'Você é um assistente útil da plataforma Operlist.';
+
+      return res.json(aiSettings);
+    } catch (error) {
+      console.error("Error fetching AI settings:", error);
+      return res.status(500).json({ message: "Erro ao buscar configurações de IA" });
+    }
+  });
+
+  // Save AI settings (admin only)
+  app.post("/api/admin/ai-settings", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const { ai_enabled, ai_model, ai_temperature, ai_max_tokens, ai_system_prompt } = req.body;
+
+      // Validate settings
+      if (ai_temperature && (parseFloat(ai_temperature) < 0 || parseFloat(ai_temperature) > 2)) {
+        return res.status(400).json({ message: "Temperatura deve estar entre 0 e 2" });
+      }
+
+      if (ai_max_tokens && (parseInt(ai_max_tokens) < 1 || parseInt(ai_max_tokens) > 256000)) {
+        return res.status(400).json({ message: "Max tokens deve estar entre 1 e 256000" });
+      }
+
+      const validModels = ['grok-4', 'grok-3', 'grok-3-mini', 'grok-vision-beta'];
+      if (ai_model && !validModels.includes(ai_model)) {
+        return res.status(400).json({ message: "Modelo inválido" });
+      }
+
+      // Save all settings
+      const settingsToSave = [
+        { key: 'ai_enabled', value: ai_enabled || 'false' },
+        { key: 'ai_model', value: ai_model || 'grok-4' },
+        { key: 'ai_temperature', value: ai_temperature || '0.7' },
+        { key: 'ai_max_tokens', value: ai_max_tokens || '1000' },
+        { key: 'ai_system_prompt', value: ai_system_prompt || 'Você é um assistente útil da plataforma Operlist.' }
+      ];
+
+      for (const setting of settingsToSave) {
+        await storage.upsertSetting(setting);
+      }
+
+      return res.json({ message: "Configurações salvas com sucesso" });
+    } catch (error) {
+      console.error("Error saving AI settings:", error);
+      return res.status(500).json({ message: "Erro ao salvar configurações de IA" });
+    }
+  });
+
+  // Test AI connection (admin only)
+  app.post("/api/admin/ai-settings/test", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const { apiKey } = req.body;
+
+      if (!apiKey) {
+        return res.status(400).json({ message: "API Key é obrigatória para testar" });
+      }
+
+      // Test connection to xAI API
+      const response = await fetch('https://api.x.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'grok-3-mini',
+          messages: [
+            { role: 'user', content: 'Teste de conexão. Responda apenas: OK' }
+          ],
+          max_tokens: 10
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('xAI API error:', errorData);
+        return res.status(400).json({ 
+          success: false,
+          message: "Falha ao conectar com a API do xAI. Verifique sua chave de API.",
+          error: errorData
+        });
+      }
+
+      const data = await response.json();
+      return res.json({ 
+        success: true,
+        message: "Conexão com xAI estabelecida com sucesso!",
+        response: data.choices[0]?.message?.content || 'OK'
+      });
+    } catch (error) {
+      console.error("Error testing AI connection:", error);
+      return res.status(500).json({ 
+        success: false,
+        message: "Erro ao testar conexão com a API" 
+      });
+    }
+  });
+
   // Serve static files from attached_assets directory
   app.use('/attached_assets', express.static(path.join(process.cwd(), 'attached_assets')));
 
