@@ -131,27 +131,46 @@ export default function AdminBanners() {
       setUploadingImage(true);
 
       const uploadResponse = await apiRequest("POST", "/api/banners/upload-image");
-      const { uploadURL } = await uploadResponse.json();
+      const { uploadURL, useLocal } = await uploadResponse.json();
 
-      const uploadResult = await fetch(uploadURL, {
-        method: 'PUT',
-        body: file,
-        headers: {
-          'Content-Type': file.type,
-        },
-      });
+      if (useLocal) {
+        const formData = new FormData();
+        formData.append('file', file);
 
-      if (!uploadResult.ok) {
-        throw new Error('Upload failed');
+        const localUploadResponse = await fetch(uploadURL, {
+          method: 'POST',
+          body: formData,
+          credentials: 'include',
+        });
+
+        if (!localUploadResponse.ok) {
+          throw new Error('Upload local falhou');
+        }
+
+        const { filePath } = await localUploadResponse.json();
+        form.setValue('imageUrl', filePath);
+        setPreviewUrl(filePath);
+      } else {
+        const uploadResult = await fetch(uploadURL, {
+          method: 'PUT',
+          body: file,
+          headers: {
+            'Content-Type': file.type,
+          },
+        });
+
+        if (!uploadResult.ok) {
+          throw new Error('Upload failed');
+        }
+
+        const setImageResponse = await apiRequest('POST', '/api/banners/set-image', {
+          imageURL: uploadURL
+        });
+        const { objectPath } = await setImageResponse.json();
+
+        form.setValue('imageUrl', objectPath);
+        setPreviewUrl(objectPath.startsWith('/objects') ? objectPath : `/objects${objectPath}`);
       }
-
-      const setImageResponse = await apiRequest('POST', '/api/banners/set-image', {
-        imageURL: uploadURL
-      });
-      const { objectPath } = await setImageResponse.json();
-
-      form.setValue('imageUrl', objectPath);
-      setPreviewUrl(objectPath.startsWith('/objects') ? objectPath : `/objects${objectPath}`);
 
       toast({
         title: "Imagem carregada!",

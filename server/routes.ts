@@ -1166,10 +1166,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Acesso negado. Apenas administradores podem fazer upload de logos de clientes" });
       }
 
-      const objectStorageService = new ObjectStorageService();
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-      console.log("✅ Upload URL generated successfully");
-      res.json({ uploadURL });
+      try {
+        const objectStorageService = new ObjectStorageService();
+        const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+        console.log("✅ Upload URL generated successfully");
+        res.json({ uploadURL });
+      } catch (objectStorageError) {
+        console.log("Object Storage not available, falling back to local upload for client logo");
+        return res.json({ 
+          uploadURL: "/api/upload/local",
+          useLocal: true 
+        });
+      }
     } catch (error) {
       console.error("Error getting upload URL for client logo:", error);
       return res.status(500).json({ message: "Erro ao obter URL de upload" });
@@ -1734,9 +1742,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Acesso negado" });
       }
 
-      const objectStorageService = new ObjectStorageService();
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-      res.json({ uploadURL });
+      try {
+        const objectStorageService = new ObjectStorageService();
+        const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+        res.json({ uploadURL });
+      } catch (objectStorageError) {
+        console.log("Object Storage not available, falling back to local upload for event cover");
+        return res.json({ 
+          uploadURL: "/api/upload/local",
+          useLocal: true 
+        });
+      }
     } catch (error) {
       console.error("Error getting upload URL for event cover:", error);
       return res.status(500).json({ message: "Erro ao obter URL de upload" });
@@ -1874,9 +1890,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(403).json({ message: "Acesso negado" });
       }
 
-      const objectStorageService = new ObjectStorageService();
-      const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-      res.json({ uploadURL });
+      try {
+        const objectStorageService = new ObjectStorageService();
+        const uploadURL = await objectStorageService.getObjectEntityUploadURL();
+        res.json({ uploadURL });
+      } catch (objectStorageError) {
+        console.log("Object Storage not available, falling back to local upload for banner image");
+        return res.json({ 
+          uploadURL: "/api/upload/local",
+          useLocal: true 
+        });
+      }
     } catch (error) {
       console.error("Error getting upload URL for banner image:", error);
       return res.status(500).json({ message: "Erro ao obter URL de upload" });
