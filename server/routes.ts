@@ -2130,6 +2130,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Public endpoint - get company details by ID
+  app.get("/api/public/companies/:id", async (req, res) => {
+    try {
+      const company = await storage.getCompany(req.params.id);
+      
+      if (!company) {
+        return res.status(404).json({ message: "Empresa não encontrada" });
+      }
+
+      // Remove sensitive data (password)
+      const { password: _, ...companyPublicData } = company;
+
+      // Get company topics
+      const topics = await storage.getCompanyTopicsByCompany(req.params.id);
+
+      return res.status(200).json({
+        ...companyPublicData,
+        topics
+      });
+    } catch (error) {
+      console.error("Error getting public company:", error);
+      return res.status(500).json({ message: "Erro ao buscar empresa" });
+    }
+  });
+
   app.get("/api/jobs", async (req, res) => {
     try {
       if (!req.session.userId) {
