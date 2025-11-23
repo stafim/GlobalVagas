@@ -17,7 +17,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { insertJobSchema, type Job, type Question, type GlobalWorkType, type GlobalContractType, type Tag } from "@shared/schema";
+import { insertJobSchema, type Job, type Question, type GlobalWorkType, type GlobalContractType, type Tag, type Sector, type Subsector } from "@shared/schema";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Separator } from "@/components/ui/separator";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -54,6 +54,7 @@ export default function CompanyJobs() {
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [creditsDialogOpen, setCreditsDialogOpen] = useState(false);
   const [editingJobId, setEditingJobId] = useState<string | null>(null);
+  const [selectedSectorId, setSelectedSectorId] = useState<string | null>(null);
 
   const { data: jobs = [], isLoading } = useQuery<JobWithApplicationCount[]>({
     queryKey: ['/api/jobs'],
@@ -77,6 +78,14 @@ export default function CompanyJobs() {
 
   const { data: tags = [] } = useQuery<Tag[]>({
     queryKey: ['/api/admin/tags'],
+  });
+
+  const { data: sectors = [] } = useQuery<Sector[]>({
+    queryKey: ['/api/admin/sectors'],
+  });
+
+  const { data: subsectors = [] } = useQuery<Subsector[]>({
+    queryKey: ['/api/admin/subsectors'],
   });
 
   const createJobMutation = useMutation({
@@ -639,6 +648,77 @@ export default function CompanyJobs() {
                                   ))}
                               </SelectContent>
                             </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
+                      <FormField
+                        control={form.control}
+                        name="sectorId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Setor (Opcional)</FormLabel>
+                            <Select 
+                              onValueChange={(value) => {
+                                field.onChange(value);
+                                setSelectedSectorId(value);
+                                // Reset subsector when sector changes
+                                form.setValue('subsectorId', null);
+                              }} 
+                              defaultValue={field.value || ''}
+                            >
+                              <FormControl>
+                                <SelectTrigger data-testid="select-sector">
+                                  <SelectValue placeholder="Selecione um setor" />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {sectors
+                                  .filter(s => s.isActive === 'true')
+                                  .map((sector) => (
+                                    <SelectItem key={sector.id} value={sector.id}>
+                                      {sector.name}
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <FormField
+                        control={form.control}
+                        name="subsectorId"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>Subsetor (Opcional)</FormLabel>
+                            <Select 
+                              onValueChange={field.onChange} 
+                              defaultValue={field.value || ''}
+                              disabled={!selectedSectorId && !form.watch('sectorId')}
+                            >
+                              <FormControl>
+                                <SelectTrigger data-testid="select-subsector">
+                                  <SelectValue placeholder={selectedSectorId || form.watch('sectorId') ? "Selecione um subsetor" : "Selecione um setor primeiro"} />
+                                </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                {subsectors
+                                  .filter(ss => ss.isActive === 'true' && ss.sectorId === (selectedSectorId || form.watch('sectorId')))
+                                  .map((subsector) => (
+                                    <SelectItem key={subsector.id} value={subsector.id}>
+                                      {subsector.name}
+                                    </SelectItem>
+                                  ))}
+                              </SelectContent>
+                            </Select>
+                            <FormDescription>
+                              Selecione um setor antes de escolher o subsetor
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}
