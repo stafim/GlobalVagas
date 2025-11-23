@@ -34,7 +34,7 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 - **Localization**: Full platform support for Portuguese and English.
 - **Email System**: Integrated SMTP for notifications and password recovery.
 - **Object Storage**: Replit Object Storage for user photos, company logos, and event images.
-- **Form Validation**: Client-side and server-side validation using Zod.
+- **Form Validation**: Client-side and server-side validation using Zod, including email format validation, CPF validation, and phone number formatting.
 - **UI/UX**: Clean, modern, responsive interface using Shadcn UI, featuring intuitive workflows, enhanced job card visualization, and consistent header/footer across all public pages. Company sidebar navigation is reorganized for clarity.
 - **Visit Counter System**: Tracks unique home page visits.
 - **Job View Counter**: Each job tracks total views automatically when users access the job details page. Companies can see view counts alongside applications and other metrics.

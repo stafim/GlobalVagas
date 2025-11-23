@@ -84,6 +84,9 @@ function validateCPF(cpf: string): boolean {
 }
 
 const signupFormSchema = insertOperatorSchema.extend({
+  email: z.string()
+    .min(1, "E-mail é obrigatório")
+    .email("E-mail inválido"),
   confirmPassword: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
   cpf: z.string()
     .min(1, "CPF é obrigatório")

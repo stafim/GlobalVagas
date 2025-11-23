@@ -43,6 +43,9 @@ function removePhoneMask(value: string): string {
 }
 
 const signupFormSchema = insertCompanySchema.extend({
+  email: z.string()
+    .min(1, "E-mail é obrigatório")
+    .email("E-mail inválido"),
   confirmPassword: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "As senhas não coincidem",
