@@ -2513,6 +2513,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.patch("/api/applications/:id/status", async (req, res) => {
+    try {
+      if (!req.session.userId || (req.session.userType !== 'company' && req.session.userType !== 'admin')) {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const { status } = req.body;
+      const applicationId = req.params.id;
+
+      if (!status || !['pending', 'accepted', 'rejected'].includes(status)) {
+        return res.status(400).json({ message: "Status inválido. Use 'pending', 'accepted' ou 'rejected'" });
+      }
+
+      // Get the application
+      const application = await storage.getApplication(applicationId);
+      if (!application) {
+        return res.status(404).json({ message: "Candidatura não encontrada" });
+      }
+
+      // Verify the job belongs to the company (unless admin)
+      if (req.session.userType === 'company') {
+        const job = await storage.getJob(application.jobId);
+        if (!job) {
+          return res.status(404).json({ message: "Vaga não encontrada" });
+        }
+        if (job.companyId !== req.session.userId && job.clientId !== req.session.userId) {
+          return res.status(403).json({ message: "Você não tem permissão para alterar esta candidatura" });
+        }
+      }
+
+      // Update the status
+      const updatedApplication = await storage.updateApplication(applicationId, { status });
+      return res.status(200).json(updatedApplication);
+    } catch (error) {
+      console.error("Error updating application status:", error);
+      return res.status(500).json({ message: "Erro ao atualizar status da candidatura" });
+    }
+  });
+
   // Saved Jobs Routes
   app.post("/api/jobs/:id/save", async (req, res) => {
     try {
