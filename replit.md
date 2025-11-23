@@ -49,6 +49,7 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 - **Flat UI Design**: Minimalist design using neutral colors and `text-muted-foreground` for icons, removing color gradients and vibrant accents for a cleaner look.
 - **Taxonomia System**: Centralized admin hub for managing platform-wide taxonomies including Tags, Setores (Sectors/Subsectors), Global Work Types, and Global Contract Types. All taxonomy management is organized under a single admin interface with dedicated tabs.
 - **Password Security**: All user passwords (Companies, Operators, Admins) are hashed using bcrypt with automatic migration from legacy plaintext passwords on login.
+- **Admin Login History Filters**: Search and filter users by name, email, and user type (Company/Operator/Admin) in the login history page.
 
 ### Technology Stack
 - **Frontend**: React + TypeScript + Vite, Shadcn UI + Tailwind CSS, TanStack Query, React Hook Form + Zod

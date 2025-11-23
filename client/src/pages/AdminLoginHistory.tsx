@@ -1,17 +1,26 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Input } from "@/components/ui/input";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { 
   Clock, 
   Users, 
   Building2,
   HardHat,
   Calendar,
-  Shield
+  Shield,
+  Search
 } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
@@ -35,6 +44,8 @@ interface LoginHistoryUser {
 export default function AdminLoginHistory() {
   const [, setLocation] = useLocation();
   const { isLoading: authLoading, isAuthenticated, userType } = useAuth();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedType, setSelectedType] = useState<string>("all");
 
   useEffect(() => {
     if (!authLoading && (!isAuthenticated || userType !== 'admin')) {
@@ -65,19 +76,34 @@ export default function AdminLoginHistory() {
     return null;
   }
 
-  const users = data?.users || [];
+  const allUsers = data?.users || [];
   const totalUsers = data?.total || 0;
   
-  const companies = users.filter(u => u.type === 'company');
-  const operators = users.filter(u => u.type === 'operator');
-  const admins = users.filter(u => u.type === 'admin');
+  // Apply filters
+  const filteredUsers = allUsers.filter(user => {
+    // Filter by search query (name or email)
+    const matchesSearch = searchQuery.trim() === "" || 
+      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    // Filter by type
+    const matchesType = selectedType === "all" || user.type === selectedType;
+    
+    return matchesSearch && matchesType;
+  });
   
-  const usersWithLogin = users.filter(u => u.lastLoginAt !== null);
-  const usersWithoutLogin = users.filter(u => u.lastLoginAt === null);
+  const users = filteredUsers;
+  
+  const companies = allUsers.filter(u => u.type === 'company');
+  const operators = allUsers.filter(u => u.type === 'operator');
+  const admins = allUsers.filter(u => u.type === 'admin');
+  
+  const usersWithLogin = allUsers.filter(u => u.lastLoginAt !== null);
+  const usersWithoutLogin = allUsers.filter(u => u.lastLoginAt === null);
 
   const last7Days = new Date();
   last7Days.setDate(last7Days.getDate() - 7);
-  const recentLogins = users.filter(u => {
+  const recentLogins = allUsers.filter(u => {
     if (!u.lastLoginAt) return false;
     const loginDate = new Date(u.lastLoginAt);
     return loginDate >= last7Days;
@@ -198,11 +224,38 @@ export default function AdminLoginHistory() {
       <Card>
         <CardHeader>
           <CardTitle>Histórico de Logins por Usuário</CardTitle>
+          <div className="flex flex-col sm:flex-row gap-4 mt-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Buscar por nome ou e-mail..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+                data-testid="input-search"
+              />
+            </div>
+            <Select value={selectedType} onValueChange={setSelectedType}>
+              <SelectTrigger className="w-full sm:w-[200px]" data-testid="select-type">
+                <SelectValue placeholder="Filtrar por tipo" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos os tipos</SelectItem>
+                <SelectItem value="company">Empresas</SelectItem>
+                <SelectItem value="operator">Operadores</SelectItem>
+                <SelectItem value="admin">Administradores</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </CardHeader>
         <CardContent>
           {users.length === 0 ? (
             <div className="text-center py-8 text-muted-foreground">
-              Nenhum usuário encontrado
+              {searchQuery || selectedType !== "all" 
+                ? "Nenhum usuário encontrado com os filtros selecionados"
+                : "Nenhum usuário encontrado"
+              }
             </div>
           ) : (
             <Table>
