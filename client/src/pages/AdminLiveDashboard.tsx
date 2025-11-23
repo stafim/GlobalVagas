@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Building2, Users, Briefcase, Activity, Eye, TrendingUp, Clock, BarChart3, Award } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
+import { Link } from "wouter";
 
 interface LiveStats {
   totalCompanies: number;
@@ -146,20 +147,22 @@ export default function AdminLiveDashboard() {
           </CardContent>
         </Card>
 
-        <Card data-testid="card-total-visits">
-          <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Visitas ao Site</CardTitle>
-            <Eye className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold" data-testid="text-total-visits">
-              {stats?.totalVisits || 0}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {stats?.todayVisits || 0} visitas hoje
-            </p>
-          </CardContent>
-        </Card>
+        <Link href="/admin/visitas">
+          <Card data-testid="card-total-visits" className="hover-elevate cursor-pointer transition-all">
+            <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Visitas ao Site</CardTitle>
+              <Eye className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold" data-testid="text-total-visits">
+                {stats?.totalVisits || 0}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">
+                {stats?.todayVisits || 0} visitas hoje
+              </p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
 
       {/* Recent Logins */}

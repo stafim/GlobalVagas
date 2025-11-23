@@ -40,6 +40,7 @@ import AdminFinanceiro from "@/pages/AdminFinanceiro";
 import AdminNewsletters from "@/pages/AdminNewsletters";
 import AdminLoginHistory from "@/pages/AdminLoginHistory";
 import AdminLiveDashboard from "@/pages/AdminLiveDashboard";
+import AdminSiteVisits from "@/pages/AdminSiteVisits";
 import Events from "@/pages/Events";
 import JobView from "@/pages/JobView";
 import PublicJobs from "@/pages/PublicJobs";
@@ -75,6 +76,7 @@ function Router() {
       <Route path="/admin/login" component={Login} />
       <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/ao-vivo" component={AdminLiveDashboard} />
+      <Route path="/admin/visitas" component={AdminSiteVisits} />
       <Route path="/admin/clientes" component={AdminClients} />
       <Route path="/admin/operadores" component={AdminOperators} />
       <Route path="/admin/vagas/:id/editar" component={AdminEditJob} />
