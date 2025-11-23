@@ -42,6 +42,7 @@ import AdminLoginHistory from "@/pages/AdminLoginHistory";
 import Events from "@/pages/Events";
 import JobView from "@/pages/JobView";
 import PublicJobs from "@/pages/PublicJobs";
+import CompanyPublicView from "@/pages/CompanyPublicView";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -67,6 +68,7 @@ function Router() {
       <Route path="/vagas-salvas" component={SavedJobs} />
       <Route path="/vagas" component={PublicJobs} />
       <Route path="/vaga/:id" component={JobView} />
+      <Route path="/empresa/:id" component={CompanyPublicView} />
       <Route path="/eventos" component={Events} />
       <Route path="/usuarios" component={UsersList} />
       <Route path="/admin/login" component={Login} />
