@@ -368,6 +368,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         companyId: req.session.userId,
         title: req.body.title,
         content: req.body.content,
+        icon: req.body.icon || 'Star',
         order: req.body.order || '0',
       });
 
