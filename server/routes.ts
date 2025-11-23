@@ -2964,6 +2964,78 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get detailed company summary for admin
+  app.get("/api/admin/company-summary/:companyId", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const companyId = req.params.companyId;
+
+      // Get company info
+      const company = await storage.getCompanyById(companyId);
+      if (!company) {
+        return res.status(404).json({ message: "Empresa não encontrada" });
+      }
+
+      // Get company jobs
+      const allJobs = await storage.getAllJobs();
+      const companyJobs = allJobs.filter((job: any) => job.companyId === companyId);
+      const activeJobs = companyJobs.filter((job: any) => job.status === 'active').length;
+      const suspendedJobs = companyJobs.filter((job: any) => job.status === 'suspended').length;
+
+      // Get company purchases
+      const allPurchases = await storage.getAllPurchases();
+      const companyPurchases = allPurchases.filter((purchase: any) => purchase.companyId === companyId);
+
+      // Get company credits
+      const companyCredits = await storage.getCompanyCredits(companyId);
+
+      return res.status(200).json({
+        company: {
+          id: company.id,
+          companyName: company.companyName,
+          email: company.email,
+          cnpj: company.cnpj,
+          industry: company.industry,
+          companySize: company.companySize,
+          lastLoginAt: company.lastLoginAt,
+          createdAt: company.createdAt
+        },
+        stats: {
+          totalJobs: companyJobs.length,
+          activeJobs,
+          suspendedJobs,
+          totalPurchases: companyPurchases.length,
+          availableCredits: companyCredits
+        },
+        purchases: companyPurchases.map((purchase: any) => ({
+          id: purchase.id,
+          planName: purchase.planName,
+          credits: purchase.credits,
+          usedCredits: purchase.usedCredits,
+          price: purchase.price,
+          status: purchase.status,
+          purchaseDate: purchase.purchaseDate
+        })),
+        recentJobs: companyJobs
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 5)
+          .map((job: any) => ({
+            id: job.id,
+            title: job.title,
+            status: job.status,
+            createdAt: job.createdAt,
+            viewCount: job.viewCount || 0
+          }))
+      });
+    } catch (error) {
+      console.error("Error getting company summary:", error);
+      return res.status(500).json({ message: "Erro ao buscar resumo da empresa" });
+    }
+  });
+
   // Questions endpoints
   app.get("/api/company/questions", async (req, res) => {
     try {
