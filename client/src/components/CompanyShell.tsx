@@ -67,7 +67,7 @@ export function CompanyShell({ children }: CompanyShellProps) {
       return { title: "Perfil da Empresa", description: "Informações e configurações da empresa" };
     }
     if (location === '/empresa/creditos') {
-      return { title: "Meus Créditos", description: "Gerencie seus créditos e histórico de transações" };
+      return { title: "Meus Créditos", description: "" };
     }
     return { title: "Dashboard", description: "" };
   };
