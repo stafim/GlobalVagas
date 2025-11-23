@@ -76,22 +76,37 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
   - Responsive: 1 column on mobile, 2 on tablets, 3 on desktop
   - **Backend**: `GET /api/featured-companies` endpoint fetches companies by IDs using Drizzle ORM's `inArray` function
   - **Storage**: Featured company IDs stored in settings table as JSON array under key `featured_companies`
-- **AI Integration (xAI Grok)**: Complete AI configuration panel in admin settings:
-  - Accessible via "Configurações de IA" menu item in admin sidebar with Bot icon
-  - **Configuration Options**:
-    - Enable/disable AI features platform-wide with toggle switch
-    - API Key management for xAI (Grok) with secure storage
-    - Model selection: Grok 4 (Flagship), Grok 3 (Balanced), Grok 3 Mini (Fast & Economic), Grok Vision (Images)
-    - Temperature control (0-2): Adjust AI creativity vs focus
-    - Max tokens configuration (1-256000): Control response length
-    - Custom system prompt: Define AI behavior and context
-  - **API Testing**: Built-in connection test to validate xAI API key before saving
+- **AI Integration (xAI Grok)**: Complete AI configuration panel in admin settings and AI-powered candidate analysis:
+  - **Admin Configuration Panel**:
+    - Accessible via "Configurações de IA" menu item in admin sidebar with Bot icon
+    - **Configuration Options**:
+      - Enable/disable AI features platform-wide with toggle switch
+      - API Key management for xAI (Grok) with secure storage
+      - Model selection: Grok 4 (Flagship), Grok 3 (Balanced), Grok 3 Mini (Fast & Economic), Grok Vision (Images)
+      - Temperature control (0-2): Adjust AI creativity vs focus
+      - Max tokens configuration (1-256000): Control response length
+      - Custom system prompt: Define AI behavior and context
+    - **API Testing**: Built-in connection test to validate xAI API key before saving
+    - Route: `/admin/ia`
+  - **AI-Powered Candidate Analysis**:
+    - "Analisar com IA" button in candidate cards on job applications page
+    - Compares job requirements with candidate CV and qualifications
+    - Displays comprehensive analysis in modal with:
+      - Match percentage (0-100%)
+      - Job summary (brief description of position)
+      - Candidate summary (brief profile overview)
+      - Strengths (3-5 positive points highlighting candidate's fit)
+      - Weaknesses/Points of attention (areas for improvement or concerns)
+      - Recommendation (Recomendado, Recomendado com ressalvas, Não recomendado)
+    - Visual indicators: color-coded badges, progress bars, icons
+    - Loading state with spinner while AI processes analysis
+    - Analysis considers: job description, requirements, benefits, salary, candidate skills, experience, certifications, bio, and questionnaire responses
   - **Backend Endpoints**:
     - `GET /api/admin/ai-settings` - Fetch AI configuration
     - `POST /api/admin/ai-settings` - Save AI settings with validation
     - `POST /api/admin/ai-settings/test` - Test API connection with provided key
-  - **Storage**: All settings stored in settings table with keys: `ai_enabled`, `ai_model`, `ai_temperature`, `ai_max_tokens`, `ai_system_prompt`
-  - Route: `/admin/ia`
+    - `POST /api/company/analyze-candidate` - Analyze candidate compatibility with job using Grok AI
+  - **Storage**: All settings stored in settings table with keys: `ai_enabled`, `ai_model`, `ai_temperature`, `ai_max_tokens`, `ai_system_prompt`, `ai_api_key`
 - **Live Dashboard (AO VIVO)**: Real-time statistics panel for administrators:
   - Accessible via "AO VIVO" menu item in admin sidebar with Radio icon
   - Displays platform-wide statistics updated automatically every 30 seconds
