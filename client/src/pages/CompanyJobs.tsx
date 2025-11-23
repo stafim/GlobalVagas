@@ -81,11 +81,11 @@ export default function CompanyJobs() {
   });
 
   const { data: sectors = [] } = useQuery<Sector[]>({
-    queryKey: ['/api/admin/sectors'],
+    queryKey: ['/api/sectors'],
   });
 
   const { data: subsectors = [] } = useQuery<Subsector[]>({
-    queryKey: ['/api/admin/subsectors'],
+    queryKey: ['/api/subsectors'],
   });
 
   const createJobMutation = useMutation({

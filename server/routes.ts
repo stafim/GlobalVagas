@@ -1531,7 +1531,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/sectors", async (req, res) => {
     try {
-      if (!req.session.userId || req.session.userType !== 'admin') {
+      if (!req.session.userId || (req.session.userType !== 'admin' && req.session.userType !== 'company')) {
         return res.status(403).json({ message: "Acesso negado" });
       }
 
@@ -1594,7 +1594,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/subsectors", async (req, res) => {
     try {
-      if (!req.session.userId || req.session.userType !== 'admin') {
+      if (!req.session.userId || (req.session.userType !== 'admin' && req.session.userType !== 'company')) {
         return res.status(403).json({ message: "Acesso negado" });
       }
 
@@ -1608,7 +1608,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/subsectors/sector/:sectorId", async (req, res) => {
     try {
-      if (!req.session.userId || req.session.userType !== 'admin') {
+      if (!req.session.userId || (req.session.userType !== 'admin' && req.session.userType !== 'company')) {
         return res.status(403).json({ message: "Acesso negado" });
       }
 
