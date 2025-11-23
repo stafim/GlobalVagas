@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/use-auth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,11 +20,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Briefcase, Building2, MapPin, Eye, Pencil } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Briefcase, Building2, MapPin, Eye, Pencil, Trash2 } from "lucide-react";
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { useLocation } from "wouter";
+import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 import type { Job } from "@shared/schema";
 
 interface JobWithCompany extends Job {
@@ -37,14 +49,39 @@ interface JobWithCompany extends Job {
 export default function AdminJobs() {
   const { userType } = useAuth();
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [companyFilter, setCompanyFilter] = useState<string>("all");
+  const [jobToDelete, setJobToDelete] = useState<JobWithCompany | null>(null);
 
   const { data: jobs, isLoading } = useQuery<JobWithCompany[]>({
     queryKey: ['/api/admin/jobs'],
     enabled: userType === 'admin',
     retry: false,
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (jobId: string) => {
+      await apiRequest(`/api/jobs/${jobId}`, {
+        method: 'DELETE',
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/admin/jobs'] });
+      toast({
+        title: "Vaga deletada",
+        description: "A vaga foi deletada com sucesso.",
+      });
+      setJobToDelete(null);
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Erro ao deletar",
+        description: error.message || "Não foi possível deletar a vaga.",
+        variant: "destructive",
+      });
+    },
   });
 
   // Extract unique companies for filter
@@ -85,8 +122,8 @@ export default function AdminJobs() {
     if (!jobs) return { total: 0, active: 0, suspended: 0 };
     return {
       total: jobs.length,
-      active: jobs.filter(j => j.status === 'Active').length,
-      suspended: jobs.filter(j => j.status === 'Suspended').length,
+      active: jobs.filter(j => j.status === 'active').length,
+      suspended: jobs.filter(j => j.status === 'suspended').length,
     };
   }, [jobs]);
 
@@ -177,8 +214,8 @@ export default function AdminJobs() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Todos</SelectItem>
-                  <SelectItem value="Active">Ativas</SelectItem>
-                  <SelectItem value="Suspended">Suspensas</SelectItem>
+                  <SelectItem value="active">Ativas</SelectItem>
+                  <SelectItem value="suspended">Suspensas</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -277,6 +314,15 @@ export default function AdminJobs() {
                             <Eye className="h-4 w-4 mr-2" />
                             Visualizar
                           </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setJobToDelete(job)}
+                            data-testid={`button-delete-job-${job.id}`}
+                          >
+                            <Trash2 className="h-4 w-4 mr-2" />
+                            Deletar
+                          </Button>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -294,6 +340,36 @@ export default function AdminJobs() {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!jobToDelete} onOpenChange={() => setJobToDelete(null)}>
+        <AlertDialogContent data-testid="dialog-delete-job">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja deletar a vaga "{jobToDelete?.title}"?
+              <br />
+              Esta ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel data-testid="button-cancel-delete">
+              Cancelar
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (jobToDelete) {
+                  deleteMutation.mutate(jobToDelete.id);
+                }
+              }}
+              disabled={deleteMutation.isPending}
+              data-testid="button-confirm-delete"
+            >
+              {deleteMutation.isPending ? "Deletando..." : "Deletar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
