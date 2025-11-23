@@ -1,4 +1,4 @@
-import { users, companies, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, savedJobs, questions, jobQuestions, applicationAnswers, siteVisits, newsletterSubscriptions, passwordResetCodes, creditTransactions, workTypes, contractTypes, tags, globalWorkTypes, globalContractTypes, type User, type InsertUser, type Company, type InsertCompany, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type SavedJob, type InsertSavedJob, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit, type NewsletterSubscription, type InsertNewsletterSubscription, type PasswordResetCode, type InsertPasswordResetCode, type CreditTransaction, type InsertCreditTransaction, type WorkType, type InsertWorkType, type ContractType, type InsertContractType, type Tag, type InsertTag, type GlobalWorkType, type InsertGlobalWorkType, type GlobalContractType, type InsertGlobalContractType } from "@shared/schema";
+import { users, companies, companyTopics, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, savedJobs, questions, jobQuestions, applicationAnswers, siteVisits, newsletterSubscriptions, passwordResetCodes, creditTransactions, workTypes, contractTypes, tags, globalWorkTypes, globalContractTypes, type User, type InsertUser, type Company, type InsertCompany, type CompanyTopic, type InsertCompanyTopic, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type SavedJob, type InsertSavedJob, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit, type NewsletterSubscription, type InsertNewsletterSubscription, type PasswordResetCode, type InsertPasswordResetCode, type CreditTransaction, type InsertCreditTransaction, type WorkType, type InsertWorkType, type ContractType, type InsertContractType, type Tag, type InsertTag, type GlobalWorkType, type InsertGlobalWorkType, type GlobalContractType, type InsertGlobalContractType } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, not, like, sql } from "drizzle-orm";
 
@@ -14,6 +14,11 @@ export interface IStorage {
   updateCompany(id: string, company: Partial<InsertCompany>): Promise<Company>;
   updateCompanyLastLogin(id: string): Promise<void>;
   getAllCompanies(): Promise<Company[]>;
+  
+  getCompanyTopicsByCompany(companyId: string): Promise<CompanyTopic[]>;
+  createCompanyTopic(topic: InsertCompanyTopic): Promise<CompanyTopic>;
+  updateCompanyTopic(id: string, topic: Partial<InsertCompanyTopic>): Promise<CompanyTopic>;
+  deleteCompanyTopic(id: string): Promise<void>;
   
   getOperator(id: string): Promise<Operator | undefined>;
   getOperatorByEmail(email: string): Promise<Operator | undefined>;
@@ -269,6 +274,24 @@ export class DatabaseStorage implements IStorage {
 
   async getAllCompanies(): Promise<Company[]> {
     return await db.select().from(companies);
+  }
+
+  async getCompanyTopicsByCompany(companyId: string): Promise<CompanyTopic[]> {
+    return await db.select().from(companyTopics).where(eq(companyTopics.companyId, companyId)).orderBy(companyTopics.order);
+  }
+
+  async createCompanyTopic(topic: InsertCompanyTopic): Promise<CompanyTopic> {
+    const [newTopic] = await db.insert(companyTopics).values(topic).returning();
+    return newTopic;
+  }
+
+  async updateCompanyTopic(id: string, topic: Partial<InsertCompanyTopic>): Promise<CompanyTopic> {
+    const [updatedTopic] = await db.update(companyTopics).set(topic).where(eq(companyTopics.id, id)).returning();
+    return updatedTopic;
+  }
+
+  async deleteCompanyTopic(id: string): Promise<void> {
+    await db.delete(companyTopics).where(eq(companyTopics.id, id));
   }
 
   async getOperator(id: string): Promise<Operator | undefined> {

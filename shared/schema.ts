@@ -47,6 +47,23 @@ export const insertCompanySchema = createInsertSchema(companies).omit({
 export type InsertCompany = z.infer<typeof insertCompanySchema>;
 export type Company = typeof companies.$inferSelect;
 
+export const companyTopics = pgTable("company_topics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyId: varchar("company_id").notNull().references(() => companies.id, { onDelete: 'cascade' }),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  order: text("order").notNull().default('0'),
+}, (table) => ({
+  companyIdIdx: index("company_topics_company_id_idx").on(table.companyId),
+}));
+
+export const insertCompanyTopicSchema = createInsertSchema(companyTopics).omit({
+  id: true,
+});
+
+export type InsertCompanyTopic = z.infer<typeof insertCompanyTopicSchema>;
+export type CompanyTopic = typeof companyTopics.$inferSelect;
+
 export const operators = pgTable("operators", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   email: text("email").notNull().unique(),

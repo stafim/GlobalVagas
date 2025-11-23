@@ -50,6 +50,7 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 - **Taxonomia System**: Centralized admin hub for managing platform-wide taxonomies including Tags, Setores (Sectors/Subsectors), Global Work Types, and Global Contract Types. All taxonomy management is organized under a single admin interface with dedicated tabs.
 - **Password Security**: All user passwords (Companies, Operators, Admins) are hashed using bcrypt with automatic migration from legacy plaintext passwords on login.
 - **Admin Login History Filters**: Search and filter users by name, email, and user type (Company/Operator/Admin) in the login history page.
+- **Company Custom Topics**: Companies can create, edit, and delete custom presentation topics on their profile page to highlight unique information about their business (e.g., Benefícios, Localização, Projetos, Clientes, etc.). Each topic has a title and content field that can be edited inline and saved automatically.
 
 ### Technology Stack
 - **Frontend**: React + TypeScript + Vite, Shadcn UI + Tailwind CSS, TanStack Query, React Hook Form + Zod

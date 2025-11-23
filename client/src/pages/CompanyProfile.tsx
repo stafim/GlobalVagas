@@ -5,22 +5,38 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Building2, Mail, Phone, Globe, FileText, Save, Camera, Image as ImageIcon, Sparkles, Target, Heart } from "lucide-react";
+import { Building2, Mail, Phone, Globe, FileText, Save, Camera, Image as ImageIcon, Sparkles, Target, Heart, Plus, Trash2, GripVertical } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import type { UploadResult } from "@uppy/core";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { Company } from "@shared/schema";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { Separator } from "@/components/ui/separator";
+
+interface CompanyTopic {
+  id: string;
+  companyId: string;
+  title: string;
+  content: string;
+  order: string;
+}
 
 export default function CompanyProfile() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
+  const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
+  const [newTopicTitle, setNewTopicTitle] = useState("");
+  const [newTopicContent, setNewTopicContent] = useState("");
 
   const company = user as Company;
+
+  // Query para buscar tópicos
+  const { data: topics = [] } = useQuery<CompanyTopic[]>({
+    queryKey: ['/api/companies/topics'],
+  });
 
   const [formData, setFormData] = useState({
     companyName: company?.companyName || "",
@@ -56,6 +72,74 @@ export default function CompanyProfile() {
         variant: "destructive",
         title: "Erro ao atualizar",
         description: "Não foi possível atualizar o perfil. Tente novamente.",
+      });
+    },
+  });
+
+  const createTopicMutation = useMutation({
+    mutationFn: async (data: { title: string; content: string; order: string }) => {
+      const response = await apiRequest("POST", "/api/companies/topics", data);
+      if (!response.ok) throw new Error("Erro ao criar tópico");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/companies/topics'] });
+      setNewTopicTitle("");
+      setNewTopicContent("");
+      toast({
+        title: "Tópico criado!",
+        description: "O tópico foi adicionado com sucesso.",
+      });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Não foi possível criar o tópico.",
+      });
+    },
+  });
+
+  const updateTopicMutation = useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<CompanyTopic> }) => {
+      const response = await apiRequest("PATCH", `/api/companies/topics/${id}`, data);
+      if (!response.ok) throw new Error("Erro ao atualizar tópico");
+      return response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/companies/topics'] });
+      setEditingTopicId(null);
+      toast({
+        title: "Tópico atualizado!",
+        description: "As alterações foram salvas.",
+      });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Não foi possível atualizar o tópico.",
+      });
+    },
+  });
+
+  const deleteTopicMutation = useMutation({
+    mutationFn: async (id: string) => {
+      const response = await apiRequest("DELETE", `/api/companies/topics/${id}`);
+      if (!response.ok) throw new Error("Erro ao deletar tópico");
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/companies/topics'] });
+      toast({
+        title: "Tópico removido",
+        description: "O tópico foi excluído com sucesso.",
+      });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Erro",
+        description: "Não foi possível remover o tópico.",
       });
     },
   });
@@ -280,6 +364,100 @@ export default function CompanyProfile() {
             <p className="text-xs text-muted-foreground">
               O que torna sua empresa um ótimo lugar para trabalhar? Quais benefícios e oportunidades vocês oferecem?
             </p>
+          </div>
+
+          <Separator />
+
+          {/* Tópicos Customizados */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-base font-semibold flex items-center gap-2">
+                  <Sparkles className="h-5 w-5 text-primary" />
+                  Tópicos Customizados
+                </h3>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Adicione seções personalizadas para destacar informações importantes sobre sua empresa
+                </p>
+              </div>
+            </div>
+
+            {/* Lista de Tópicos Existentes */}
+            {topics.length > 0 && (
+              <div className="space-y-3">
+                {topics.map((topic) => (
+                  <div key={topic.id} className="border rounded-lg p-4 space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 space-y-2">
+                        <Input
+                          value={topic.title}
+                          onChange={(e) => updateTopicMutation.mutate({ id: topic.id, data: { title: e.target.value } })}
+                          placeholder="Título do tópico"
+                          className="font-semibold"
+                          data-testid={`input-topic-title-${topic.id}`}
+                        />
+                        <Textarea
+                          value={topic.content}
+                          onChange={(e) => updateTopicMutation.mutate({ id: topic.id, data: { content: e.target.value } })}
+                          placeholder="Conteúdo do tópico..."
+                          rows={4}
+                          data-testid={`textarea-topic-content-${topic.id}`}
+                        />
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => deleteTopicMutation.mutate(topic.id)}
+                        className="text-destructive hover:text-destructive"
+                        data-testid={`button-delete-topic-${topic.id}`}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Formulário para Novo Tópico */}
+            <div className="border-2 border-dashed rounded-lg p-4 space-y-3">
+              <Input
+                value={newTopicTitle}
+                onChange={(e) => setNewTopicTitle(e.target.value)}
+                placeholder="Título do novo tópico (ex: Benefícios, Localização, Projetos...)"
+                data-testid="input-new-topic-title"
+              />
+              <Textarea
+                value={newTopicContent}
+                onChange={(e) => setNewTopicContent(e.target.value)}
+                placeholder="Conteúdo do tópico..."
+                rows={4}
+                data-testid="textarea-new-topic-content"
+              />
+              <Button
+                onClick={() => {
+                  if (newTopicTitle.trim() && newTopicContent.trim()) {
+                    createTopicMutation.mutate({
+                      title: newTopicTitle,
+                      content: newTopicContent,
+                      order: String(topics.length),
+                    });
+                  } else {
+                    toast({
+                      variant: "destructive",
+                      title: "Campos obrigatórios",
+                      description: "Preencha o título e conteúdo do tópico.",
+                    });
+                  }
+                }}
+                disabled={createTopicMutation.isPending || !newTopicTitle.trim() || !newTopicContent.trim()}
+                data-testid="button-add-topic"
+                className="gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                {createTopicMutation.isPending ? "Adicionando..." : "Adicionar Tópico"}
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

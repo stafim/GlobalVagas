@@ -343,6 +343,69 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Company Topics
+  app.get("/api/companies/topics", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autenticado" });
+      }
+
+      const topics = await storage.getCompanyTopicsByCompany(req.session.userId);
+      return res.status(200).json(topics);
+    } catch (error) {
+      console.error("Error getting company topics:", error);
+      return res.status(500).json({ message: "Erro ao buscar tópicos" });
+    }
+  });
+
+  app.post("/api/companies/topics", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autenticado" });
+      }
+
+      const newTopic = await storage.createCompanyTopic({
+        companyId: req.session.userId,
+        title: req.body.title,
+        content: req.body.content,
+        order: req.body.order || '0',
+      });
+
+      return res.status(201).json(newTopic);
+    } catch (error) {
+      console.error("Error creating company topic:", error);
+      return res.status(500).json({ message: "Erro ao criar tópico" });
+    }
+  });
+
+  app.patch("/api/companies/topics/:id", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autenticado" });
+      }
+
+      const updatedTopic = await storage.updateCompanyTopic(req.params.id, req.body);
+      return res.status(200).json(updatedTopic);
+    } catch (error) {
+      console.error("Error updating company topic:", error);
+      return res.status(500).json({ message: "Erro ao atualizar tópico" });
+    }
+  });
+
+  app.delete("/api/companies/topics/:id", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autenticado" });
+      }
+
+      await storage.deleteCompanyTopic(req.params.id);
+      return res.status(204).send();
+    } catch (error) {
+      console.error("Error deleting company topic:", error);
+      return res.status(500).json({ message: "Erro ao deletar tópico" });
+    }
+  });
+
   app.post("/api/auth/login", async (req, res) => {
     try {
       const { email, password } = req.body;
