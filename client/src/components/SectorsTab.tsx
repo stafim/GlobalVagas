@@ -69,7 +69,11 @@ export default function SectorsTab() {
 
   const createSectorMutation = useMutation({
     mutationFn: async (sectorData: InsertSector) => {
-      return await apiRequest('/api/sectors', 'POST', sectorData);
+      const response = await apiRequest('POST', '/api/sectors', sectorData);
+      if (!response.ok) {
+        throw new Error('Erro ao criar setor');
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sectors'] });
@@ -90,7 +94,11 @@ export default function SectorsTab() {
 
   const createSubsectorMutation = useMutation({
     mutationFn: async (subsectorData: InsertSubsector) => {
-      return await apiRequest('/api/subsectors', 'POST', subsectorData);
+      const response = await apiRequest('POST', '/api/subsectors', subsectorData);
+      if (!response.ok) {
+        throw new Error('Erro ao criar subsetor');
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/subsectors'] });
@@ -111,7 +119,10 @@ export default function SectorsTab() {
 
   const deleteSectorMutation = useMutation({
     mutationFn: async (id: string) => {
-      await apiRequest(`/api/sectors/${id}`, 'DELETE');
+      const response = await apiRequest('DELETE', `/api/sectors/${id}`);
+      if (!response.ok) {
+        throw new Error('Erro ao excluir setor');
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/sectors'] });
@@ -131,7 +142,10 @@ export default function SectorsTab() {
 
   const deleteSubsectorMutation = useMutation({
     mutationFn: async (id: string) => {
-      await apiRequest(`/api/subsectors/${id}`, 'DELETE');
+      const response = await apiRequest('DELETE', `/api/subsectors/${id}`);
+      if (!response.ok) {
+        throw new Error('Erro ao excluir subsetor');
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/subsectors'] });
