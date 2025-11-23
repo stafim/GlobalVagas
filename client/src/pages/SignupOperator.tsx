@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/form";
 import { HardHat, Mail, Lock, Phone, User, FileText, Briefcase, MapPin, CheckCircle2 } from "lucide-react";
 import { useState } from "react";
+import { PasswordStrengthIndicator, calculatePasswordStrength } from "@/components/PasswordStrengthIndicator";
 
 function formatCPF(value: string): string {
   const numbers = value.replace(/\D/g, '');
@@ -87,7 +88,15 @@ const signupFormSchema = insertOperatorSchema.extend({
   email: z.string()
     .min(1, "E-mail é obrigatório")
     .email("E-mail inválido"),
-  confirmPassword: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
+  password: z.string()
+    .min(8, "A senha deve ter no mínimo 8 caracteres")
+    .refine((password) => {
+      const strength = calculatePasswordStrength(password);
+      return strength.score >= 60;
+    }, {
+      message: "A senha não atende aos requisitos mínimos de segurança",
+    }),
+  confirmPassword: z.string().min(8, "A senha deve ter no mínimo 8 caracteres"),
   cpf: z.string()
     .min(1, "CPF é obrigatório")
     .refine((cpf) => validateCPF(cpf), {
@@ -104,6 +113,7 @@ export default function SignupOperator() {
   const { toast } = useToast();
   const [, setLocation] = useLocation();
   const [currentStep, setCurrentStep] = useState(1);
+  const [password, setPassword] = useState("");
 
   const form = useForm<SignupFormData>({
     resolver: zodResolver(signupFormSchema),
@@ -435,9 +445,14 @@ export default function SignupOperator() {
                                 className="pl-10"
                                 data-testid="input-password"
                                 {...field}
+                                onChange={(e) => {
+                                  field.onChange(e);
+                                  setPassword(e.target.value);
+                                }}
                               />
                             </div>
                           </FormControl>
+                          <PasswordStrengthIndicator password={password} />
                           <FormMessage />
                         </FormItem>
                       )}
