@@ -2544,7 +2544,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Update the status
-      const updatedApplication = await storage.updateApplication(applicationId, { status });
+      const updatedApplication = await storage.updateApplicationStatus(applicationId, status);
       return res.status(200).json(updatedApplication);
     } catch (error) {
       console.error("Error updating application status:", error);
