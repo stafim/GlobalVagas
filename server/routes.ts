@@ -3732,7 +3732,11 @@ Analise cuidadosamente a compatibilidade entre os requisitos da vaga e as qualif
       const data = await response.json();
       const content = data.choices?.[0]?.message?.content;
 
+      console.log("🤖 xAI Raw Response:", JSON.stringify(data, null, 2));
+      console.log("🤖 Content extracted:", content);
+
       if (!content) {
+        console.error("❌ Empty response from AI");
         return res.status(500).json({ message: "Resposta vazia da IA" });
       }
 
@@ -3740,11 +3744,29 @@ Analise cuidadosamente a compatibilidade entre os requisitos da vaga e as qualif
       let analysis;
       try {
         analysis = JSON.parse(content);
+        console.log("✅ Parsed AI Analysis:", JSON.stringify(analysis, null, 2));
+        
+        // Verificar e corrigir estrutura se necessário
+        if (!analysis.strengths || !Array.isArray(analysis.strengths)) {
+          console.warn("⚠️ Missing or invalid strengths array, creating default");
+          analysis.strengths = [];
+        }
+        if (!analysis.weaknesses || !Array.isArray(analysis.weaknesses)) {
+          console.warn("⚠️ Missing or invalid weaknesses array, creating default");
+          analysis.weaknesses = [];
+        }
+        if (typeof analysis.matchPercentage !== 'number') {
+          console.warn("⚠️ Missing or invalid matchPercentage, setting to 0");
+          analysis.matchPercentage = 0;
+        }
+        
       } catch (error) {
-        console.error("Error parsing AI response:", error);
+        console.error("❌ Error parsing AI response:", error);
+        console.error("Raw content that failed to parse:", content);
         return res.status(500).json({ message: "Erro ao processar resposta da IA" });
       }
 
+      console.log("📤 Sending analysis to frontend:", JSON.stringify(analysis, null, 2));
       return res.status(200).json(analysis);
     } catch (error) {
       console.error("Error analyzing candidate with AI:", error);
