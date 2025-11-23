@@ -3977,7 +3977,7 @@ Analise cuidadosamente a compatibilidade entre os requisitos da vaga e as qualif
         return res.status(401).json({ message: "Não autorizado" });
       }
 
-      const { ai_enabled, ai_model, ai_temperature, ai_max_tokens, ai_system_prompt } = req.body;
+      const { ai_enabled, ai_model, ai_temperature, ai_max_tokens, ai_system_prompt, ai_api_key } = req.body;
 
       // Validate settings
       if (ai_temperature && (parseFloat(ai_temperature) < 0 || parseFloat(ai_temperature) > 2)) {
@@ -4001,6 +4001,11 @@ Analise cuidadosamente a compatibilidade entre os requisitos da vaga e as qualif
         { key: 'ai_max_tokens', value: ai_max_tokens || '1000' },
         { key: 'ai_system_prompt', value: ai_system_prompt || 'Você é um assistente útil da plataforma Operlist.' }
       ];
+
+      // Only save API key if provided
+      if (ai_api_key) {
+        settingsToSave.push({ key: 'ai_api_key', value: ai_api_key });
+      }
 
       for (const setting of settingsToSave) {
         await storage.upsertSetting(setting);

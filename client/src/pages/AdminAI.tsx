@@ -58,13 +58,19 @@ export default function AdminAI() {
 
   const saveSettingsMutation = useMutation({
     mutationFn: async () => {
-      const data = {
+      const data: Record<string, string> = {
         ai_enabled: enabled ? 'true' : 'false',
         ai_model: model,
         ai_temperature: temperature,
         ai_max_tokens: maxTokens,
         ai_system_prompt: systemPrompt,
       };
+      
+      // Only include API key if it's been set
+      if (apiKey) {
+        data.ai_api_key = apiKey;
+      }
+      
       return await apiRequest('POST', '/api/admin/ai-settings', data);
     },
     onSuccess: () => {
