@@ -1996,6 +1996,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/featured-companies", async (req, res) => {
+    try {
+      const { featuredCompanyIds } = req.query;
+      
+      if (!featuredCompanyIds) {
+        return res.json([]);
+      }
+
+      const ids = JSON.parse(featuredCompanyIds as string);
+      
+      if (!Array.isArray(ids) || ids.length === 0) {
+        return res.json([]);
+      }
+
+      const companies = await storage.getCompaniesByIds(ids);
+      return res.json(companies);
+    } catch (error) {
+      console.error("Error fetching featured companies:", error);
+      return res.status(500).json({ message: "Erro ao buscar empresas em destaque" });
+    }
+  });
+
   app.get("/api/purchases", async (req, res) => {
     try {
       if (!req.session.userId || req.session.userType !== 'admin') {

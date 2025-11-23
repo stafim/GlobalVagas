@@ -14,6 +14,7 @@ export interface IStorage {
   updateCompany(id: string, company: Partial<InsertCompany>): Promise<Company>;
   updateCompanyLastLogin(id: string): Promise<void>;
   getAllCompanies(): Promise<Company[]>;
+  getCompaniesByIds(ids: string[]): Promise<Company[]>;
   
   getCompanyTopicsByCompany(companyId: string): Promise<CompanyTopic[]>;
   createCompanyTopic(topic: InsertCompanyTopic): Promise<CompanyTopic>;
@@ -281,6 +282,11 @@ export class DatabaseStorage implements IStorage {
 
   async getAllCompanies(): Promise<Company[]> {
     return await db.select().from(companies);
+  }
+
+  async getCompaniesByIds(ids: string[]): Promise<Company[]> {
+    if (ids.length === 0) return [];
+    return await db.select().from(companies).where(sql`${companies.id} = ANY(${ids})`);
   }
 
   async getCompanyTopicsByCompany(companyId: string): Promise<CompanyTopic[]> {
