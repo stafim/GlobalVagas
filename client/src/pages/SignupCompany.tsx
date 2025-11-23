@@ -30,6 +30,18 @@ import {
 } from "@/components/ui/form";
 import { Building2, Mail, Lock, Phone, Globe, FileText, Users } from "lucide-react";
 
+function formatPhone(value: string): string {
+  const numbers = value.replace(/\D/g, '');
+  
+  if (numbers.length <= 2) return numbers;
+  if (numbers.length <= 7) return `(${numbers.slice(0, 2)}) ${numbers.slice(2)}`;
+  return `(${numbers.slice(0, 2)}) ${numbers.slice(2, 7)}-${numbers.slice(7, 11)}`;
+}
+
+function removePhoneMask(value: string): string {
+  return value.replace(/\D/g, '');
+}
+
 const signupFormSchema = insertCompanySchema.extend({
   confirmPassword: z.string().min(6, "A senha deve ter no mínimo 6 caracteres"),
 }).refine((data) => data.password === data.confirmPassword, {
@@ -285,10 +297,16 @@ export default function SignupCompany() {
                           <div className="relative">
                             <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                             <Input
-                              placeholder="(00) 0000-0000"
+                              placeholder="(00) 00000-0000"
                               className="pl-10"
                               data-testid="input-phone"
                               {...field}
+                              onChange={(e) => {
+                                const formatted = formatPhone(e.target.value);
+                                field.onChange(removePhoneMask(formatted));
+                                e.target.value = formatted;
+                              }}
+                              value={formatPhone(field.value || '')}
                             />
                           </div>
                         </FormControl>
