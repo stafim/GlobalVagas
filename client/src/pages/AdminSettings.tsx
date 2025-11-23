@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Select,
   SelectContent,
@@ -40,6 +41,10 @@ export default function AdminSettings() {
   const [statsCountries, setStatsCountries] = useState("150+");
   const [statsSalary, setStatsSalary] = useState("$75k");
 
+  const [aboutWhoWeAre, setAboutWhoWeAre] = useState("");
+  const [aboutMission, setAboutMission] = useState("");
+  const [aboutValues, setAboutValues] = useState("");
+
   const { data: emailSettings, isLoading: emailLoading } = useQuery<EmailSettings>({
     queryKey: ['/api/email-settings'],
     retry: false,
@@ -73,6 +78,9 @@ export default function AdminSettings() {
       setStatsCompanies(settingsData.stats_companies_value || "15.000+");
       setStatsCountries(settingsData.stats_countries_value || "150+");
       setStatsSalary(settingsData.stats_salary_value || "$75k");
+      setAboutWhoWeAre(settingsData.about_who_we_are || "");
+      setAboutMission(settingsData.about_mission || "");
+      setAboutValues(settingsData.about_values || "");
     }
   }, [settingsData]);
 
@@ -234,6 +242,41 @@ export default function AdminSettings() {
     saveStatsMutation.mutate();
   };
 
+  const saveAboutMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest('POST', '/api/settings', {
+        key: 'about_who_we_are',
+        value: aboutWhoWeAre,
+      });
+      await apiRequest('POST', '/api/settings', {
+        key: 'about_mission',
+        value: aboutMission,
+      });
+      await apiRequest('POST', '/api/settings', {
+        key: 'about_values',
+        value: aboutValues,
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
+      toast({
+        title: "Informações atualizadas!",
+        description: "As informações 'Quem Somos' foram atualizadas com sucesso.",
+      });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Erro ao salvar",
+        description: "Não foi possível salvar as informações. Tente novamente.",
+      });
+    },
+  });
+
+  const handleSaveAbout = () => {
+    saveAboutMutation.mutate();
+  };
+
   const isLoading = emailLoading || settingsLoading;
 
   if (isLoading) {
@@ -383,6 +426,69 @@ export default function AdminSettings() {
               >
                 <Save className="h-4 w-4 mr-2" />
                 {saveStatsMutation.isPending ? 'Salvando...' : 'Salvar Estatísticas'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* About Section */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Type className="h-5 w-5" />
+              Quem Somos
+            </CardTitle>
+            <CardDescription>
+              Configure os textos da seção "Quem Somos" da página inicial
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="aboutWhoWeAre">Quem Somos</Label>
+                <Textarea
+                  id="aboutWhoWeAre"
+                  placeholder="Escreva sobre a empresa, sua história e propósito..."
+                  value={aboutWhoWeAre}
+                  onChange={(e) => setAboutWhoWeAre(e.target.value)}
+                  rows={4}
+                  data-testid="textarea-who-we-are"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="aboutMission">Missão</Label>
+                <Textarea
+                  id="aboutMission"
+                  placeholder="Descreva a missão da empresa..."
+                  value={aboutMission}
+                  onChange={(e) => setAboutMission(e.target.value)}
+                  rows={3}
+                  data-testid="textarea-mission"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="aboutValues">Valores</Label>
+                <Textarea
+                  id="aboutValues"
+                  placeholder="Liste os valores da empresa..."
+                  value={aboutValues}
+                  onChange={(e) => setAboutValues(e.target.value)}
+                  rows={3}
+                  data-testid="textarea-values"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-4 border-t">
+              <Button 
+                onClick={handleSaveAbout}
+                disabled={saveAboutMutation.isPending}
+                data-testid="button-save-about"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {saveAboutMutation.isPending ? 'Salvando...' : 'Salvar Informações'}
               </Button>
             </div>
           </CardContent>

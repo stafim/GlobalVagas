@@ -60,6 +60,12 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
   - Each banner has title, subtitle, image, link, display order, and active/inactive status
   - Auto-rotation carousel with navigation arrows and indicators
   - Home page displays only 6 latest jobs to keep content focused
+- **About Section (Quem Somos)**: Customizable "About Us" section on home page:
+  - Displayed immediately after the hero section
+  - Three configurable fields: **Quem Somos** (Who We Are), **Missão** (Mission), **Valores** (Values)
+  - Administrators manage content through Settings panel
+  - Automatically hides if no content is configured
+  - Clean, centered layout with icons for each section
 
 ### Technology Stack
 - **Frontend**: React + TypeScript + Vite, Shadcn UI + Tailwind CSS, TanStack Query, React Hook Form + Zod

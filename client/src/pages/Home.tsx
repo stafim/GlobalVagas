@@ -1,5 +1,6 @@
 import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
+import { AboutSection } from "@/components/AboutSection";
 import { StatsSection } from "@/components/StatsSection";
 import { CategorySection } from "@/components/CategorySection";
 import { MiddleBannerSection } from "@/components/MiddleBannerSection";
@@ -80,6 +81,7 @@ export default function Home() {
     <div className="min-h-screen flex flex-col">
       <Header onLanguageToggle={handleLanguageToggle} language={language} />
       <HeroSection />
+      <AboutSection />
       <StatsSection />
       
       <main className="flex-1">
