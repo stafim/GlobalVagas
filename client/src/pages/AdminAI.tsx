@@ -25,6 +25,7 @@ interface AISettings {
   ai_temperature: string;
   ai_max_tokens: string;
   ai_system_prompt: string;
+  ai_api_key?: string;
 }
 
 export default function AdminAI() {
@@ -53,6 +54,7 @@ export default function AdminAI() {
       setTemperature(aiSettings.ai_temperature || '0.7');
       setMaxTokens(aiSettings.ai_max_tokens || '1000');
       setSystemPrompt(aiSettings.ai_system_prompt || 'Você é um assistente útil da plataforma Operlist.');
+      setApiKey(aiSettings.ai_api_key || '');
     }
   }, [aiSettings]);
 

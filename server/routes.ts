@@ -3949,7 +3949,7 @@ Analise cuidadosamente a compatibilidade entre os requisitos da vaga e as qualif
       const aiSettings: Record<string, string> = {};
       
       // Filter AI-related settings
-      const aiKeys = ['ai_enabled', 'ai_model', 'ai_temperature', 'ai_max_tokens', 'ai_system_prompt'];
+      const aiKeys = ['ai_enabled', 'ai_model', 'ai_temperature', 'ai_max_tokens', 'ai_system_prompt', 'ai_api_key'];
       settings.forEach(s => {
         if (aiKeys.includes(s.key)) {
           aiSettings[s.key] = s.value;
