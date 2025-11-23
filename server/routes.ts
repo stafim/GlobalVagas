@@ -3614,20 +3614,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Buscar configurações de IA
-      const aiEnabled = await storage.getSetting('ai_enabled');
-      if (aiEnabled !== 'true') {
+      const aiEnabledSetting = await storage.getSetting('ai_enabled');
+      if (aiEnabledSetting?.value !== 'true') {
         return res.status(400).json({ message: "IA não está habilitada no sistema" });
       }
 
-      const apiKey = await storage.getSetting('ai_api_key');
-      if (!apiKey) {
+      const apiKeySetting = await storage.getSetting('ai_api_key');
+      if (!apiKeySetting?.value) {
         return res.status(400).json({ message: "API Key da IA não configurada" });
       }
+      const apiKey = apiKeySetting.value;
 
-      const model = await storage.getSetting('ai_model') || 'grok-3';
-      const temperature = parseFloat(await storage.getSetting('ai_temperature') || '0.7');
-      const maxTokens = parseInt(await storage.getSetting('ai_max_tokens') || '2000');
-      const systemPrompt = await storage.getSetting('ai_system_prompt') || 'Você é um assistente útil da plataforma Operlist.';
+      const modelSetting = await storage.getSetting('ai_model');
+      const model = modelSetting?.value || 'grok-3';
+      
+      const temperatureSetting = await storage.getSetting('ai_temperature');
+      const temperature = parseFloat(temperatureSetting?.value || '0.7');
+      
+      const maxTokensSetting = await storage.getSetting('ai_max_tokens');
+      const maxTokens = parseInt(maxTokensSetting?.value || '2000');
+      
+      const systemPromptSetting = await storage.getSetting('ai_system_prompt');
+      const systemPrompt = systemPromptSetting?.value || 'Você é um assistente útil da plataforma Operlist.';
 
       // Buscar dados da vaga
       const job = await storage.getJob(jobId);
@@ -3657,10 +3665,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Buscar respostas do questionário
-      const answers = await storage.getAnswersByApplication(applicationId);
-
-      // Buscar perguntas da vaga
-      const jobQuestions = await storage.getJobQuestionsByJob(jobId);
+      const answers = await storage.getApplicationAnswersByApplication(applicationId);
 
       // Montar prompt estruturado para análise
       const userPrompt = `Analise a compatibilidade entre o candidato e a vaga abaixo. Forneça uma resposta estruturada em JSON com os seguintes campos:

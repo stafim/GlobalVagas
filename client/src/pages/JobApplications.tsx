@@ -20,7 +20,11 @@ import {
   FileText,
   FileDown,
   Search,
-  Filter
+  Filter,
+  Bot,
+  TrendingUp,
+  TrendingDown,
+  CheckCircle
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { useLocation, useRoute } from "wouter";
@@ -37,12 +41,23 @@ import operlistLogo from "@assets/operlist2025_1763133653351.png";
 type ApplicationWithOperator = Application & { operator: Operator };
 type AnswerWithQuestion = ApplicationAnswer & { question: Question };
 
+type AIAnalysis = {
+  jobSummary: string;
+  candidateSummary: string;
+  strengths: string[];
+  weaknesses: string[];
+  matchPercentage: number;
+  recommendation: string;
+};
+
 export default function JobApplications() {
   const [, setLocation] = useLocation();
   const [selectedCandidate, setSelectedCandidate] = useState<ApplicationWithOperator | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [locationFilter, setLocationFilter] = useState("all");
+  const [aiAnalysisOpen, setAiAnalysisOpen] = useState(false);
+  const [currentAnalysis, setCurrentAnalysis] = useState<AIAnalysis | null>(null);
   const { toast } = useToast();
   
   // Get jobId from URL params
@@ -80,6 +95,27 @@ export default function JobApplications() {
         variant: "destructive",
         title: "Erro ao atualizar status",
         description: error.message || "Não foi possível atualizar o status da candidatura.",
+      });
+    }
+  });
+
+  const analyzeWithAIMutation = useMutation({
+    mutationFn: async ({ jobId, applicationId }: { jobId: string; applicationId: string }) => {
+      const response = await apiRequest('POST', '/api/company/analyze-candidate', { 
+        jobId, 
+        applicationId 
+      });
+      return response as unknown as AIAnalysis;
+    },
+    onSuccess: (data: AIAnalysis) => {
+      setCurrentAnalysis(data);
+      setAiAnalysisOpen(true);
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Erro ao analisar candidato",
+        description: error.message || "Não foi possível analisar o candidato com IA.",
       });
     }
   });
@@ -526,6 +562,27 @@ export default function JobApplications() {
                             variant="ghost"
                             onClick={(e) => {
                               e.stopPropagation();
+                              if (jobId) {
+                                analyzeWithAIMutation.mutate({ jobId, applicationId: application.id });
+                              }
+                            }}
+                            title="Analisar com IA"
+                            data-testid={`button-analyze-ai-${application.id}`}
+                            className="h-7 px-2"
+                            disabled={analyzeWithAIMutation.isPending}
+                          >
+                            {analyzeWithAIMutation.isPending ? (
+                              <div className="h-3 w-3 animate-spin rounded-full border-2 border-muted-foreground border-t-transparent" />
+                            ) : (
+                              <Bot className="h-3 w-3" />
+                            )}
+                          </Button>
+
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={(e) => {
+                              e.stopPropagation();
                               downloadCV(operator, job.title);
                             }}
                             title="Baixar CV"
@@ -819,6 +876,132 @@ export default function JobApplications() {
                     WhatsApp
                   </Button>
                 </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Análise com IA */}
+      <Dialog open={aiAnalysisOpen} onOpenChange={setAiAnalysisOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          {currentAnalysis && (
+            <div className="space-y-6">
+              <DialogHeader>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10">
+                    <Bot className="h-6 w-6 text-primary" />
+                  </div>
+                  <div>
+                    <DialogTitle className="text-2xl">Análise com IA</DialogTitle>
+                    <DialogDescription>
+                      Análise de compatibilidade entre candidato e vaga
+                    </DialogDescription>
+                  </div>
+                </div>
+              </DialogHeader>
+
+              <Separator />
+
+              {/* Porcentagem de Aderência */}
+              <div className="flex flex-col items-center justify-center p-6 bg-primary/5 rounded-lg border border-primary/20">
+                <div className="text-6xl font-bold text-primary mb-2">
+                  {currentAnalysis.matchPercentage}%
+                </div>
+                <p className="text-sm text-muted-foreground">Compatibilidade</p>
+                <Badge 
+                  className="mt-3"
+                  variant={
+                    currentAnalysis.matchPercentage >= 75 ? "default" : 
+                    currentAnalysis.matchPercentage >= 50 ? "secondary" : 
+                    "outline"
+                  }
+                >
+                  {currentAnalysis.recommendation}
+                </Badge>
+              </div>
+
+              <Separator />
+
+              {/* Resumo da Vaga */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <Briefcase className="h-5 w-5" />
+                  Resumo da Vaga
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {currentAnalysis.jobSummary}
+                </p>
+              </div>
+
+              <Separator />
+
+              {/* Resumo do Candidato */}
+              <div className="space-y-2">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Resumo do Candidato
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  {currentAnalysis.candidateSummary}
+                </p>
+              </div>
+
+              <Separator />
+
+              {/* Pontos Fortes */}
+              <div className="space-y-3">
+                <h3 className="text-lg font-semibold flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
+                  Pontos Fortes
+                </h3>
+                <div className="space-y-2">
+                  {currentAnalysis.strengths.map((strength, index) => (
+                    <div 
+                      key={index} 
+                      className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-950/20 rounded-md border border-green-200 dark:border-green-900/30"
+                    >
+                      <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-green-900 dark:text-green-100">{strength}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <Separator />
+
+              {/* Pontos Fracos */}
+              {currentAnalysis.weaknesses.length > 0 && (
+                <>
+                  <div className="space-y-3">
+                    <h3 className="text-lg font-semibold flex items-center gap-2">
+                      <TrendingDown className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+                      Pontos de Atenção
+                    </h3>
+                    <div className="space-y-2">
+                      {currentAnalysis.weaknesses.map((weakness, index) => (
+                        <div 
+                          key={index} 
+                          className="flex items-start gap-2 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-md border border-orange-200 dark:border-orange-900/30"
+                        >
+                          <FileText className="h-4 w-4 text-orange-600 dark:text-orange-400 mt-0.5 flex-shrink-0" />
+                          <p className="text-sm text-orange-900 dark:text-orange-100">{weakness}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <Separator />
+                </>
+              )}
+
+              {/* Botão para fechar */}
+              <div className="flex justify-end">
+                <Button 
+                  onClick={() => setAiAnalysisOpen(false)}
+                  data-testid="button-close-ai-analysis"
+                >
+                  Fechar
+                </Button>
               </div>
             </div>
           )}
