@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Briefcase, Plus, Search, MapPin, Clock, DollarSign, Users, ChevronRight, ChevronLeft, Building2, Check, ChevronsUpDown, Eye, Trash2, UserCheck, ExternalLink, Pause, Play, Filter, X, Coins, AlertCircle, Copy } from "lucide-react";
+import { Briefcase, Plus, Search, MapPin, Clock, DollarSign, Users, ChevronRight, ChevronLeft, Building2, Check, ChevronsUpDown, Eye, Trash2, UserCheck, ExternalLink, Pause, Play, Filter, X, Coins, AlertCircle, Copy, Pencil } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
@@ -53,6 +53,7 @@ export default function CompanyJobs() {
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [creditsDialogOpen, setCreditsDialogOpen] = useState(false);
+  const [editingJobId, setEditingJobId] = useState<string | null>(null);
 
   const { data: jobs = [], isLoading } = useQuery<JobWithApplicationCount[]>({
     queryKey: ['/api/jobs'],
@@ -80,10 +81,14 @@ export default function CompanyJobs() {
 
   const createJobMutation = useMutation({
     mutationFn: async (data: JobFormValues) => {
-      const response = await apiRequest('POST', '/api/jobs', data);
+      const isEditing = !!editingJobId;
+      const method = isEditing ? 'PUT' : 'POST';
+      const url = isEditing ? `/api/jobs/${editingJobId}` : '/api/jobs';
+      
+      const response = await apiRequest(method, url, data);
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.message || "Erro ao criar vaga");
+        throw new Error(error.message || (isEditing ? "Erro ao atualizar vaga" : "Erro ao criar vaga"));
       }
       const job = await response.json();
       
@@ -97,19 +102,24 @@ export default function CompanyJobs() {
         }
       }
       
-      return job;
+      return { job, isEditing };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['/api/jobs'] });
-      queryClient.invalidateQueries({ queryKey: ['/api/company/credits'] });
+      if (!data.isEditing) {
+        queryClient.invalidateQueries({ queryKey: ['/api/company/credits'] });
+      }
       setDialogOpen(false);
       setCurrentStep(1);
       setSelectedQuestions([]);
       setSelectedTags([]);
+      setEditingJobId(null);
       form.reset();
       toast({
-        title: "Vaga criada com sucesso!",
-        description: "Sua vaga foi publicada e 1 crédito foi debitado da sua conta.",
+        title: data.isEditing ? "Vaga atualizada com sucesso!" : "Vaga criada com sucesso!",
+        description: data.isEditing 
+          ? "As alterações foram salvas." 
+          : "Sua vaga foi publicada e 1 crédito foi debitado da sua conta.",
       });
     },
     onError: (error: any) => {
@@ -299,6 +309,58 @@ export default function CompanyJobs() {
     }
   };
 
+  const handleEditJob = async (job: Job) => {
+    // Buscar as questions associadas à vaga
+    try {
+      const questionsResponse = await fetch(`/api/jobs/${job.id}/questions`);
+      const jobQuestions = questionsResponse.ok ? await questionsResponse.json() : [];
+      
+      // Definir que estamos editando esta vaga
+      setEditingJobId(job.id);
+      
+      // Preencher o formulário com os dados da vaga (sem adicionar "Cópia" ao título)
+      form.reset({
+        title: job.title,
+        description: job.description || "",
+        requirements: job.requirements || "",
+        responsibilities: job.responsibilities || "",
+        benefits: job.benefits || "",
+        location: job.location || "",
+        city: job.city || "",
+        state: job.state || "",
+        workType: job.workType || "",
+        contractType: job.contractType || "",
+        salary: job.salary || "",
+        salaryPeriod: job.salaryPeriod || "mensal",
+        experienceLevel: job.experienceLevel || "",
+        educationLevel: job.educationLevel || "",
+        vacancies: job.vacancies?.toString() || "1",
+        status: job.status || "active",
+      });
+      
+      // Definir as questions selecionadas
+      setSelectedQuestions(jobQuestions.map((q: any) => q.id));
+      
+      // Definir as tags selecionadas
+      setSelectedTags(job.tags || []);
+      
+      // Abrir o dialog no primeiro passo
+      setCurrentStep(1);
+      setDialogOpen(true);
+      
+      toast({
+        title: "Editando vaga",
+        description: "Faça as alterações necessárias e salve quando estiver pronto.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao carregar vaga",
+        description: "Não foi possível carregar os dados da vaga para edição.",
+      });
+    }
+  };
+
   const hasActiveFilters = searchTerm || locationFilter || statusFilter !== "all" || dateFrom || dateTo;
 
   const filteredJobs = jobs.filter((job) => {
@@ -384,12 +446,21 @@ export default function CompanyJobs() {
               Nova Vaga
             </Button>
 
-            <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <Dialog open={dialogOpen} onOpenChange={(open) => {
+              setDialogOpen(open);
+              if (!open) {
+                // Resetar estado de edição quando fechar o dialog
+                setEditingJobId(null);
+                setSelectedQuestions([]);
+                setSelectedTags([]);
+                form.reset();
+              }
+            }}>
               <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
-                  <DialogTitle>Criar Nova Vaga</DialogTitle>
+                  <DialogTitle>{editingJobId ? "Editar Vaga" : "Criar Nova Vaga"}</DialogTitle>
                   <DialogDescription>
-                    Preencha as informações da vaga em {currentStep} de 4 etapas
+                    {editingJobId ? "Atualize" : "Preencha"} as informações da vaga em {currentStep} de 4 etapas
                   </DialogDescription>
                 </DialogHeader>
 
@@ -863,7 +934,9 @@ export default function CompanyJobs() {
                       className="ml-auto"
                       data-testid="button-submit-job"
                     >
-                      {createJobMutation.isPending ? "Criando..." : "Publicar Vaga"}
+                      {createJobMutation.isPending 
+                        ? (editingJobId ? "Salvando..." : "Criando...") 
+                        : (editingJobId ? "Salvar Alterações" : "Publicar Vaga")}
                     </Button>
                   )}
                 </div>
@@ -1100,6 +1173,15 @@ export default function CompanyJobs() {
                         <UserCheck className="h-4 w-4" />
                       </Button>
                     </Link>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleEditJob(job)}
+                      title="Editar vaga"
+                      data-testid={`button-edit-${job.id}`}
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </Button>
                     <Button
                       size="sm"
                       variant="ghost"
