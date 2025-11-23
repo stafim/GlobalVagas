@@ -46,10 +46,10 @@ export default function Home() {
     queryKey: ['/api/public/jobs'],
   });
 
-  // Get latest 10 jobs
+  // Get latest 6 jobs
   const latestJobs = jobs
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 10);
+    .slice(0, 6);
 
   const formatSalary = (salary: string | null) => {
     if (!salary) return null;
@@ -100,7 +100,7 @@ export default function Home() {
             
             {isLoading ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                {[1, 2, 3, 4].map((i) => (
+                {[1, 2, 3, 4, 5, 6].map((i) => (
                   <Card key={i}>
                     <CardContent className="p-6">
                       <div className="flex gap-4">
