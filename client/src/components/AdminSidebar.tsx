@@ -1,4 +1,4 @@
-import { Building2, HardHat, Briefcase, CreditCard, DollarSign, Settings, Calendar, Image, Mail, Tags, Clock, Radio } from "lucide-react";
+import { Building2, HardHat, Briefcase, CreditCard, DollarSign, Settings, Calendar, Image, Mail, Tags, Clock, Radio, Bot } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -49,6 +49,11 @@ const menuItems = [
     title: "Taxonomia",
     url: "/admin/taxonomia",
     icon: Tags,
+  },
+  {
+    title: "Configurações de IA",
+    url: "/admin/ia",
+    icon: Bot,
   },
   {
     title: "Configurações",
