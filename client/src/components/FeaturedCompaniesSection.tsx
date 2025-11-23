@@ -49,7 +49,7 @@ export function FeaturedCompaniesSection() {
                     <img 
                       src={company.logoUrl} 
                       alt={company.companyName}
-                      className="max-w-full max-h-[160px] w-auto h-auto object-contain"
+                      className="max-w-full max-h-[160px] w-auto h-auto object-contain border border-border rounded-md p-4"
                     />
                   ) : (
                     <Building2 className="h-24 w-24 text-muted-foreground" />
