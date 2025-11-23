@@ -2861,8 +2861,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       ]);
 
       // Calculate statistics
-      const activeJobs = allJobs.filter((job: any) => job.status === 'Active').length;
-      const suspendedJobs = allJobs.filter((job: any) => job.status === 'Suspended').length;
+      const activeJobs = allJobs.filter((job: any) => job.status === 'active').length;
+      const suspendedJobs = allJobs.filter((job: any) => job.status === 'suspended').length;
       
       // Create login data from all users
       const companiesLoginData = allCompanies.map((company: any) => ({
@@ -2927,7 +2927,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           
           if (existing) {
             existing.totalJobs++;
-            if (job.status === 'Active') {
+            if (job.status === 'active') {
               existing.activeJobs++;
             }
           } else {
@@ -2935,7 +2935,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
               companyId: job.companyId,
               companyName,
               totalJobs: 1,
-              activeJobs: job.status === 'Active' ? 1 : 0
+              activeJobs: job.status === 'active' ? 1 : 0
             });
           }
         }
@@ -2974,7 +2974,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const companyId = req.params.companyId;
 
       // Get company info
-      const company = await storage.getCompanyById(companyId);
+      const company = await storage.getCompany(companyId);
       if (!company) {
         return res.status(404).json({ message: "Empresa não encontrada" });
       }
@@ -2999,9 +2999,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
           email: company.email,
           cnpj: company.cnpj,
           industry: company.industry,
-          companySize: company.companySize,
+          companySize: company.size,
           lastLoginAt: company.lastLoginAt,
-          createdAt: company.createdAt
+          createdAt: new Date().toISOString() // Company table doesn't have a createdAt field
         },
         stats: {
           totalJobs: companyJobs.length,

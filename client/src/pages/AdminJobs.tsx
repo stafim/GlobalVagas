@@ -248,10 +248,10 @@ export default function AdminJobs() {
                       </TableCell>
                       <TableCell>
                         <Badge
-                          variant={job.status === 'Active' ? 'default' : 'secondary'}
+                          variant={job.status === 'active' ? 'default' : 'secondary'}
                           data-testid={`badge-status-${job.id}`}
                         >
-                          {job.status === 'Active' ? 'Ativa' : 'Suspensa'}
+                          {job.status === 'active' ? 'Ativa' : 'Suspensa'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-muted-foreground">
