@@ -2923,7 +2923,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         activeJobs,
         suspendedJobs,
         totalVisits: visitStats?.totalVisits || 0,
-        uniqueVisits: visitStats?.uniqueVisits || 0,
+        todayVisits: visitStats?.todayVisits || 0,
         recentLogins,
         companiesWithLastLogin: companiesWithLastLogin.slice(0, 20)
       });

@@ -12,7 +12,7 @@ interface LiveStats {
   activeJobs: number;
   suspendedJobs: number;
   totalVisits: number;
-  uniqueVisits: number;
+  todayVisits: number;
   recentLogins: Array<{
     id: number;
     userId: string;
@@ -150,7 +150,7 @@ export default function AdminLiveDashboard() {
               {stats?.totalVisits || 0}
             </div>
             <p className="text-xs text-muted-foreground mt-1">
-              {stats?.uniqueVisits || 0} visitantes únicos
+              {stats?.todayVisits || 0} visitas hoje
             </p>
           </CardContent>
         </Card>
