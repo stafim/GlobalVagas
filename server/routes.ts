@@ -1031,6 +1031,21 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/companies", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(403).json({ message: "Acesso negado" });
+      }
+
+      const companies = await storage.getAllCompanies();
+      const companiesWithoutPassword = companies.map(({ password, ...company }) => company);
+      return res.status(200).json(companiesWithoutPassword);
+    } catch (error) {
+      console.error("Error getting companies:", error);
+      return res.status(500).json({ message: "Erro ao buscar empresas" });
+    }
+  });
+
   app.get("/api/clients", async (req, res) => {
     try {
       if (!req.session.userId || req.session.userType !== 'admin') {
