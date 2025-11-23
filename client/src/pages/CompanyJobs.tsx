@@ -251,13 +251,10 @@ export default function CompanyJobs() {
   };
 
   const handleDuplicateJob = async (job: Job) => {
-    // Buscar as questions e tags associadas à vaga
+    // Buscar as questions associadas à vaga
     try {
       const questionsResponse = await fetch(`/api/jobs/${job.id}/questions`);
       const jobQuestions = questionsResponse.ok ? await questionsResponse.json() : [];
-      
-      const tagsResponse = await fetch(`/api/jobs/${job.id}/tags`);
-      const jobTags = tagsResponse.ok ? await tagsResponse.json() : [];
       
       // Preencher o formulário com os dados da vaga
       form.reset({
@@ -279,9 +276,11 @@ export default function CompanyJobs() {
         status: "active",
       });
       
-      // Definir as questions e tags selecionadas
-      setSelectedQuestions(jobQuestions.map((q: Question) => q.id));
-      setSelectedTags(jobTags.map((t: Tag) => t.id));
+      // Definir as questions selecionadas (pegar o id de cada question)
+      setSelectedQuestions(jobQuestions.map((q: any) => q.id));
+      
+      // Definir as tags selecionadas (as tags já vêm no objeto job como array de strings)
+      setSelectedTags(job.tags || []);
       
       // Resetar para o primeiro passo e abrir o dialog
       setCurrentStep(1);
