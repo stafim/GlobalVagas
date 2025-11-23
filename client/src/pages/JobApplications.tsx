@@ -106,8 +106,9 @@ export default function JobApplications() {
         jobId, 
         applicationId 
       });
-      console.log("📥 Resposta da API recebida:", response);
-      return response as unknown as AIAnalysis;
+      const data = await response.json();
+      console.log("📥 Resposta da API recebida:", data);
+      return data as AIAnalysis;
     },
     onSuccess: (data: AIAnalysis) => {
       console.log("✅ onSuccess disparado com dados:", data);
