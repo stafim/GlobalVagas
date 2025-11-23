@@ -18,7 +18,10 @@ export function CompanyShell({ children }: CompanyShellProps) {
   const [location, setLocation] = useLocation();
   const { toast } = useToast();
 
-  const isCompanyRoute = location.startsWith('/dashboard/empresa') || location.startsWith('/empresa/');
+  // Check if it's a protected company route (not the public company view page)
+  const isCompanyRoute = location.startsWith('/dashboard/empresa') || 
+    (location.startsWith('/empresa/') && 
+      !location.match(/^\/empresa\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i));
 
   useEffect(() => {
     if (isLoading) return;
