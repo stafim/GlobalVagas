@@ -8,7 +8,7 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform d
 - Bilingual support (Portuguese/English)
 - Clean, modern UI using Shadcn components
 - **Flat, minimalist design**: Neutral colors, simple icons, reduced visual noise
-- **Color scheme**: Neutral gray-blue palette (hsl 210, 8%, 45%) for primary actions and branding
+- **Color scheme**: Off-white warm palette with neutral beige/taupe tones (hsl 30) for a soft, elegant appearance. Background uses warm off-white (hsl 30, 10%, 97%) instead of pure white, with warm gray accents for primary actions
 - Database-backed configuration (no hardcoded values)
 
 ## System Architecture
