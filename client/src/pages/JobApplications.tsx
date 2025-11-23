@@ -32,6 +32,7 @@ import type { Job, Operator, Application, Question, ApplicationAnswer } from "@s
 import jsPDF from "jspdf";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import operlistLogo from "@assets/operlist2025_1763133653351.png";
 
 type ApplicationWithOperator = Application & { operator: Operator };
 type AnswerWithQuestion = ApplicationAnswer & { question: Question };
@@ -169,7 +170,14 @@ export default function JobApplications() {
   const downloadCV = (operator: Operator, jobTitle: string) => {
     const doc = new jsPDF();
     const pageWidth = doc.internal.pageSize.getWidth();
-    let yPos = 20;
+    let yPos = 15;
+
+    // Logo da Operlist
+    const logoWidth = 40;
+    const logoHeight = 15;
+    const logoX = (pageWidth - logoWidth) / 2;
+    doc.addImage(operlistLogo, 'PNG', logoX, yPos, logoWidth, logoHeight);
+    yPos += logoHeight + 10;
 
     // Header
     doc.setFontSize(20);
