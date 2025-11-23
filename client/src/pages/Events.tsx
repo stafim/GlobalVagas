@@ -224,7 +224,9 @@ export default function Events() {
                     <div 
                       className="h-48 overflow-hidden cursor-pointer hover:opacity-90 transition-opacity"
                       onClick={() => {
-                        const imgSrc = event.coverImageUrl!.startsWith('/objects') 
+                        const imgSrc = event.coverImageUrl!.startsWith('http://') || event.coverImageUrl!.startsWith('https://')
+                          ? event.coverImageUrl!
+                          : event.coverImageUrl!.startsWith('/objects') 
                           ? event.coverImageUrl! 
                           : event.coverImageUrl!.startsWith('attached_assets')
                           ? `/${event.coverImageUrl}`
@@ -234,7 +236,9 @@ export default function Events() {
                     >
                       <img 
                         src={
-                          event.coverImageUrl.startsWith('/objects') 
+                          event.coverImageUrl.startsWith('http://') || event.coverImageUrl.startsWith('https://')
+                            ? event.coverImageUrl
+                            : event.coverImageUrl.startsWith('/objects') 
                             ? event.coverImageUrl 
                             : event.coverImageUrl.startsWith('attached_assets')
                             ? `/${event.coverImageUrl}`
@@ -363,7 +367,9 @@ export default function Events() {
                 <div 
                   className="w-full h-64 overflow-hidden rounded-md cursor-pointer hover:opacity-90 transition-opacity"
                   onClick={() => {
-                    const imgSrc = selectedEvent.coverImageUrl!.startsWith('/objects') 
+                    const imgSrc = selectedEvent.coverImageUrl!.startsWith('http://') || selectedEvent.coverImageUrl!.startsWith('https://')
+                      ? selectedEvent.coverImageUrl!
+                      : selectedEvent.coverImageUrl!.startsWith('/objects') 
                       ? selectedEvent.coverImageUrl! 
                       : selectedEvent.coverImageUrl!.startsWith('attached_assets')
                       ? `/${selectedEvent.coverImageUrl}`
@@ -373,7 +379,9 @@ export default function Events() {
                 >
                   <img 
                     src={
-                      selectedEvent.coverImageUrl.startsWith('/objects') 
+                      selectedEvent.coverImageUrl.startsWith('http://') || selectedEvent.coverImageUrl.startsWith('https://')
+                        ? selectedEvent.coverImageUrl
+                        : selectedEvent.coverImageUrl.startsWith('/objects') 
                         ? selectedEvent.coverImageUrl 
                         : selectedEvent.coverImageUrl.startsWith('attached_assets')
                         ? `/${selectedEvent.coverImageUrl}`
