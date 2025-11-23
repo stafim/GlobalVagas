@@ -24,12 +24,14 @@ import {
 } from "lucide-react";
 import { SiWhatsapp } from "react-icons/si";
 import { useLocation, useRoute } from "wouter";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import type { Job, Operator, Application, Question, ApplicationAnswer } from "@shared/schema";
 import jsPDF from "jspdf";
+import { useToast } from "@/hooks/use-toast";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 type ApplicationWithOperator = Application & { operator: Operator };
 type AnswerWithQuestion = ApplicationAnswer & { question: Question };
@@ -40,6 +42,7 @@ export default function JobApplications() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [locationFilter, setLocationFilter] = useState("all");
+  const { toast } = useToast();
   
   // Get jobId from URL params
   const [, params] = useRoute("/empresa/vaga/:id/candidatos");
@@ -58,6 +61,26 @@ export default function JobApplications() {
   const { data: answers = [] } = useQuery<AnswerWithQuestion[]>({
     queryKey: ['/api/applications', selectedCandidate?.id, 'answers'],
     enabled: !!selectedCandidate?.id,
+  });
+
+  const updateStatusMutation = useMutation({
+    mutationFn: async ({ applicationId, status }: { applicationId: string; status: string }) => {
+      return await apiRequest('PATCH', `/api/applications/${applicationId}/status`, { status });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/jobs', jobId, 'applications'] });
+      toast({
+        title: "Status atualizado",
+        description: "O status da candidatura foi atualizado com sucesso.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        variant: "destructive",
+        title: "Erro ao atualizar status",
+        description: error.message || "Não foi possível atualizar o status da candidatura.",
+      });
+    }
   });
 
   // Filtros
@@ -124,6 +147,23 @@ export default function JobApplications() {
       default:
         return <Badge>{status}</Badge>;
     }
+  };
+
+  const getStatusLabel = (status: string) => {
+    switch (status) {
+      case 'pending':
+        return 'Pendente';
+      case 'accepted':
+        return 'Aceito';
+      case 'rejected':
+        return 'Rejeitado';
+      default:
+        return status;
+    }
+  };
+
+  const handleStatusChange = (applicationId: string, newStatus: string) => {
+    updateStatusMutation.mutate({ applicationId, status: newStatus });
   };
 
   const downloadCV = (operator: Operator, jobTitle: string) => {
@@ -490,7 +530,28 @@ export default function JobApplications() {
                             {formatDateTime(application.appliedAt)}
                           </div>
                           
-                          {getStatusBadge(application.status)}
+                          <Select 
+                            value={application.status} 
+                            onValueChange={(value) => {
+                              handleStatusChange(application.id, value);
+                            }}
+                            disabled={updateStatusMutation.isPending}
+                          >
+                            <SelectTrigger 
+                              className="w-[140px] h-8"
+                              onClick={(e) => e.stopPropagation()}
+                              data-testid={`select-status-${application.id}`}
+                            >
+                              <SelectValue>
+                                {getStatusLabel(application.status)}
+                              </SelectValue>
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="pending">Pendente</SelectItem>
+                              <SelectItem value="accepted">Aceito</SelectItem>
+                              <SelectItem value="rejected">Rejeitado</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
                     </div>
@@ -523,8 +584,31 @@ export default function JobApplications() {
                     <DialogDescription className="text-base">
                       {selectedCandidate.operator.profession}
                     </DialogDescription>
-                    <div className="mt-2">
-                      {getStatusBadge(selectedCandidate.status)}
+                    <div className="mt-3">
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">Status:</span>
+                        <Select 
+                          value={selectedCandidate.status} 
+                          onValueChange={(value) => {
+                            handleStatusChange(selectedCandidate.id, value);
+                          }}
+                          disabled={updateStatusMutation.isPending}
+                        >
+                          <SelectTrigger 
+                            className="w-[160px]"
+                            data-testid="select-modal-status"
+                          >
+                            <SelectValue>
+                              {getStatusLabel(selectedCandidate.status)}
+                            </SelectValue>
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="pending">Pendente</SelectItem>
+                            <SelectItem value="accepted">Aceito</SelectItem>
+                            <SelectItem value="rejected">Rejeitado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </div>
                 </div>
