@@ -86,8 +86,18 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
     - Medal icons for top 3 positions (gold, silver, bronze)
     - Percentage-based progress bars showing relative job count
   - **Companies Activity**: Lists 20 most recently active companies with last login timestamps
+  - **Company Search & Summary**: Searchable combobox to quickly find and view detailed company information
+    - Search by company name with auto-complete
+    - Displays comprehensive company summary including:
+      - Company details (CNPJ, industry, size, last access, registration date)
+      - Statistics (total jobs, active/suspended jobs, available credits, total purchases)
+      - Purchase history with credits usage and status
+      - Recent jobs (last 5) with view counts and status
+    - Real-time data updates when company is selected
   - Visual indicators: Red pulsing "live" badge, color-coded user type badges
-  - **Backend**: `GET /api/admin/live-stats` endpoint aggregates data from all user types and jobs
+  - **Backend**: 
+    - `GET /api/admin/live-stats` endpoint aggregates data from all user types and jobs
+    - `GET /api/admin/company-summary/:companyId` endpoint provides detailed company analytics
   - Route: `/admin/ao-vivo`
 
 ### Technology Stack
