@@ -64,13 +64,6 @@ export default function CompanyCredits() {
   return (
     <CompanyShell>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Meus Créditos</h1>
-          <p className="text-muted-foreground mt-2">
-            Gerencie seus créditos e acompanhe o histórico de transações
-          </p>
-        </div>
-
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           {creditsQuery.isLoading ? (
