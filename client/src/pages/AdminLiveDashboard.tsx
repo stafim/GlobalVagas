@@ -1,10 +1,25 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Users, Briefcase, Activity, Eye, TrendingUp, Clock, BarChart3, Award } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Building2, Users, Briefcase, Activity, Eye, TrendingUp, Clock, BarChart3, Award, Search, CreditCard, Calendar, DollarSign } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Link } from "wouter";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 interface LiveStats {
   totalCompanies: number;
@@ -36,10 +51,54 @@ interface LiveStats {
   }>;
 }
 
+interface CompanySummary {
+  company: {
+    id: string;
+    companyName: string;
+    email: string;
+    cnpj: string | null;
+    industry: string | null;
+    companySize: string | null;
+    lastLoginAt: string | null;
+    createdAt: string;
+  };
+  stats: {
+    totalJobs: number;
+    activeJobs: number;
+    suspendedJobs: number;
+    totalPurchases: number;
+    availableCredits: number;
+  };
+  purchases: Array<{
+    id: string;
+    planName: string;
+    credits: number;
+    usedCredits: number;
+    price: number;
+    status: string;
+    purchaseDate: string;
+  }>;
+  recentJobs: Array<{
+    id: string;
+    title: string;
+    status: string;
+    createdAt: string;
+    viewCount: number;
+  }>;
+}
+
 export default function AdminLiveDashboard() {
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null);
+  const [open, setOpen] = useState(false);
+
   const { data: stats, isLoading } = useQuery<LiveStats>({
     queryKey: ['/api/admin/live-stats'],
     refetchInterval: 30000, // Refresh every 30 seconds
+  });
+
+  const { data: companySummary, isLoading: isLoadingSummary } = useQuery<CompanySummary>({
+    queryKey: ['/api/admin/company-summary', selectedCompanyId],
+    enabled: !!selectedCompanyId,
   });
 
   if (isLoading) {
@@ -164,6 +223,270 @@ export default function AdminLiveDashboard() {
           </Card>
         </Link>
       </div>
+
+      {/* Company Search Section */}
+      <Card data-testid="card-company-search">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Search className="h-5 w-5 text-muted-foreground" />
+            Buscar Cliente
+          </CardTitle>
+          <CardDescription>Selecione uma empresa para ver informações detalhadas</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                role="combobox"
+                aria-expanded={open}
+                className="w-full justify-between"
+                data-testid="button-company-search"
+              >
+                {selectedCompanyId
+                  ? stats?.companiesWithLastLogin.find((company) => company.id === selectedCompanyId)?.companyName
+                  : "Selecione uma empresa..."}
+                <Search className="ml-2 h-4 w-4 shrink-0 text-muted-foreground" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-[400px] p-0">
+              <Command>
+                <CommandInput placeholder="Buscar empresa..." data-testid="input-company-search" />
+                <CommandList>
+                  <CommandEmpty>Nenhuma empresa encontrada.</CommandEmpty>
+                  <CommandGroup>
+                    {stats?.companiesWithLastLogin.map((company) => (
+                      <CommandItem
+                        key={company.id}
+                        value={company.companyName}
+                        onSelect={() => {
+                          setSelectedCompanyId(company.id);
+                          setOpen(false);
+                        }}
+                        data-testid={`item-company-${company.id}`}
+                      >
+                        <div className="flex flex-col">
+                          <span className="font-medium">{company.companyName}</span>
+                          <span className="text-xs text-muted-foreground">{company.email}</span>
+                        </div>
+                      </CommandItem>
+                    ))}
+                  </CommandGroup>
+                </CommandList>
+              </Command>
+            </PopoverContent>
+          </Popover>
+        </CardContent>
+      </Card>
+
+      {/* Company Summary */}
+      {selectedCompanyId && companySummary && (
+        <div className="space-y-4" data-testid="section-company-summary">
+          {/* Company Info */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="h-5 w-5 text-muted-foreground" />
+                {companySummary.company.companyName}
+              </CardTitle>
+              <CardDescription>{companySummary.company.email}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div>
+                  <p className="text-sm text-muted-foreground">CNPJ</p>
+                  <p className="font-medium" data-testid="text-cnpj">
+                    {companySummary.company.cnpj || 'Não informado'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Setor</p>
+                  <p className="font-medium" data-testid="text-industry">
+                    {companySummary.company.industry || 'Não informado'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Tamanho</p>
+                  <p className="font-medium" data-testid="text-company-size">
+                    {companySummary.company.companySize || 'Não informado'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-muted-foreground">Último Acesso</p>
+                  <p className="font-medium" data-testid="text-last-access">
+                    {companySummary.company.lastLoginAt
+                      ? format(new Date(companySummary.company.lastLoginAt), "dd/MM/yyyy HH:mm", { locale: ptBR })
+                      : 'Nunca acessou'}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Stats Cards */}
+          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Vagas Totais</CardTitle>
+                <Briefcase className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold" data-testid="text-summary-total-jobs">
+                  {companySummary.stats.totalJobs}
+                </div>
+                <div className="flex gap-2 mt-1">
+                  <Badge variant="default" className="text-xs">
+                    {companySummary.stats.activeJobs} Ativas
+                  </Badge>
+                  <Badge variant="secondary" className="text-xs">
+                    {companySummary.stats.suspendedJobs} Suspensas
+                  </Badge>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Créditos Disponíveis</CardTitle>
+                <CreditCard className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold" data-testid="text-summary-credits">
+                  {companySummary.stats.availableCredits}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {companySummary.stats.totalPurchases} {companySummary.stats.totalPurchases === 1 ? 'plano' : 'planos'} comprados
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Total de Compras</CardTitle>
+                <DollarSign className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold" data-testid="text-summary-purchases">
+                  {companySummary.stats.totalPurchases}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Planos adquiridos</p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between gap-2 space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium">Membro Desde</CardTitle>
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-lg font-bold" data-testid="text-summary-member-since">
+                  {format(new Date(companySummary.company.createdAt), "dd/MM/yyyy", { locale: ptBR })}
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Data de cadastro</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Purchases */}
+          {companySummary.purchases.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-muted-foreground" />
+                  Compras de Planos
+                </CardTitle>
+                <CardDescription>Histórico de compras de créditos</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {companySummary.purchases.map((purchase) => (
+                    <div
+                      key={purchase.id}
+                      className="flex items-center justify-between p-3 rounded-md border"
+                      data-testid={`purchase-${purchase.id}`}
+                    >
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{purchase.planName}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {format(new Date(purchase.purchaseDate), "dd/MM/yyyy", { locale: ptBR })}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <p className="text-sm font-medium">
+                            {purchase.credits - purchase.usedCredits} / {purchase.credits} créditos
+                          </p>
+                          <p className="text-xs text-muted-foreground">
+                            R$ {purchase.price.toFixed(2)}
+                          </p>
+                        </div>
+                        <Badge variant={purchase.status === 'Disponível para uso' ? 'default' : 'secondary'}>
+                          {purchase.status}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Recent Jobs */}
+          {companySummary.recentJobs.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Briefcase className="h-5 w-5 text-muted-foreground" />
+                  Vagas Recentes
+                </CardTitle>
+                <CardDescription>Últimas 5 vagas cadastradas</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {companySummary.recentJobs.map((job) => (
+                    <div
+                      key={job.id}
+                      className="flex items-center justify-between p-3 rounded-md border"
+                      data-testid={`job-${job.id}`}
+                    >
+                      <div className="flex-1">
+                        <p className="text-sm font-medium">{job.title}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Criada em {format(new Date(job.createdAt), "dd/MM/yyyy", { locale: ptBR })}
+                        </p>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <p className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Eye className="h-3 w-3" />
+                            {job.viewCount} {job.viewCount === 1 ? 'visualização' : 'visualizações'}
+                          </p>
+                        </div>
+                        <Badge variant={job.status === 'active' ? 'default' : 'secondary'}>
+                          {job.status === 'active' ? 'Ativa' : 'Suspensa'}
+                        </Badge>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* Loading state for company summary */}
+      {selectedCompanyId && isLoadingSummary && (
+        <Card>
+          <CardContent className="p-6">
+            <div className="animate-pulse space-y-4">
+              <div className="h-4 bg-muted rounded w-1/2"></div>
+              <div className="h-4 bg-muted rounded w-3/4"></div>
+              <div className="h-4 bg-muted rounded w-2/3"></div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Recent Logins */}
       <Card data-testid="card-recent-logins">
