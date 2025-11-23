@@ -769,18 +769,29 @@ export default function JobApplications() {
                   </div>
                 </div>
 
-                <Button 
-                  variant="outline" 
-                  className="w-full bg-green-500/10 hover:bg-green-500/20 border-green-500/30 text-green-700 dark:text-green-400"
-                  onClick={() => {
-                    const phoneNumber = selectedCandidate.operator.phone.replace(/\D/g, '');
-                    window.open(`https://wa.me/55${phoneNumber}`, '_blank');
-                  }}
-                  data-testid="button-whatsapp-candidate"
-                >
-                  <SiWhatsapp className="h-4 w-4 mr-2" />
-                  WhatsApp
-                </Button>
+                <div className="grid grid-cols-2 gap-3">
+                  <Button 
+                    variant="outline"
+                    onClick={() => downloadCV(selectedCandidate.operator, job?.title || 'Vaga')}
+                    data-testid="button-download-cv-modal"
+                  >
+                    <FileDown className="h-4 w-4 mr-2" />
+                    Baixar CV
+                  </Button>
+
+                  <Button 
+                    variant="outline" 
+                    className="bg-green-500/10 hover:bg-green-500/20 border-green-500/30 text-green-700 dark:text-green-400"
+                    onClick={() => {
+                      const phoneNumber = selectedCandidate.operator.phone.replace(/\D/g, '');
+                      window.open(`https://wa.me/55${phoneNumber}`, '_blank');
+                    }}
+                    data-testid="button-whatsapp-candidate"
+                  >
+                    <SiWhatsapp className="h-4 w-4 mr-2" />
+                    WhatsApp
+                  </Button>
+                </div>
               </div>
             </div>
           )}
