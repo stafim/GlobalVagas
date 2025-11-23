@@ -77,7 +77,15 @@ export function CategorySection() {
             {currentBanner.imageUrl ? (
               <div className="relative w-full">
                 <img
-                  src={currentBanner.imageUrl.startsWith('/attached_assets/') ? currentBanner.imageUrl : (currentBanner.imageUrl.startsWith('/objects') ? currentBanner.imageUrl : `/objects${currentBanner.imageUrl}`)}
+                  src={
+                    currentBanner.imageUrl.startsWith('http://') || currentBanner.imageUrl.startsWith('https://') 
+                      ? currentBanner.imageUrl 
+                      : currentBanner.imageUrl.startsWith('/attached_assets/') 
+                        ? currentBanner.imageUrl 
+                        : currentBanner.imageUrl.startsWith('/objects') 
+                          ? currentBanner.imageUrl 
+                          : `/objects${currentBanner.imageUrl}`
+                  }
                   alt={currentBanner.title}
                   className="w-full h-auto max-h-[350px] object-cover"
                 />
