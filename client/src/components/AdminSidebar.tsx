@@ -1,4 +1,4 @@
-import { LayoutDashboard, Building2, HardHat, Briefcase, CreditCard, DollarSign, Settings, Calendar, Image, Mail, Tags, Clock, Radio } from "lucide-react";
+import { Building2, HardHat, Briefcase, CreditCard, DollarSign, Settings, Calendar, Image, Mail, Tags, Clock, Radio } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -15,11 +15,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import operlistLogo from "@assets/operlist2025_1763133653351.png";
 
 const menuItems = [
-  {
-    title: "Dashboard",
-    url: "/admin",
-    icon: LayoutDashboard,
-  },
   {
     title: "AO VIVO",
     url: "/admin/ao-vivo",
