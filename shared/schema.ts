@@ -1,5 +1,5 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, index } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, index, unique } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -448,6 +448,7 @@ export const jobQuestions = pgTable("job_questions", {
 }, (table) => ({
   jobIdIdx: index("job_questions_job_id_idx").on(table.jobId),
   questionIdIdx: index("job_questions_question_id_idx").on(table.questionId),
+  uniqueJobQuestion: unique("unique_job_question").on(table.jobId, table.questionId),
 }));
 
 export const insertJobQuestionSchema = createInsertSchema(jobQuestions).omit({
