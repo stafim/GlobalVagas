@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Building2, Users, Briefcase, Activity, Eye, TrendingUp, Clock } from "lucide-react";
+import { Building2, Users, Briefcase, Activity, Eye, TrendingUp, Clock, BarChart3, Award } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
@@ -26,6 +26,12 @@ interface LiveStats {
     companyName: string;
     email: string;
     lastLogin?: string;
+  }>;
+  companiesJobsRanking: Array<{
+    companyId: string;
+    companyName: string;
+    totalJobs: number;
+    activeJobs: number;
   }>;
 }
 
@@ -192,6 +198,71 @@ export default function AdminLiveDashboard() {
             ) : (
               <p className="text-sm text-muted-foreground text-center py-4">
                 Nenhum login registrado
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Companies Jobs Ranking */}
+      <Card data-testid="card-companies-jobs-ranking">
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <BarChart3 className="h-5 w-5 text-muted-foreground" />
+            Ranking de Vagas por Empresa
+          </CardTitle>
+          <CardDescription>Top 10 clientes que mais abriram vagas</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {stats?.companiesJobsRanking && stats.companiesJobsRanking.length > 0 ? (
+              stats.companiesJobsRanking.map((company, index) => {
+                const maxJobs = stats.companiesJobsRanking[0]?.totalJobs || 1;
+                const percentage = (company.totalJobs / maxJobs) * 100;
+                
+                return (
+                  <div
+                    key={company.companyId}
+                    className="space-y-2"
+                    data-testid={`ranking-${company.companyId}`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3 flex-1">
+                        <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10">
+                          {index === 0 && <Award className="h-4 w-4 text-yellow-500" />}
+                          {index === 1 && <Award className="h-4 w-4 text-gray-400" />}
+                          {index === 2 && <Award className="h-4 w-4 text-orange-600" />}
+                          {index > 2 && <span className="text-sm font-semibold text-muted-foreground">{index + 1}</span>}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium truncate" data-testid={`text-company-ranking-${company.companyId}`}>
+                            {company.companyName}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <Badge variant="default" className="text-xs">
+                              {company.totalJobs} {company.totalJobs === 1 ? 'vaga' : 'vagas'}
+                            </Badge>
+                            <Badge variant="secondary" className="text-xs">
+                              {company.activeJobs} {company.activeJobs === 1 ? 'ativa' : 'ativas'}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    {/* Progress Bar */}
+                    <div className="w-full bg-muted rounded-full h-2">
+                      <div
+                        className="bg-primary h-2 rounded-full transition-all duration-500"
+                        style={{ width: `${percentage}%` }}
+                        data-testid={`progress-${company.companyId}`}
+                      />
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <p className="text-sm text-muted-foreground text-center py-4">
+                Nenhuma vaga cadastrada ainda
               </p>
             )}
           </div>

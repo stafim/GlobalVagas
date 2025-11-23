@@ -2916,6 +2916,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return new Date(b.lastLogin).getTime() - new Date(a.lastLogin).getTime();
       });
 
+      // Calculate jobs ranking by company
+      const jobsByCompany = new Map<string, { companyId: string, companyName: string, totalJobs: number, activeJobs: number }>();
+      
+      allJobs.forEach((job: any) => {
+        if (job.companyId) {
+          const existing = jobsByCompany.get(job.companyId);
+          const company = allCompanies.find((c: any) => c.id === job.companyId);
+          const companyName = company?.companyName || 'Empresa não encontrada';
+          
+          if (existing) {
+            existing.totalJobs++;
+            if (job.status === 'Active') {
+              existing.activeJobs++;
+            }
+          } else {
+            jobsByCompany.set(job.companyId, {
+              companyId: job.companyId,
+              companyName,
+              totalJobs: 1,
+              activeJobs: job.status === 'Active' ? 1 : 0
+            });
+          }
+        }
+      });
+
+      // Convert to array and sort by total jobs (descending)
+      const companiesJobsRanking = Array.from(jobsByCompany.values())
+        .sort((a, b) => b.totalJobs - a.totalJobs)
+        .slice(0, 10); // Top 10 companies
+
       return res.status(200).json({
         totalCompanies: allCompanies.length,
         totalOperators: allOperators.length,
@@ -2925,7 +2955,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         totalVisits: visitStats?.totalVisits || 0,
         todayVisits: visitStats?.todayVisits || 0,
         recentLogins,
-        companiesWithLastLogin: companiesWithLastLogin.slice(0, 20)
+        companiesWithLastLogin: companiesWithLastLogin.slice(0, 20),
+        companiesJobsRanking
       });
     } catch (error) {
       console.error("Error getting live stats:", error);
