@@ -52,6 +52,7 @@ export const companyTopics = pgTable("company_topics", {
   companyId: varchar("company_id").notNull().references(() => companies.id, { onDelete: 'cascade' }),
   title: text("title").notNull(),
   content: text("content").notNull(),
+  icon: text("icon").notNull().default('Star'),
   order: text("order").notNull().default('0'),
 }, (table) => ({
   companyIdIdx: index("company_topics_company_id_idx").on(table.companyId),

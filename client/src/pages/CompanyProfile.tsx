@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Building2, Mail, Phone, Globe, FileText, Save, Camera, Image as ImageIcon, Sparkles, Target, Heart, Plus, Trash2, GripVertical } from "lucide-react";
+import { IconSelector, getIconComponent } from "@/components/IconSelector";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ObjectUploader } from "@/components/ObjectUploader";
@@ -20,6 +21,7 @@ interface CompanyTopic {
   companyId: string;
   title: string;
   content: string;
+  icon: string;
   order: string;
 }
 
@@ -30,6 +32,7 @@ export default function CompanyProfile() {
   const [editingTopicId, setEditingTopicId] = useState<string | null>(null);
   const [newTopicTitle, setNewTopicTitle] = useState("");
   const [newTopicContent, setNewTopicContent] = useState("");
+  const [newTopicIcon, setNewTopicIcon] = useState("Star");
 
   const company = user as Company;
 
@@ -77,7 +80,7 @@ export default function CompanyProfile() {
   });
 
   const createTopicMutation = useMutation({
-    mutationFn: async (data: { title: string; content: string; order: string }) => {
+    mutationFn: async (data: { title: string; content: string; icon: string; order: string }) => {
       const response = await apiRequest("POST", "/api/companies/topics", data);
       if (!response.ok) throw new Error("Erro ao criar tópico");
       return response.json();
@@ -86,6 +89,7 @@ export default function CompanyProfile() {
       queryClient.invalidateQueries({ queryKey: ['/api/companies/topics'] });
       setNewTopicTitle("");
       setNewTopicContent("");
+      setNewTopicIcon("Star");
       toast({
         title: "Tópico criado!",
         description: "O tópico foi adicionado com sucesso.",
@@ -385,61 +389,84 @@ export default function CompanyProfile() {
             {/* Lista de Tópicos Existentes */}
             {topics.length > 0 && (
               <div className="space-y-3">
-                {topics.map((topic) => (
-                  <div key={topic.id} className="border rounded-lg p-4 space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex-1 space-y-2">
-                        <Input
-                          value={topic.title}
-                          onChange={(e) => updateTopicMutation.mutate({ id: topic.id, data: { title: e.target.value } })}
-                          placeholder="Título do tópico"
-                          className="font-semibold"
-                          data-testid={`input-topic-title-${topic.id}`}
-                        />
-                        <Textarea
-                          value={topic.content}
-                          onChange={(e) => updateTopicMutation.mutate({ id: topic.id, data: { content: e.target.value } })}
-                          placeholder="Conteúdo do tópico..."
-                          rows={4}
-                          data-testid={`textarea-topic-content-${topic.id}`}
-                        />
+                {topics.map((topic) => {
+                  const TopicIcon = getIconComponent(topic.icon || "Star");
+                  return (
+                    <div key={topic.id} className="border rounded-lg p-4 space-y-3">
+                      <div className="flex items-start gap-2">
+                        <div className="flex items-center gap-2 pt-2">
+                          <IconSelector
+                            value={topic.icon || "Star"}
+                            onChange={(iconName) => 
+                              updateTopicMutation.mutate({ id: topic.id, data: { icon: iconName } })
+                            }
+                          />
+                          <TopicIcon className="h-5 w-5 text-primary" />
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <Input
+                            value={topic.title}
+                            onChange={(e) => updateTopicMutation.mutate({ id: topic.id, data: { title: e.target.value } })}
+                            placeholder="Título do tópico"
+                            className="font-semibold"
+                            data-testid={`input-topic-title-${topic.id}`}
+                          />
+                          <Textarea
+                            value={topic.content}
+                            onChange={(e) => updateTopicMutation.mutate({ id: topic.id, data: { content: e.target.value } })}
+                            placeholder="Conteúdo do tópico..."
+                            rows={4}
+                            data-testid={`textarea-topic-content-${topic.id}`}
+                          />
+                        </div>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => deleteTopicMutation.mutate(topic.id)}
+                          className="text-destructive hover:text-destructive"
+                          data-testid={`button-delete-topic-${topic.id}`}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => deleteTopicMutation.mutate(topic.id)}
-                        className="text-destructive hover:text-destructive"
-                        data-testid={`button-delete-topic-${topic.id}`}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
             {/* Formulário para Novo Tópico */}
             <div className="border-2 border-dashed rounded-lg p-4 space-y-3">
-              <Input
-                value={newTopicTitle}
-                onChange={(e) => setNewTopicTitle(e.target.value)}
-                placeholder="Título do novo tópico (ex: Benefícios, Localização, Projetos...)"
-                data-testid="input-new-topic-title"
-              />
-              <Textarea
-                value={newTopicContent}
-                onChange={(e) => setNewTopicContent(e.target.value)}
-                placeholder="Conteúdo do tópico..."
-                rows={4}
-                data-testid="textarea-new-topic-content"
-              />
+              <div className="flex items-start gap-2">
+                <div className="pt-2">
+                  <IconSelector
+                    value={newTopicIcon}
+                    onChange={setNewTopicIcon}
+                  />
+                </div>
+                <div className="flex-1 space-y-3">
+                  <Input
+                    value={newTopicTitle}
+                    onChange={(e) => setNewTopicTitle(e.target.value)}
+                    placeholder="Título do novo tópico (ex: Benefícios, Localização, Projetos...)"
+                    data-testid="input-new-topic-title"
+                  />
+                  <Textarea
+                    value={newTopicContent}
+                    onChange={(e) => setNewTopicContent(e.target.value)}
+                    placeholder="Conteúdo do tópico..."
+                    rows={4}
+                    data-testid="textarea-new-topic-content"
+                  />
+                </div>
+              </div>
               <Button
                 onClick={() => {
                   if (newTopicTitle.trim() && newTopicContent.trim()) {
                     createTopicMutation.mutate({
                       title: newTopicTitle,
                       content: newTopicContent,
+                      icon: newTopicIcon,
                       order: String(topics.length),
                     });
                   } else {
