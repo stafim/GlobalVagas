@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 
 export function CategorySection() {
   const { data: banners } = useQuery<Banner[]>({
-    queryKey: ['/api/banners/active'],
+    queryKey: ['/api/banners/active', { position: 'topo' }],
     retry: false,
   });
 

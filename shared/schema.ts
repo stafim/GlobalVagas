@@ -290,8 +290,10 @@ export const banners = pgTable("banners", {
   linkUrl: text("link_url"),
   displayOrder: text("display_order").notNull().default('0'),
   isActive: text("is_active").notNull().default('true'),
+  position: text("position").notNull().default('topo'),
 }, (table) => ({
   displayOrderIdx: index("banners_display_order_idx").on(table.displayOrder),
+  positionIdx: index("banners_position_idx").on(table.position),
 }));
 
 export const insertBannerSchema = createInsertSchema(banners).omit({

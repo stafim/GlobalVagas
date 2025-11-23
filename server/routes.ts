@@ -1827,7 +1827,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.get("/api/banners/active", async (req, res) => {
     try {
-      const banners = await storage.getActiveBanners();
+      const position = req.query.position as string | undefined;
+      const banners = position 
+        ? await storage.getActiveBannersByPosition(position)
+        : await storage.getActiveBanners();
       return res.json(banners);
     } catch (error) {
       console.error("Error fetching active banners:", error);

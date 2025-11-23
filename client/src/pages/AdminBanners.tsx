@@ -47,6 +47,7 @@ export default function AdminBanners() {
       linkUrl: "",
       displayOrder: "0",
       isActive: "true",
+      position: "topo",
     },
   });
 
@@ -205,6 +206,7 @@ export default function AdminBanners() {
       linkUrl: banner.linkUrl || "",
       displayOrder: banner.displayOrder || "0",
       isActive: banner.isActive,
+      position: banner.position || "topo",
     });
     if (banner.imageUrl) {
       setPreviewUrl(banner.imageUrl.startsWith('/objects') ? banner.imageUrl : `/objects${banner.imageUrl}`);
@@ -221,6 +223,7 @@ export default function AdminBanners() {
       linkUrl: "",
       displayOrder: "0",
       isActive: "true",
+      position: "topo",
     });
     setPreviewUrl(null);
     setIsDialogOpen(true);
@@ -372,6 +375,31 @@ export default function AdminBanners() {
                           </FormControl>
                           <FormDescription className="text-xs">
                             Banners com menor número aparecem primeiro
+                          </FormDescription>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="position"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Posição*</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger data-testid="select-position">
+                                <SelectValue />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              <SelectItem value="topo">Banner do Topo</SelectItem>
+                              <SelectItem value="meio">Banner do Meio (após vagas)</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <FormDescription className="text-xs">
+                            Define onde o banner será exibido na página inicial
                           </FormDescription>
                           <FormMessage />
                         </FormItem>

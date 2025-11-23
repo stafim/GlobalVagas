@@ -2,6 +2,7 @@ import { Header } from "@/components/Header";
 import { HeroSection } from "@/components/HeroSection";
 import { StatsSection } from "@/components/StatsSection";
 import { CategorySection } from "@/components/CategorySection";
+import { MiddleBannerSection } from "@/components/MiddleBannerSection";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -229,6 +230,9 @@ export default function Home() {
             )}
           </div>
         </section>
+
+        {/* Middle Banner Section */}
+        <MiddleBannerSection />
       </main>
       
       <Footer />

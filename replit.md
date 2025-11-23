@@ -54,6 +54,12 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 - **Password Security**: All user passwords (Companies, Operators, Admins) are hashed using bcrypt with automatic migration from legacy plaintext passwords on login.
 - **Admin Login History Filters**: Search and filter users by name, email, and user type (Company/Operator/Admin) in the login history page.
 - **Company Custom Topics**: Companies can create, edit, and delete custom presentation topics on their profile page to highlight unique information about their business (e.g., Benefícios, Localização, Projetos, Clientes, etc.). Each topic has a title and content field that can be edited inline and saved automatically.
+- **Banner System with Positions**: Administrators can create and manage banners with different positions on the home page:
+  - **Banner do Topo**: Displayed in the "Explore por Categoria" section at the top
+  - **Banner do Meio**: Displayed below the "Últimas Vagas Cadastradas" section
+  - Each banner has title, subtitle, image, link, display order, and active/inactive status
+  - Auto-rotation carousel with navigation arrows and indicators
+  - Home page displays only 6 latest jobs to keep content focused
 
 ### Technology Stack
 - **Frontend**: React + TypeScript + Vite, Shadcn UI + Tailwind CSS, TanStack Query, React Hook Form + Zod

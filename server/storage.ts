@@ -97,6 +97,7 @@ export interface IStorage {
   getBanner(id: string): Promise<Banner | undefined>;
   getAllBanners(): Promise<Banner[]>;
   getActiveBanners(): Promise<Banner[]>;
+  getActiveBannersByPosition(position: string): Promise<Banner[]>;
   createBanner(banner: InsertBanner): Promise<Banner>;
   updateBanner(id: string, banner: Partial<InsertBanner>): Promise<Banner>;
   deleteBanner(id: string): Promise<void>;
@@ -736,6 +737,12 @@ export class DatabaseStorage implements IStorage {
   async getActiveBanners(): Promise<Banner[]> {
     return await db.select().from(banners)
       .where(eq(banners.isActive, 'true'))
+      .orderBy(banners.displayOrder);
+  }
+
+  async getActiveBannersByPosition(position: string): Promise<Banner[]> {
+    return await db.select().from(banners)
+      .where(and(eq(banners.isActive, 'true'), eq(banners.position, position)))
       .orderBy(banners.displayOrder);
   }
 
