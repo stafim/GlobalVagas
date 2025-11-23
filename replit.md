@@ -76,6 +76,22 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
   - Responsive: 1 column on mobile, 2 on tablets, 3 on desktop
   - **Backend**: `GET /api/featured-companies` endpoint fetches companies by IDs using Drizzle ORM's `inArray` function
   - **Storage**: Featured company IDs stored in settings table as JSON array under key `featured_companies`
+- **AI Integration (xAI Grok)**: Complete AI configuration panel in admin settings:
+  - Accessible via "Configurações de IA" menu item in admin sidebar with Bot icon
+  - **Configuration Options**:
+    - Enable/disable AI features platform-wide with toggle switch
+    - API Key management for xAI (Grok) with secure storage
+    - Model selection: Grok 4 (Flagship), Grok 3 (Balanced), Grok 3 Mini (Fast & Economic), Grok Vision (Images)
+    - Temperature control (0-2): Adjust AI creativity vs focus
+    - Max tokens configuration (1-256000): Control response length
+    - Custom system prompt: Define AI behavior and context
+  - **API Testing**: Built-in connection test to validate xAI API key before saving
+  - **Backend Endpoints**:
+    - `GET /api/admin/ai-settings` - Fetch AI configuration
+    - `POST /api/admin/ai-settings` - Save AI settings with validation
+    - `POST /api/admin/ai-settings/test` - Test API connection with provided key
+  - **Storage**: All settings stored in settings table with keys: `ai_enabled`, `ai_model`, `ai_temperature`, `ai_max_tokens`, `ai_system_prompt`
+  - Route: `/admin/ia`
 - **Live Dashboard (AO VIVO)**: Real-time statistics panel for administrators:
   - Accessible via "AO VIVO" menu item in admin sidebar with Radio icon
   - Displays platform-wide statistics updated automatically every 30 seconds
