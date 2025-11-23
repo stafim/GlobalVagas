@@ -537,6 +537,27 @@ export const insertPasswordResetCodeSchema = createInsertSchema(passwordResetCod
 export type InsertPasswordResetCode = z.infer<typeof insertPasswordResetCodeSchema>;
 export type PasswordResetCode = typeof passwordResetCodes.$inferSelect;
 
+export const companyPlans = pgTable("company_plans", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  companyId: varchar("company_id").notNull().references(() => companies.id, { onDelete: 'cascade' }),
+  planId: varchar("plan_id").notNull().references(() => plans.id),
+  totalCredits: text("total_credits").notNull(),
+  usedCredits: text("used_credits").notNull().default('0'),
+  status: text("status").notNull().default('disponivel'),
+  purchaseDate: text("purchase_date").notNull().default(sql`CURRENT_TIMESTAMP`),
+}, (table) => ({
+  companyIdIdx: index("company_plans_company_id_idx").on(table.companyId),
+  statusIdx: index("company_plans_status_idx").on(table.status),
+}));
+
+export const insertCompanyPlanSchema = createInsertSchema(companyPlans).omit({
+  id: true,
+  purchaseDate: true,
+});
+
+export type InsertCompanyPlan = z.infer<typeof insertCompanyPlanSchema>;
+export type CompanyPlan = typeof companyPlans.$inferSelect;
+
 export const creditTransactions = pgTable("credit_transactions", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   companyId: varchar("company_id").notNull().references(() => companies.id, { onDelete: 'cascade' }),
@@ -544,6 +565,7 @@ export const creditTransactions = pgTable("credit_transactions", {
   amount: text("amount").notNull(),
   description: text("description").notNull(),
   relatedPlanId: varchar("related_plan_id").references(() => plans.id),
+  relatedCompanyPlanId: varchar("related_company_plan_id").references(() => companyPlans.id),
   relatedJobId: varchar("related_job_id").references(() => jobs.id),
   createdAt: text("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   balanceAfter: text("balance_after").notNull(),

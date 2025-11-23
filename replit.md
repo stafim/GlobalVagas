@@ -40,7 +40,10 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 - **Job View Counter**: Each job tracks total views automatically when users access the job details page. Companies can see view counts alongside applications and other metrics.
 - **Public Jobs Page**: `/vagas` page with advanced filtering and real-time search.
 - **Events Management**: System for displaying trade shows and workshops.
-- **Company Credits System**: Dashboard for companies to manage credits, view transaction history, and track balances for plan purchases and job postings.
+- **Company Credits System**: Dashboard for companies to manage credits, view transaction history, and track balances for plan purchases and job postings. Each purchased plan is tracked individually with usage monitoring:
+  - Plans have status: **"Disponível para uso"** (available) when credits remain, **"Concluído"** (completed) when 100% of credits are used.
+  - System automatically debits from the oldest available plan first (FIFO).
+  - Automatic status updates when credits are consumed through job posting.
 - **Communication Tools**: WhatsApp contact button for direct communication and CV download feature for PDF resumes.
 - **Questionnaire System**: Dynamic question selection during job creation and interactive questionnaires for operators, with companies viewing responses. Only 'Short Answer' (20 chars) and 'Long Answer' (1000 chars) are available.
 - **Company Configuration CRUDs**: Management of company-specific `Work Types` and `Contract Types` via dedicated pages.

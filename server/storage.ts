@@ -1,4 +1,4 @@
-import { users, companies, companyTopics, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, savedJobs, questions, jobQuestions, applicationAnswers, siteVisits, newsletterSubscriptions, passwordResetCodes, creditTransactions, workTypes, contractTypes, tags, globalWorkTypes, globalContractTypes, type User, type InsertUser, type Company, type InsertCompany, type CompanyTopic, type InsertCompanyTopic, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type SavedJob, type InsertSavedJob, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit, type NewsletterSubscription, type InsertNewsletterSubscription, type PasswordResetCode, type InsertPasswordResetCode, type CreditTransaction, type InsertCreditTransaction, type WorkType, type InsertWorkType, type ContractType, type InsertContractType, type Tag, type InsertTag, type GlobalWorkType, type InsertGlobalWorkType, type GlobalContractType, type InsertGlobalContractType } from "@shared/schema";
+import { users, companies, companyTopics, operators, experiences, admins, plans, clients, purchases, emailSettings, sectors, subsectors, events, banners, settings, jobs, applications, savedJobs, questions, jobQuestions, applicationAnswers, siteVisits, newsletterSubscriptions, passwordResetCodes, companyPlans, creditTransactions, workTypes, contractTypes, tags, globalWorkTypes, globalContractTypes, type User, type InsertUser, type Company, type InsertCompany, type CompanyTopic, type InsertCompanyTopic, type Operator, type InsertOperator, type Experience, type InsertExperience, type Admin, type InsertAdmin, type Plan, type InsertPlan, type Client, type InsertClient, type Purchase, type InsertPurchase, type EmailSettings, type InsertEmailSettings, type Sector, type InsertSector, type Subsector, type InsertSubsector, type Event, type InsertEvent, type Banner, type InsertBanner, type Setting, type InsertSetting, type Job, type InsertJob, type Application, type InsertApplication, type SavedJob, type InsertSavedJob, type Question, type InsertQuestion, type JobQuestion, type InsertJobQuestion, type ApplicationAnswer, type InsertApplicationAnswer, type SiteVisit, type InsertSiteVisit, type NewsletterSubscription, type InsertNewsletterSubscription, type PasswordResetCode, type InsertPasswordResetCode, type CompanyPlan, type InsertCompanyPlan, type CreditTransaction, type InsertCreditTransaction, type WorkType, type InsertWorkType, type ContractType, type InsertContractType, type Tag, type InsertTag, type GlobalWorkType, type InsertGlobalWorkType, type GlobalContractType, type InsertGlobalContractType } from "@shared/schema";
 import { db } from "./db";
 import { eq, desc, and, gte, lte, not, like, sql } from "drizzle-orm";
 
@@ -212,6 +212,12 @@ export interface IStorage {
   getCompanyCredits(companyId: string): Promise<number>;
   addCreditsToCompany(companyId: string, amount: number, description: string, relatedPlanId?: string): Promise<CreditTransaction>;
   deductCreditsFromCompany(companyId: string, amount: number, description: string, relatedJobId?: string): Promise<CreditTransaction>;
+  
+  getCompanyPlansByCompany(companyId: string): Promise<Array<CompanyPlan & { plan: Plan }>>;
+  getCompanyPlan(id: string): Promise<CompanyPlan | undefined>;
+  createCompanyPlan(companyPlan: InsertCompanyPlan): Promise<CompanyPlan>;
+  updateCompanyPlanCredits(id: string, creditsUsed: number): Promise<CompanyPlan>;
+  getAvailableCompanyPlanForDebit(companyId: string): Promise<CompanyPlan | undefined>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -1501,12 +1507,26 @@ export class DatabaseStorage implements IStorage {
       .set({ credits: newBalance.toString() })
       .where(eq(companies.id, companyId));
 
+    // Se houver um plano relacionado, criar registro em companyPlans
+    let companyPlanId: string | undefined;
+    if (relatedPlanId) {
+      const companyPlan = await this.createCompanyPlan({
+        companyId,
+        planId: relatedPlanId,
+        totalCredits: amount.toString(),
+        usedCredits: '0',
+        status: 'disponivel',
+      });
+      companyPlanId = companyPlan.id;
+    }
+
     const transaction = await this.createCreditTransaction({
       companyId,
       type: 'credit',
       amount: amount.toString(),
       description,
       relatedPlanId,
+      relatedCompanyPlanId: companyPlanId,
       balanceAfter: newBalance.toString(),
     });
 
@@ -1532,16 +1552,95 @@ export class DatabaseStorage implements IStorage {
       .set({ credits: newBalance.toString() })
       .where(eq(companies.id, companyId));
 
+    // Buscar um plano disponível para debitar
+    const availablePlan = await this.getAvailableCompanyPlanForDebit(companyId);
+    let companyPlanId: string | undefined;
+    
+    if (availablePlan) {
+      // Atualizar o plano com os créditos usados
+      await this.updateCompanyPlanCredits(availablePlan.id, amount);
+      companyPlanId = availablePlan.id;
+    }
+
     const transaction = await this.createCreditTransaction({
       companyId,
       type: 'debit',
       amount: amount.toString(),
       description,
       relatedJobId,
+      relatedCompanyPlanId: companyPlanId,
       balanceAfter: newBalance.toString(),
     });
 
     return transaction;
+  }
+
+  async getCompanyPlansByCompany(companyId: string): Promise<Array<CompanyPlan & { plan: Plan }>> {
+    const result = await db
+      .select()
+      .from(companyPlans)
+      .leftJoin(plans, eq(companyPlans.planId, plans.id))
+      .where(eq(companyPlans.companyId, companyId))
+      .orderBy(desc(companyPlans.purchaseDate));
+    
+    return result.map(row => ({
+      ...row.company_plans,
+      plan: row.plans!
+    }));
+  }
+
+  async getCompanyPlan(id: string): Promise<CompanyPlan | undefined> {
+    const [companyPlan] = await db
+      .select()
+      .from(companyPlans)
+      .where(eq(companyPlans.id, id));
+    return companyPlan || undefined;
+  }
+
+  async createCompanyPlan(companyPlan: InsertCompanyPlan): Promise<CompanyPlan> {
+    const [newCompanyPlan] = await db
+      .insert(companyPlans)
+      .values(companyPlan)
+      .returning();
+    return newCompanyPlan;
+  }
+
+  async updateCompanyPlanCredits(id: string, creditsUsed: number): Promise<CompanyPlan> {
+    const companyPlan = await this.getCompanyPlan(id);
+    if (!companyPlan) {
+      throw new Error('Plano da empresa não encontrado');
+    }
+
+    const totalCredits = parseInt(companyPlan.totalCredits);
+    const newUsedCredits = parseInt(companyPlan.usedCredits) + creditsUsed;
+    const newStatus = newUsedCredits >= totalCredits ? 'concluido' : 'disponivel';
+
+    const [updated] = await db
+      .update(companyPlans)
+      .set({
+        usedCredits: newUsedCredits.toString(),
+        status: newStatus,
+      })
+      .where(eq(companyPlans.id, id))
+      .returning();
+
+    return updated;
+  }
+
+  async getAvailableCompanyPlanForDebit(companyId: string): Promise<CompanyPlan | undefined> {
+    const [companyPlan] = await db
+      .select()
+      .from(companyPlans)
+      .where(
+        and(
+          eq(companyPlans.companyId, companyId),
+          eq(companyPlans.status, 'disponivel')
+        )
+      )
+      .orderBy(companyPlans.purchaseDate)
+      .limit(1);
+    
+    return companyPlan || undefined;
   }
 }
 

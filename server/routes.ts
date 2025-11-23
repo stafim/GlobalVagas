@@ -3254,6 +3254,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  app.get("/api/company/plans", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const companyPlans = await storage.getCompanyPlansByCompany(req.session.userId);
+      return res.status(200).json(companyPlans);
+    } catch (error) {
+      console.error("Error fetching company plans:", error);
+      return res.status(500).json({ message: "Erro ao buscar planos" });
+    }
+  });
+
   app.post("/api/company/credits/add", async (req, res) => {
     try {
       if (!req.session.userId || req.session.userType !== 'company') {
