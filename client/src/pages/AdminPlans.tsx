@@ -41,6 +41,35 @@ export default function AdminPlans() {
     isActive: "true",
   });
 
+  // Função para formatar valor em moeda brasileira
+  const formatCurrency = (value: string) => {
+    // Remove tudo que não é número
+    const numbers = value.replace(/\D/g, '');
+    
+    if (!numbers) return '';
+    
+    // Converte para número e divide por 100 para obter centavos
+    const amount = parseInt(numbers) / 100;
+    
+    // Formata como moeda brasileira
+    return amount.toLocaleString('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+      minimumFractionDigits: 2,
+    });
+  };
+
+  // Função para remover formatação e obter apenas números
+  const unformatCurrency = (value: string) => {
+    return value.replace(/\D/g, '');
+  };
+
+  // Handler para mudança de preço
+  const handlePriceChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatCurrency(e.target.value);
+    setFormData({ ...formData, price: formatted });
+  };
+
   const { data: plans, isLoading } = useQuery<Plan[]>({
     queryKey: ['/api/plans'],
     retry: false,
@@ -134,7 +163,7 @@ export default function AdminPlans() {
       setFormData({
         name: plan.name,
         description: plan.description,
-        price: plan.price,
+        price: formatCurrency((parseFloat(plan.price) * 100).toString()),
         vacancyQuantity: plan.vacancyQuantity,
         features: plan.features,
         isActive: plan.isActive,
@@ -148,10 +177,20 @@ export default function AdminPlans() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Desformata o preço antes de enviar (converte R$ 1.234,56 para 1234.56)
+    const unformattedPrice = unformatCurrency(formData.price);
+    const priceInReais = (parseInt(unformattedPrice) / 100).toString();
+    
+    const dataToSubmit = {
+      ...formData,
+      price: priceInReais,
+    };
+    
     if (editingPlan) {
-      updatePlanMutation.mutate({ id: editingPlan.id, data: formData });
+      updatePlanMutation.mutate({ id: editingPlan.id, data: dataToSubmit });
     } else {
-      createPlanMutation.mutate(formData);
+      createPlanMutation.mutate(dataToSubmit);
     }
   };
 
@@ -298,8 +337,8 @@ export default function AdminPlans() {
                 <Input
                   id="price"
                   value={formData.price}
-                  onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                  placeholder="Ex: 99,00"
+                  onChange={handlePriceChange}
+                  placeholder="R$ 0,00"
                   required
                   data-testid="input-plan-price"
                 />
