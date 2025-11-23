@@ -106,7 +106,11 @@ export default function AdminTaxonomy() {
 
   const createMutation = useMutation({
     mutationFn: async (data: TagFormData) => {
-      return await apiRequest('/api/admin/tags', 'POST', data);
+      const response = await apiRequest('POST', '/api/admin/tags', data);
+      if (!response.ok) {
+        throw new Error('Erro ao criar tag');
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/tags'] });
@@ -128,7 +132,11 @@ export default function AdminTaxonomy() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }: { id: string; data: TagFormData }) => {
-      return await apiRequest(`/api/admin/tags/${id}`, 'PATCH', data);
+      const response = await apiRequest('PATCH', `/api/admin/tags/${id}`, data);
+      if (!response.ok) {
+        throw new Error('Erro ao atualizar tag');
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/tags'] });
@@ -151,7 +159,10 @@ export default function AdminTaxonomy() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: string) => {
-      return await apiRequest(`/api/admin/tags/${id}`, 'DELETE');
+      const response = await apiRequest('DELETE', `/api/admin/tags/${id}`);
+      if (!response.ok) {
+        throw new Error('Erro ao deletar tag');
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/admin/tags'] });
