@@ -3600,6 +3600,153 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // AI Candidate Analysis endpoint
+  app.post("/api/company/analyze-candidate", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'company') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      const { jobId, applicationId } = req.body;
+
+      if (!jobId || !applicationId) {
+        return res.status(400).json({ message: "jobId e applicationId são obrigatórios" });
+      }
+
+      // Buscar configurações de IA
+      const aiEnabled = await storage.getSetting('ai_enabled');
+      if (aiEnabled !== 'true') {
+        return res.status(400).json({ message: "IA não está habilitada no sistema" });
+      }
+
+      const apiKey = await storage.getSetting('ai_api_key');
+      if (!apiKey) {
+        return res.status(400).json({ message: "API Key da IA não configurada" });
+      }
+
+      const model = await storage.getSetting('ai_model') || 'grok-3';
+      const temperature = parseFloat(await storage.getSetting('ai_temperature') || '0.7');
+      const maxTokens = parseInt(await storage.getSetting('ai_max_tokens') || '2000');
+      const systemPrompt = await storage.getSetting('ai_system_prompt') || 'Você é um assistente útil da plataforma Operlist.';
+
+      // Buscar dados da vaga
+      const job = await storage.getJob(jobId);
+      if (!job) {
+        return res.status(404).json({ message: "Vaga não encontrada" });
+      }
+
+      // Verificar se a vaga pertence à empresa
+      if (job.companyId !== req.session.userId) {
+        return res.status(403).json({ message: "Você não tem permissão para analisar candidatos desta vaga" });
+      }
+
+      // Buscar dados da aplicação
+      const application = await storage.getApplication(applicationId);
+      if (!application) {
+        return res.status(404).json({ message: "Candidatura não encontrada" });
+      }
+
+      if (application.jobId !== jobId) {
+        return res.status(400).json({ message: "Candidatura não pertence a esta vaga" });
+      }
+
+      // Buscar dados do operador/candidato
+      const operator = await storage.getOperator(application.operatorId);
+      if (!operator) {
+        return res.status(404).json({ message: "Candidato não encontrado" });
+      }
+
+      // Buscar respostas do questionário
+      const answers = await storage.getAnswersByApplication(applicationId);
+
+      // Buscar perguntas da vaga
+      const jobQuestions = await storage.getJobQuestionsByJob(jobId);
+
+      // Montar prompt estruturado para análise
+      const userPrompt = `Analise a compatibilidade entre o candidato e a vaga abaixo. Forneça uma resposta estruturada em JSON com os seguintes campos:
+{
+  "jobSummary": "Resumo breve da vaga (máximo 150 caracteres)",
+  "candidateSummary": "Resumo breve do candidato (máximo 150 caracteres)",
+  "strengths": ["Ponto forte 1", "Ponto forte 2", "Ponto forte 3"],
+  "weaknesses": ["Ponto fraco 1", "Ponto fraco 2"],
+  "matchPercentage": 85,
+  "recommendation": "Recomendação final (Recomendado, Recomendado com ressalvas, ou Não recomendado)"
+}
+
+DADOS DA VAGA:
+- Título: ${job.title}
+- Descrição: ${job.description}
+- Localização: ${job.location}
+- Tipo de Trabalho: ${job.workType || 'Não especificado'}
+- Tipo de Contrato: ${job.contractType || 'Não especificado'}
+- Salário: ${job.salary || 'Não informado'}
+- Requisitos: ${job.requirements || 'Não especificado'}
+- Benefícios: ${job.benefits || 'Não especificado'}
+
+DADOS DO CANDIDATO:
+- Nome: ${operator.fullName}
+- Profissão: ${operator.profession || 'Não especificado'}
+- Localização Preferida: ${operator.preferredLocation || 'Não especificado'}
+- Anos de Experiência: ${operator.experienceYears || 'Não informado'}
+- Tipo de Trabalho Preferido: ${operator.workType || 'Não especificado'}
+- Disponibilidade: ${operator.availability || 'Não especificado'}
+- Habilidades: ${operator.skills || 'Não especificado'}
+- Certificações: ${operator.certifications || 'Não especificado'}
+- Bio: ${operator.bio || 'Não especificado'}
+
+${answers.length > 0 ? `RESPOSTAS DO QUESTIONÁRIO:
+${answers.map((a, i) => `${i + 1}. ${a.question.questionText}\nResposta: ${a.answerText}`).join('\n\n')}` : ''}
+
+Analise cuidadosamente a compatibilidade entre os requisitos da vaga e as qualificações do candidato. Seja objetivo e baseie-se em fatos concretos.`;
+
+      // Chamar API do xAI Grok
+      const response = await fetch('https://api.x.ai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt }
+          ],
+          temperature: temperature,
+          max_tokens: maxTokens,
+          response_format: { type: 'json_object' }
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.text();
+        console.error("xAI API error:", errorData);
+        return res.status(500).json({ message: "Erro ao processar análise com IA" });
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+
+      if (!content) {
+        return res.status(500).json({ message: "Resposta vazia da IA" });
+      }
+
+      // Parse do JSON retornado
+      let analysis;
+      try {
+        analysis = JSON.parse(content);
+      } catch (error) {
+        console.error("Error parsing AI response:", error);
+        return res.status(500).json({ message: "Erro ao processar resposta da IA" });
+      }
+
+      return res.status(200).json(analysis);
+    } catch (error) {
+      console.error("Error analyzing candidate with AI:", error);
+      return res.status(500).json({ message: "Erro ao analisar candidato" });
+    }
+  });
+
   // Job Questions endpoints
   app.get("/api/jobs/:jobId/questions", async (req, res) => {
     try {
