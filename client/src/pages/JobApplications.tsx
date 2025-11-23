@@ -466,25 +466,26 @@ export default function JobApplications() {
           </Card>
         ) : (
           <div className="space-y-2">
-            {filteredApplications.map((application) => {
+            {filteredApplications.map((application, index) => {
               const { operator } = application;
+              const isLocked = index > 0; // Apenas o primeiro candidato está desbloqueado
               
               return (
-                <Card 
-                  key={application.id} 
-                  className="hover-elevate cursor-pointer transition-all"
-                  onClick={() => setSelectedCandidate(application)}
-                  data-testid={`card-candidate-${application.id}`}
-                >
-                  <CardContent className="p-3">
-                    <div className="flex items-center gap-3">
-                      {/* Avatar e Nome */}
-                      <Avatar className="h-10 w-10 flex-shrink-0">
-                        <AvatarImage src={operator.profilePhotoUrl || undefined} />
-                        <AvatarFallback className="text-xs">
-                          {getInitials(operator.fullName)}
-                        </AvatarFallback>
-                      </Avatar>
+                <div key={application.id} className="relative">
+                  <Card 
+                    className={`transition-all ${isLocked ? 'cursor-not-allowed' : 'hover-elevate cursor-pointer'}`}
+                    onClick={() => !isLocked && setSelectedCandidate(application)}
+                    data-testid={`card-candidate-${application.id}`}
+                  >
+                    <CardContent className={`p-3 ${isLocked ? 'blur-sm select-none' : ''}`}>
+                      <div className="flex items-center gap-3">
+                        {/* Avatar e Nome */}
+                        <Avatar className="h-10 w-10 flex-shrink-0">
+                          <AvatarImage src={operator.profilePhotoUrl || undefined} />
+                          <AvatarFallback className="text-xs">
+                            {getInitials(operator.fullName)}
+                          </AvatarFallback>
+                        </Avatar>
                       
                       {/* Informações principais */}
                       <div className="flex-1 min-w-0 grid grid-cols-1 md:grid-cols-4 gap-2 items-center">
@@ -565,7 +566,25 @@ export default function JobApplications() {
                     </div>
                   </CardContent>
                 </Card>
-              );
+                
+                {/* Overlay de bloqueio para candidatos além do primeiro */}
+                {isLocked && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-md">
+                    <div className="text-center p-4 max-w-xs">
+                      <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mb-3">
+                        <svg className="w-6 h-6 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                        </svg>
+                      </div>
+                      <h3 className="font-semibold text-sm mb-1">Candidato Bloqueado</h3>
+                      <p className="text-xs text-muted-foreground">
+                        Você pode visualizar apenas 1 candidato por vaga. Entre em contato para desbloquear mais candidatos.
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
             })}
           </div>
         )}
