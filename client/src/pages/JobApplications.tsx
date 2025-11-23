@@ -950,28 +950,30 @@ export default function JobApplications() {
               <Separator />
 
               {/* Pontos Fortes */}
-              <div className="space-y-3">
-                <h3 className="text-lg font-semibold flex items-center gap-2">
-                  <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
-                  Pontos Fortes
-                </h3>
-                <div className="space-y-2">
-                  {currentAnalysis.strengths.map((strength, index) => (
-                    <div 
-                      key={index} 
-                      className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-950/20 rounded-md border border-green-200 dark:border-green-900/30"
-                    >
-                      <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                      <p className="text-sm text-green-900 dark:text-green-100">{strength}</p>
-                    </div>
-                  ))}
+              {currentAnalysis.strengths && currentAnalysis.strengths.length > 0 && (
+                <div className="space-y-3">
+                  <h3 className="text-lg font-semibold flex items-center gap-2">
+                    <TrendingUp className="h-5 w-5 text-green-600 dark:text-green-400" />
+                    Pontos Fortes
+                  </h3>
+                  <div className="space-y-2">
+                    {currentAnalysis.strengths.map((strength, index) => (
+                      <div 
+                        key={index} 
+                        className="flex items-start gap-2 p-3 bg-green-50 dark:bg-green-950/20 rounded-md border border-green-200 dark:border-green-900/30"
+                      >
+                        <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
+                        <p className="text-sm text-green-900 dark:text-green-100">{strength}</p>
+                      </div>
+                    ))}
+                  </div>
                 </div>
-              </div>
+              )}
 
               <Separator />
 
               {/* Pontos Fracos */}
-              {currentAnalysis.weaknesses.length > 0 && (
+              {currentAnalysis.weaknesses && currentAnalysis.weaknesses.length > 0 && (
                 <>
                   <div className="space-y-3">
                     <h3 className="text-lg font-semibold flex items-center gap-2">
