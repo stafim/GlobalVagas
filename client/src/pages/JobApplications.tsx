@@ -101,17 +101,32 @@ export default function JobApplications() {
 
   const analyzeWithAIMutation = useMutation({
     mutationFn: async ({ jobId, applicationId }: { jobId: string; applicationId: string }) => {
+      console.log("🚀 Iniciando análise com IA:", { jobId, applicationId });
       const response = await apiRequest('POST', '/api/company/analyze-candidate', { 
         jobId, 
         applicationId 
       });
+      console.log("📥 Resposta da API recebida:", response);
       return response as unknown as AIAnalysis;
     },
     onSuccess: (data: AIAnalysis) => {
+      console.log("✅ onSuccess disparado com dados:", data);
+      console.log("📊 Estrutura dos dados:", {
+        hasJobSummary: !!data.jobSummary,
+        hasCandidateSummary: !!data.candidateSummary,
+        hasStrengths: !!data.strengths,
+        strengthsLength: data.strengths?.length || 0,
+        hasWeaknesses: !!data.weaknesses,
+        weaknessesLength: data.weaknesses?.length || 0,
+        matchPercentage: data.matchPercentage,
+        recommendation: data.recommendation
+      });
       setCurrentAnalysis(data);
       setAiAnalysisOpen(true);
+      console.log("🎭 Modal aberto, currentAnalysis setado");
     },
     onError: (error: Error) => {
+      console.error("❌ Erro na análise:", error);
       toast({
         variant: "destructive",
         title: "Erro ao analisar candidato",
