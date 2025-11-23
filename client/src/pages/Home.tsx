@@ -4,6 +4,7 @@ import { AboutSection } from "@/components/AboutSection";
 import { StatsSection } from "@/components/StatsSection";
 import { CategorySection } from "@/components/CategorySection";
 import { MiddleBannerSection } from "@/components/MiddleBannerSection";
+import { FeaturedCompaniesSection } from "@/components/FeaturedCompaniesSection";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -235,6 +236,9 @@ export default function Home() {
 
         {/* Middle Banner Section */}
         <MiddleBannerSection />
+
+        {/* Featured Companies Section */}
+        <FeaturedCompaniesSection />
       </main>
       
       <Footer />

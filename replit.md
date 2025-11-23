@@ -66,6 +66,13 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
   - Administrators manage content through Settings panel
   - Automatically hides if no content is configured
   - Clean, centered layout with icons for each section
+- **Featured Companies Section**: Showcase selected companies on homepage:
+  - Displayed below the middle banner section
+  - Administrators select companies via checkboxes in Settings panel
+  - Shows company logo, name, industry, size, and website
+  - Clickable cards linking to company presentation pages
+  - Automatically hides if no companies are selected
+  - Clean grid layout with hover effects
 
 ### Technology Stack
 - **Frontend**: React + TypeScript + Vite, Shadcn UI + Tailwind CSS, TanStack Query, React Hook Form + Zod
