@@ -9,7 +9,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Briefcase, Plus, Search, MapPin, Clock, DollarSign, Users, ChevronRight, ChevronLeft, Building2, Check, ChevronsUpDown, Eye, Trash2, UserCheck, ExternalLink, Pause, Play, Filter, X, Coins, AlertCircle } from "lucide-react";
+import { Briefcase, Plus, Search, MapPin, Clock, DollarSign, Users, ChevronRight, ChevronLeft, Building2, Check, ChevronsUpDown, Eye, Trash2, UserCheck, ExternalLink, Pause, Play, Filter, X, Coins, AlertCircle, Copy } from "lucide-react";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { Link } from "wouter";
@@ -248,6 +248,56 @@ export default function CompanyJobs() {
     setStatusFilter("all");
     setDateFrom("");
     setDateTo("");
+  };
+
+  const handleDuplicateJob = async (job: Job) => {
+    // Buscar as questions e tags associadas à vaga
+    try {
+      const questionsResponse = await fetch(`/api/jobs/${job.id}/questions`);
+      const jobQuestions = questionsResponse.ok ? await questionsResponse.json() : [];
+      
+      const tagsResponse = await fetch(`/api/jobs/${job.id}/tags`);
+      const jobTags = tagsResponse.ok ? await tagsResponse.json() : [];
+      
+      // Preencher o formulário com os dados da vaga
+      form.reset({
+        title: `${job.title} (Cópia)`,
+        description: job.description || "",
+        requirements: job.requirements || "",
+        responsibilities: job.responsibilities || "",
+        benefits: job.benefits || "",
+        location: job.location || "",
+        city: job.city || "",
+        state: job.state || "",
+        workType: job.workType || "",
+        contractType: job.contractType || "",
+        salary: job.salary || "",
+        salaryPeriod: job.salaryPeriod || "mensal",
+        experienceLevel: job.experienceLevel || "",
+        educationLevel: job.educationLevel || "",
+        vacancies: job.vacancies?.toString() || "1",
+        status: "active",
+      });
+      
+      // Definir as questions e tags selecionadas
+      setSelectedQuestions(jobQuestions.map((q: Question) => q.id));
+      setSelectedTags(jobTags.map((t: Tag) => t.id));
+      
+      // Resetar para o primeiro passo e abrir o dialog
+      setCurrentStep(1);
+      setDialogOpen(true);
+      
+      toast({
+        title: "Vaga duplicada",
+        description: "Os dados da vaga foram copiados. Revise e publique quando estiver pronto.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Erro ao duplicar vaga",
+        description: "Não foi possível carregar todos os dados da vaga.",
+      });
+    }
   };
 
   const hasActiveFilters = searchTerm || locationFilter || statusFilter !== "all" || dateFrom || dateTo;
@@ -1051,6 +1101,15 @@ export default function CompanyJobs() {
                         <UserCheck className="h-4 w-4" />
                       </Button>
                     </Link>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => handleDuplicateJob(job)}
+                      title="Duplicar vaga"
+                      data-testid={`button-duplicate-${job.id}`}
+                    >
+                      <Copy className="h-4 w-4" />
+                    </Button>
                     <Button
                       size="sm"
                       variant="ghost"

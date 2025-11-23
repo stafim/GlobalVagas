@@ -27,7 +27,7 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
 
 ### Core Features & Design
 - **User Management**: Distinct roles (Operators, Companies, Administrators) with session-based authentication. Operators must have ≥50% profile completion before applying to jobs, with an AlertDialog guiding them to required fields.
-- **Job Management**: Companies create/manage jobs via a 4-step wizard, including dynamic question selection. Jobs have 'Active'/'Suspended' statuses and are publicly listed with search/filter capabilities. A credit system dictates job publishing.
+- **Job Management**: Companies create/manage jobs via a 4-step wizard, including dynamic question selection. Jobs have 'Active'/'Suspended' statuses and are publicly listed with search/filter capabilities. A credit system dictates job publishing. Companies can duplicate existing jobs to quickly create similar positions with pre-filled data.
 - **Job Application System**: Operators apply to jobs and complete dynamic questionnaires. The system validates required questions and prevents duplicate applications. Features advanced filtering (search, status, location) for companies to manage applications efficiently.
 - **Profile Management**: Detailed profiles for Companies (presentation pages, banner uploads) and Operators (experience tracking, photos). Operator profile completion tracked via 13 fields with 50% minimum threshold.
 - **Administration Panel**: Comprehensive interface for system settings, email configuration, content, user management, and financial dashboard.
