@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -13,7 +14,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Mail, Settings as SettingsIcon, Save, AlertCircle, Type, BarChart3, Send } from "lucide-react";
+import { Mail, Settings as SettingsIcon, Save, AlertCircle, Type, BarChart3, Send, Building2 } from "lucide-react";
+import type { Company } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import type { EmailSettings } from "@shared/schema";
@@ -45,6 +47,8 @@ export default function AdminSettings() {
   const [aboutMission, setAboutMission] = useState("");
   const [aboutValues, setAboutValues] = useState("");
 
+  const [featuredCompanyIds, setFeaturedCompanyIds] = useState<string[]>([]);
+
   const { data: emailSettings, isLoading: emailLoading } = useQuery<EmailSettings>({
     queryKey: ['/api/email-settings'],
     retry: false,
@@ -54,6 +58,12 @@ export default function AdminSettings() {
   const { data: settingsData, isLoading: settingsLoading } = useQuery<Record<string, string>>({
     queryKey: ['/api/settings'],
     retry: false,
+  });
+
+  const { data: allCompanies, isLoading: companiesLoading } = useQuery<Company[]>({
+    queryKey: ['/api/companies'],
+    retry: false,
+    enabled: userType === 'admin',
   });
 
   useEffect(() => {
@@ -81,6 +91,16 @@ export default function AdminSettings() {
       setAboutWhoWeAre(settingsData.about_who_we_are || "");
       setAboutMission(settingsData.about_mission || "");
       setAboutValues(settingsData.about_values || "");
+      
+      if (settingsData.featured_companies) {
+        try {
+          setFeaturedCompanyIds(JSON.parse(settingsData.featured_companies));
+        } catch (e) {
+          setFeaturedCompanyIds([]);
+        }
+      } else {
+        setFeaturedCompanyIds([]);
+      }
     }
   }, [settingsData]);
 
@@ -277,7 +297,42 @@ export default function AdminSettings() {
     saveAboutMutation.mutate();
   };
 
-  const isLoading = emailLoading || settingsLoading;
+  const saveFeaturedCompaniesMutation = useMutation({
+    mutationFn: async () => {
+      await apiRequest('POST', '/api/settings', {
+        key: 'featured_companies',
+        value: JSON.stringify(featuredCompanyIds),
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['/api/settings'] });
+      toast({
+        title: "Empresas em destaque atualizadas!",
+        description: "As empresas em destaque foram atualizadas com sucesso.",
+      });
+    },
+    onError: () => {
+      toast({
+        variant: "destructive",
+        title: "Erro ao salvar",
+        description: "Não foi possível salvar as empresas em destaque. Tente novamente.",
+      });
+    },
+  });
+
+  const handleSaveFeaturedCompanies = () => {
+    saveFeaturedCompaniesMutation.mutate();
+  };
+
+  const toggleFeaturedCompany = (companyId: string) => {
+    setFeaturedCompanyIds(prev => 
+      prev.includes(companyId) 
+        ? prev.filter(id => id !== companyId)
+        : [...prev, companyId]
+    );
+  };
+
+  const isLoading = emailLoading || settingsLoading || companiesLoading;
 
   if (isLoading) {
     return (
@@ -489,6 +544,79 @@ export default function AdminSettings() {
               >
                 <Save className="h-4 w-4 mr-2" />
                 {saveAboutMutation.isPending ? 'Salvando...' : 'Salvar Informações'}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Featured Companies */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Building2 className="h-5 w-5" />
+              Empresas em Destaque
+            </CardTitle>
+            <CardDescription>
+              Selecione as empresas que aparecerão na seção "Empresas em Destaque" da página inicial
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-3">
+              {allCompanies && allCompanies.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {allCompanies.map((company) => (
+                    <div
+                      key={company.id}
+                      className="flex items-start gap-3 p-3 rounded-md border hover-elevate"
+                      data-testid={`company-selector-${company.id}`}
+                    >
+                      <Checkbox
+                        id={`company-${company.id}`}
+                        checked={featuredCompanyIds.includes(company.id)}
+                        onCheckedChange={() => toggleFeaturedCompany(company.id)}
+                        data-testid={`checkbox-company-${company.id}`}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <label
+                          htmlFor={`company-${company.id}`}
+                          className="text-sm font-medium cursor-pointer flex items-center gap-2"
+                        >
+                          {company.logoUrl && (
+                            <img 
+                              src={company.logoUrl} 
+                              alt={company.companyName}
+                              className="w-6 h-6 rounded object-cover"
+                            />
+                          )}
+                          <span className="truncate">{company.companyName}</span>
+                        </label>
+                        {company.industry && (
+                          <p className="text-xs text-muted-foreground mt-1">
+                            {company.industry}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-8">
+                  Nenhuma empresa cadastrada no sistema
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center justify-between pt-4 border-t">
+              <p className="text-sm text-muted-foreground">
+                {featuredCompanyIds.length} {featuredCompanyIds.length === 1 ? 'empresa selecionada' : 'empresas selecionadas'}
+              </p>
+              <Button 
+                onClick={handleSaveFeaturedCompanies}
+                disabled={saveFeaturedCompaniesMutation.isPending}
+                data-testid="button-save-featured-companies"
+              >
+                <Save className="h-4 w-4 mr-2" />
+                {saveFeaturedCompaniesMutation.isPending ? 'Salvando...' : 'Salvar Seleção'}
               </Button>
             </div>
           </CardContent>
