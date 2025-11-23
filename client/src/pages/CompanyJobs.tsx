@@ -123,6 +123,7 @@ export default function CompanyJobs() {
       setSelectedQuestions([]);
       setSelectedTags([]);
       setEditingJobId(null);
+      setSelectedSectorId(null);
       form.reset();
       toast({
         title: data.isEditing ? "Vaga atualizada com sucesso!" : "Vaga criada com sucesso!",
@@ -293,7 +294,12 @@ export default function CompanyJobs() {
         educationLevel: job.educationLevel || "",
         vacancies: job.vacancies?.toString() || "1",
         status: "active",
+        sectorId: job.sectorId || null,
+        subsectorId: job.subsectorId || null,
       });
+      
+      // Definir o setor selecionado para que o subsetor seja filtrado corretamente
+      setSelectedSectorId(job.sectorId || null);
       
       // Definir as questions selecionadas (pegar o id de cada question)
       setSelectedQuestions(jobQuestions.map((q: any) => q.id));
@@ -345,7 +351,12 @@ export default function CompanyJobs() {
         educationLevel: job.educationLevel || "",
         vacancies: job.vacancies?.toString() || "1",
         status: job.status || "active",
+        sectorId: job.sectorId || null,
+        subsectorId: job.subsectorId || null,
       });
+      
+      // Definir o setor selecionado para que o subsetor seja filtrado corretamente
+      setSelectedSectorId(job.sectorId || null);
       
       // Definir as questions selecionadas
       setSelectedQuestions(jobQuestions.map((q: any) => q.id));
@@ -462,6 +473,7 @@ export default function CompanyJobs() {
                 setEditingJobId(null);
                 setSelectedQuestions([]);
                 setSelectedTags([]);
+                setSelectedSectorId(null);
                 form.reset();
               }
             }}>
