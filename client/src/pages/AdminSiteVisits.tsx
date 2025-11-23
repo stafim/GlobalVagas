@@ -18,44 +18,50 @@ interface SiteVisit {
   visitedAt: string;
 }
 
-// Map country names to ISO 3166-1 alpha-2 codes
-const countryToCode: Record<string, string> = {
-  "Brazil": "br",
-  "United States": "us",
-  "Portugal": "pt",
-  "Spain": "es",
-  "Argentina": "ar",
-  "Chile": "cl",
-  "Mexico": "mx",
-  "Colombia": "co",
-  "Peru": "pe",
-  "Venezuela": "ve",
-  "Uruguay": "uy",
-  "Paraguay": "py",
-  "Ecuador": "ec",
-  "Bolivia": "bo",
-  "France": "fr",
-  "Germany": "de",
-  "Italy": "it",
-  "United Kingdom": "gb",
-  "Canada": "ca",
-  "Australia": "au",
-  "Japan": "jp",
-  "China": "cn",
-  "India": "in",
-  "Russia": "ru",
-  "South Africa": "za",
-  "Nigeria": "ng",
-  "Kenya": "ke",
-  "Egypt": "eg",
-  "Morocco": "ma",
-  "Angola": "ao",
-  "Mozambique": "mz",
+// Map country ISO codes to friendly names (most common ones)
+const countryNames: Record<string, string> = {
+  "BR": "Brasil",
+  "US": "Estados Unidos",
+  "PT": "Portugal",
+  "ES": "Espanha",
+  "AR": "Argentina",
+  "CL": "Chile",
+  "MX": "México",
+  "CO": "Colômbia",
+  "PE": "Peru",
+  "VE": "Venezuela",
+  "UY": "Uruguai",
+  "PY": "Paraguai",
+  "EC": "Equador",
+  "BO": "Bolívia",
+  "FR": "França",
+  "DE": "Alemanha",
+  "IT": "Itália",
+  "GB": "Reino Unido",
+  "CA": "Canadá",
+  "AU": "Austrália",
+  "JP": "Japão",
+  "CN": "China",
+  "IN": "Índia",
+  "RU": "Rússia",
+  "ZA": "África do Sul",
+  "NG": "Nigéria",
+  "KE": "Quênia",
+  "EG": "Egito",
+  "MA": "Marrocos",
+  "AO": "Angola",
+  "MZ": "Moçambique",
 };
+
+function getCountryName(countryCode: string | null): string {
+  if (!countryCode) return "Desconhecido";
+  return countryNames[countryCode.toUpperCase()] || countryCode;
+}
 
 function getCountryCode(country: string | null): string {
   if (!country) return "un"; // Unknown flag
-  return countryToCode[country] || "un";
+  // Country is already an ISO code from geoip-lite
+  return country.toLowerCase();
 }
 
 function AdminSiteVisitsContent() {
@@ -130,23 +136,21 @@ function AdminSiteVisitsContent() {
                   >
                     {/* Country Flag */}
                     <div className="flex-shrink-0">
-                      <img
-                        src={`https://flagcdn.com/w40/${countryCode}.png`}
-                        srcSet={`https://flagcdn.com/w80/${countryCode}.png 2x`}
-                        width="40"
-                        height="30"
-                        alt={visit.country || "Unknown"}
-                        className="rounded border border-border"
-                        onError={(e) => {
-                          // Fallback to globe icon if flag fails to load
-                          e.currentTarget.style.display = 'none';
-                          const parent = e.currentTarget.parentElement;
-                          if (parent) {
-                            parent.innerHTML = '<div class="flex items-center justify-center w-10 h-8 bg-muted rounded border border-border"><svg class="h-5 w-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></div>';
-                          }
-                        }}
-                        data-testid={`flag-${visit.id}`}
-                      />
+                      {visit.country ? (
+                        <img
+                          src={`https://flagcdn.com/w40/${countryCode}.png`}
+                          srcSet={`https://flagcdn.com/w80/${countryCode}.png 2x`}
+                          width="40"
+                          height="30"
+                          alt={getCountryName(visit.country)}
+                          className="rounded border border-border"
+                          data-testid={`flag-${visit.id}`}
+                        />
+                      ) : (
+                        <div className="flex items-center justify-center w-10 h-8 bg-muted rounded border border-border">
+                          <Globe className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                      )}
                     </div>
 
                     {/* Visit Info */}
@@ -159,7 +163,7 @@ function AdminSiteVisitsContent() {
                         {visit.country && (
                           <Badge variant="secondary" className="gap-1">
                             <MapPin className="h-3 w-3" />
-                            {visit.country}
+                            {getCountryName(visit.country)}
                             {visit.city && `, ${visit.city}`}
                             {visit.region && visit.region !== visit.city && ` - ${visit.region}`}
                           </Badge>
