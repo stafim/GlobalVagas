@@ -355,6 +355,12 @@ export default function SignupOperator() {
                                   className="pl-10"
                                   data-testid="input-phone"
                                   {...field}
+                                  onChange={(e) => {
+                                    const formatted = formatPhone(e.target.value);
+                                    field.onChange(removePhoneMask(formatted));
+                                    e.target.value = formatted;
+                                  }}
+                                  value={formatPhone(field.value || '')}
                                 />
                               </div>
                             </FormControl>
