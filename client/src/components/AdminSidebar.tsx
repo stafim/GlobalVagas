@@ -1,4 +1,4 @@
-import { LayoutDashboard, Building2, HardHat, Briefcase, CreditCard, DollarSign, Settings, Calendar, Image, Mail, Tags, Clock } from "lucide-react";
+import { LayoutDashboard, Building2, HardHat, Briefcase, CreditCard, DollarSign, Settings, Calendar, Image, Mail, Tags, Clock, Radio } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -19,6 +19,11 @@ const menuItems = [
     title: "Dashboard",
     url: "/admin",
     icon: LayoutDashboard,
+  },
+  {
+    title: "AO VIVO",
+    url: "/admin/ao-vivo",
+    icon: Radio,
   },
   {
     title: "Meus Clientes",

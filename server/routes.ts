@@ -2838,6 +2838,101 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Admin endpoint - get live statistics dashboard
+  app.get("/api/admin/live-stats", async (req, res) => {
+    try {
+      if (!req.session.userId || req.session.userType !== 'admin') {
+        return res.status(401).json({ message: "Não autorizado" });
+      }
+
+      // Get all statistics in parallel
+      const [
+        allCompanies,
+        allOperators,
+        allAdmins,
+        allJobs,
+        visitStats
+      ] = await Promise.all([
+        storage.getAllCompanies(),
+        storage.getAllOperators(),
+        storage.getAllAdmins(),
+        storage.getAllJobs(),
+        storage.getVisitStats()
+      ]);
+
+      // Calculate statistics
+      const activeJobs = allJobs.filter((job: any) => job.status === 'Active').length;
+      const suspendedJobs = allJobs.filter((job: any) => job.status === 'Suspended').length;
+      
+      // Create login data from all users
+      const companiesLoginData = allCompanies.map((company: any) => ({
+        id: company.id,
+        name: company.companyName,
+        email: company.email,
+        userType: 'company',
+        lastLoginAt: company.lastLoginAt
+      }));
+
+      const operatorsLoginData = allOperators.map((operator: any) => ({
+        id: operator.id,
+        name: operator.fullName,
+        email: operator.email,
+        userType: 'operator',
+        lastLoginAt: operator.lastLoginAt
+      }));
+
+      const adminsLoginData = allAdmins.map((admin: any) => ({
+        id: admin.id,
+        name: admin.name || admin.email,
+        email: admin.email,
+        userType: 'admin',
+        lastLoginAt: admin.lastLoginAt
+      }));
+
+      // Combine and sort by last login
+      const allUsers = [...companiesLoginData, ...operatorsLoginData, ...adminsLoginData];
+      const recentLogins = allUsers
+        .filter((user: any) => user.lastLoginAt)
+        .sort((a: any, b: any) => new Date(b.lastLoginAt).getTime() - new Date(a.lastLoginAt).getTime())
+        .slice(0, 10)
+        .map((user: any, index: number) => ({
+          id: index + 1,
+          userId: user.id,
+          userType: user.userType,
+          loginDate: user.lastLoginAt,
+          ipAddress: undefined,
+          userAgent: undefined
+        }));
+
+      // Get company statistics
+      const companiesWithLastLogin = allCompanies.map((company: any) => ({
+        id: company.id,
+        companyName: company.companyName,
+        email: company.email,
+        lastLogin: company.lastLoginAt
+      })).sort((a: any, b: any) => {
+        if (!a.lastLogin) return 1;
+        if (!b.lastLogin) return -1;
+        return new Date(b.lastLogin).getTime() - new Date(a.lastLogin).getTime();
+      });
+
+      return res.status(200).json({
+        totalCompanies: allCompanies.length,
+        totalOperators: allOperators.length,
+        totalJobs: allJobs.length,
+        activeJobs,
+        suspendedJobs,
+        totalVisits: visitStats?.totalVisits || 0,
+        uniqueVisits: visitStats?.uniqueVisits || 0,
+        recentLogins,
+        companiesWithLastLogin: companiesWithLastLogin.slice(0, 20)
+      });
+    } catch (error) {
+      console.error("Error getting live stats:", error);
+      return res.status(500).json({ message: "Erro ao buscar estatísticas ao vivo" });
+    }
+  });
+
   // Questions endpoints
   app.get("/api/company/questions", async (req, res) => {
     try {
