@@ -76,6 +76,15 @@ Operlist is a comprehensive, bilingual (Portuguese/English) job board platform c
   - Responsive: 1 column on mobile, 2 on tablets, 3 on desktop
   - **Backend**: `GET /api/featured-companies` endpoint fetches companies by IDs using Drizzle ORM's `inArray` function
   - **Storage**: Featured company IDs stored in settings table as JSON array under key `featured_companies`
+- **Live Dashboard (AO VIVO)**: Real-time statistics panel for administrators:
+  - Accessible via "AO VIVO" menu item in admin sidebar with Radio icon
+  - Displays platform-wide statistics updated automatically every 30 seconds
+  - **Statistics Cards**: Total companies, total operators, total jobs (active/suspended), total site visits
+  - **Recent Logins**: Shows last 10 logins across all user types (Company, Operator, Admin) with timestamps
+  - **Companies Activity**: Lists 20 most recently active companies with last login timestamps
+  - Visual indicators: Red pulsing "live" badge, color-coded user type badges
+  - **Backend**: `GET /api/admin/live-stats` endpoint aggregates data from all user types and jobs
+  - Route: `/admin/ao-vivo`
 
 ### Technology Stack
 - **Frontend**: React + TypeScript + Vite, Shadcn UI + Tailwind CSS, TanStack Query, React Hook Form + Zod
